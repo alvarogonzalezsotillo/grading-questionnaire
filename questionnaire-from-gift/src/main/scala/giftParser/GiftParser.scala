@@ -39,10 +39,15 @@ object GiftParser{
 
   trait Question {
     val text: String
-    val answers = List()
+    val answers = List[Answer]()
   }
 
   case class OpenQuestion(text: String) extends Question
   case class QuestionnaireQuestion(text: String, override val answers: List[Answer]) extends Question
   type GiftFile = List[Question]
+
+  def parse( s: String ) = {
+    val parser = new GiftParser
+    parser.parseAll( parser.questionnaire, s )
+  }
 }
