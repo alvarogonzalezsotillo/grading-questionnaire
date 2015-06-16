@@ -65,4 +65,10 @@ class GiftParserTest extends FlatSpec {
     assert( q.answers(1) == Answer( "mal", false) )
   }
 
+  "A malformed file" should "not parse" in {
+    val error =" this is an error "
+    val ret = GiftParser.parse(error)
+    assert( !ret.successful )
+  }
+
 }

@@ -10,27 +10,33 @@ class GiftParser extends JavaTokenParsers {
 
   import giftParser.GiftParser._
 
-
+  // ANY NUMBER OF BLANKS
   def indent: Parser[String] = """\s*""".r
 
+  // ONLY ~ OR =
   def startOfAnswer: Parser[String] = "~" | "="
 
-  def answerBody: Parser[String] = """(?m)[^\}~=]*""".r
+  // ANY CHARACTERS, NOT INCLUDING THE FIRST }, ~ OR =
+  def answerBody: Parser[String] = """[^\}~=]*""".r
 
+  // ANY CHARACTERS, NOT INCLUDING THE FIRST {
+  def questionText: Parser[String] = """[^\{]*""".r
+
+
+  // AN ANSWER CAN BE INDENTED, HAS A START AND A BODY
   def answer: Parser[Answer] = indent ~> startOfAnswer ~ answerBody ^^ {
     case "=" ~ b => Answer(b.trim, true)
     case "~" ~ b => Answer(b.trim, false)
   }
 
-  def questionText: Parser[String] = """(?m)[^\{]*""".r
-
-  def question: Parser[Question] = questionText ~ "{" ~ rep(answer) ~ "}" ^^ {
-    case t ~ "{" ~ List() ~ "}" => OpenQuestion(t.trim)
-    case t ~ "{" ~ a ~ "}" => QuestionnaireQuestion(t.trim, a)
+  // A QUESTION HAS A TEXT, AND MAYBE SOME ANSWERS
+  def question: Parser[Question] = (questionText <~  "{" ) ~ ( rep(answer) <~ "}" )  ^^ {
+    case t ~ List()  => OpenQuestion(t.trim)
+    case t ~  a => QuestionnaireQuestion(t.trim, a)
   }
 
+  // A QUESTIONNAIRE IS COMPOSED OF SEVERAL QUESTIONS
   def questionnaire: Parser[GiftFile] = rep(question)
-
 }
 
 object GiftParser{
@@ -39,11 +45,10 @@ object GiftParser{
 
   trait Question {
     val text: String
-    val answers = List[Answer]()
   }
 
   case class OpenQuestion(text: String) extends Question
-  case class QuestionnaireQuestion(text: String, override val answers: List[Answer]) extends Question
+  case class QuestionnaireQuestion(text: String, answers: List[Answer]) extends Question
   type GiftFile = List[Question]
 
   def parse( s: String ) = {
