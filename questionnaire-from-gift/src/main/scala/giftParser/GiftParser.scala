@@ -6,6 +6,7 @@ package giftParser
 
 import scala.util.parsing.combinator._
 
+// SEE https://docs.moodle.org/23/en/GIFT_format
 class GiftParser extends JavaTokenParsers {
 
   import giftParser.GiftParser._
@@ -22,7 +23,6 @@ class GiftParser extends JavaTokenParsers {
   // ANY CHARACTERS, NOT INCLUDING THE FIRST {
   def questionText: Parser[String] = """[^\{]*""".r
 
-
   // AN ANSWER CAN BE INDENTED, HAS A START AND A BODY
   def answer: Parser[Answer] = indent ~> startOfAnswer ~ answerBody ^^ {
     case "=" ~ b => Answer(b.trim, true)
@@ -31,8 +31,8 @@ class GiftParser extends JavaTokenParsers {
 
   // A QUESTION HAS A TEXT, AND MAYBE SOME ANSWERS
   def question: Parser[Question] = (questionText <~  "{" ) ~ ( rep(answer) <~ "}" )  ^^ {
-    case t ~ List()  => OpenQuestion(t.trim)
-    case t ~  a => QuestionnaireQuestion(t.trim, a)
+    case t ~ Nil  => OpenQuestion(t.trim)
+    case t ~ a    => QuestionnaireQuestion(t.trim, a)
   }
 
   // A QUESTIONNAIRE IS COMPOSED OF SEVERAL QUESTIONS
