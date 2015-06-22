@@ -5,18 +5,16 @@ import java.util.*;
  */
 public class NumerosRomanos {
 
-    private static SortedMap<Integer, String> _cantidades = new TreeMap<Integer, String>( new Comparator<Integer>(){
-        @Override
-        public int compare(Integer o1, Integer o2) {
-            return o2 - o1;
-        }
-    });
+    private static SortedMap<Integer, String> _cantidades;
 
-    static {
-        inicializaDatos();
+    public static SortedMap<Integer,String> getCantidades(){
+        if (_cantidades == null) {
+            _cantidades = inicializaCantidades();
+        }
+        return _cantidades;
     }
 
-    private static void inicializaDatos() {
+    private static SortedMap<Integer,String> inicializaCantidades() {
         Map<Integer,String> map = new HashMap<Integer,String>();
         map.put(1, "i");
         map.put(4, "iv");
@@ -32,10 +30,18 @@ public class NumerosRomanos {
         map.put(900, "cm");
         map.put(1000, "m");
 
+        SortedMap<Integer, String> ret = new TreeMap<Integer, String>( new Comparator<Integer>(){
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                return o2 - o1;
+            }
+        });
+
         for( int i : map.keySet() ){
-            _cantidades.put( i, map.get(i) );
-            _cantidades.put( i*1000, map.get(i).toUpperCase() );
+            ret.put( i, map.get(i) );
+            ret.put( i*1000, map.get(i).toUpperCase() );
         }
+        return ret;
     }
 
 
@@ -46,7 +52,7 @@ public class NumerosRomanos {
         }
         int i = numeroMasGrandeMenorQue(n);
         log( "  " + i + "->" + _cantidades.get(i) );
-        return _cantidades.get(i) + aRomano( n - i );
+        return getCantidades().get(i) + aRomano( n - i );
     }
 
     private static void log(String s) {
@@ -54,7 +60,7 @@ public class NumerosRomanos {
     }
 
     private static int numeroMasGrandeMenorQue(int n) {
-        for( int i : _cantidades.keySet() ){
+        for( int i : getCantidades().keySet() ){
             if( i <= n ){
                 return i;
             }
