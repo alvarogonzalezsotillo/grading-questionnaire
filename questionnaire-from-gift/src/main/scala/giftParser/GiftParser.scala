@@ -6,14 +6,15 @@ package giftParser
 
 import java.io.{FileReader, File, Reader}
 
-import scala.util.{Random, Failure, Success}
+import scala.util.{Random}
 import scala.util.parsing.combinator._
 
 // SEE https://docs.moodle.org/23/en/GIFT_format
 // NOT SUPPORTED: missing word, matching, title, feedback, numerics
 class GiftParser extends JavaTokenParsers {
 
-  import giftParser.GiftParser._
+  import GiftParser._
+  import GiftParser.GiftFile._
 
   // ANY NUMBER OF BLANKS
   def indent: Parser[String] = """\s*""".r
@@ -45,32 +46,64 @@ class GiftParser extends JavaTokenParsers {
 
 object GiftParser{
 
-  case class Answer(text: String, correct: Boolean)
 
-  type Questions = List[Question]
-
-  trait Question {
-    val text: String
-    def shuffle = this
-  }
-
-  case class OpenQuestion(text: String) extends Question
-  case class QuestionnaireQuestion(text: String, answers: List[Answer]) extends Question{
-    override def shuffle = QuestionnaireQuestion( text, Random.shuffle(answers) )
-  }
+  type Questions = List[GiftFile.Question]
 
   trait GiftResult{
     def questions: Questions
     val successful = true
   }
-  case class GiftFile( questions: Questions ) extends GiftResult
+
+  object GiftFile{
+    case class Answer(text: String, correct: Boolean)
+
+    trait Question {
+      val text: String
+
+      def shuffle = this
+    }
+
+    case class OpenQuestion(text: String) extends Question
+
+    case class QuestionnaireQuestion(text: String, answers: List[Answer]) extends Question {
+      override def shuffle = QuestionnaireQuestion(text, Random.shuffle(answers))
+    }
+
+    def apply( questions: Questions ) = new GiftFile(questions)
+    def unapply( gf: GiftFile) : Option[Questions]= Some(gf.questions)
+  }
+
+  class GiftFile( val questions: Questions ) extends GiftResult{
+
+    import GiftFile._
+
+    def reorder(reorderAnswer: Boolean = true, reorderQuestions: Boolean = false) = {
+
+      var oQuestions = questions.filter(_.isInstanceOf[OpenQuestion])
+      var qQuestions = questions.filter(_.isInstanceOf[QuestionnaireQuestion])
+
+      if (reorderQuestions) {
+        oQuestions = Random.shuffle(oQuestions)
+      }
+      if (reorderQuestions) {
+        qQuestions = Random.shuffle(qQuestions)
+      }
+
+      if (reorderAnswer) {
+        qQuestions = qQuestions.map(_.shuffle)
+      }
+
+      GiftFile(qQuestions ++ oQuestions)
+    }
+
+  }
   case class GiftError( msg: String, line: Int, column: Int, lineContents: String ) extends GiftResult{
     override def questions = throw new NoSuchElementException()
     override val successful = false
   }
 
   private def processResult(parser: GiftParser, ret: GiftParser#ParseResult[Questions]): GiftResult = ret match {
-    case parser.Success(_, _) => GiftFile(ret.get)
+    case parser.Success(_, _) => GiftFile(ret.get).reorder()
     case parser.Error(msg, next) => GiftError(msg, next.pos.line, next.pos.column, next.pos.longString.takeWhile(_ != '\n'))
     case parser.Failure(msg, next) => GiftError(msg, next.pos.line, next.pos.column, next.pos.longString.takeWhile(_ != '\n'))
   }

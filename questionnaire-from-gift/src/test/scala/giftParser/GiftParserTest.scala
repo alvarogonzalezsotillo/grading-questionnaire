@@ -2,6 +2,7 @@ package giftParser
 
 import java.io.File
 
+import giftParser.GiftParser.GiftFile._
 import giftParser.GiftParser._
 import org.junit.runner.RunWith
 import org.scalatest.FlatSpec
@@ -103,14 +104,14 @@ class GiftParserTest extends FlatSpec {
 
   "A big file" should "parse" in {
     val file = new File("/home/alvaro/SincronizadoCloud/copy/2014-2015-Alonso de Avellaneda/seguridad-informatica/examenes/SI-Extraordinaria-Junio.gift")
-    val ret = GiftQuestionnaire.parseFile(file)
+    val ret = GiftParser.parse(file)
 
     ret match {
       case GiftError(msg,line,column,lineContents) =>
 
       case g : GiftFile =>
-        println( GiftQuestionnaire.generateLatex(g) )
-        println( GiftQuestionnaire.generateSolution(g) )
+        println( GiftToLatex.generateLatexForQuestions(g) )
+        println( GiftToLatex.generateLatexSolutionForSolution(g) )
     }
 
 
