@@ -77,10 +77,13 @@ object GiftParser{
 
     import GiftFile._
 
+    val openQuestions = questions.filter(_.isInstanceOf[OpenQuestion])
+    val questionnaireQuestions = questions.filter(_.isInstanceOf[QuestionnaireQuestion])
+
     def reorder(reorderAnswer: Boolean = true, reorderQuestions: Boolean = false) = {
 
-      var oQuestions = questions.filter(_.isInstanceOf[OpenQuestion])
-      var qQuestions = questions.filter(_.isInstanceOf[QuestionnaireQuestion])
+      var oQuestions = openQuestions
+      var qQuestions = questionnaireQuestions
 
       if (reorderQuestions) {
         oQuestions = Random.shuffle(oQuestions)

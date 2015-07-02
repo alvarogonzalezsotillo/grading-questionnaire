@@ -12,22 +12,56 @@ import scala.util.Random
  */
 object GiftToLatex {
 
+  private val charsToLatexMap = Map(
+    '\n' -> """\\""",
+    '_' ->  """\_""",
+    '#' -> """\#""",
+    '%' -> """\%""",
+    '&' -> """\&""",
+    '\\' -> """\textbackslash""",
+    '{' -> """\{""",
+    '}' -> """\}"""
+  ).withDefault( _.toString )
+
+  private object charsToLatex extends ((Char) => String){
+    var state = "``"
+
+    private def toggle = state = state match{
+      case "``" => "''"
+      case "''" => "``"
+    }
+
+    override def apply( c: Char): String = c match{
+      case '"' =>
+        val ret = state
+        toggle
+        ret
+
+      case c => charsToLatexMap(c)
+
+    }
+  }
+
+  private def escapeLatex( s: String )  =  s.map( charsToLatex ).mkString
 
   private def generateQuestionLatex( q : Question ): String = q match {
     case OpenQuestion(text) =>
-      s"\\begin{OpenQuestion}$text\\end{OpenQuestion}"
+      s"\\begin{OpenQuestion}${escapeLatex(text)}\\end{OpenQuestion}"
 
     case QuestionnaireQuestion(text, answers) =>
-      val sa = answers.map {   a =>  s"\\item ${a.text}"  }.mkString("\n")
+      val sa = answers.map {   a =>  s"    \\item ${escapeLatex(a.text)}"  }.mkString("\n")
 
-      val begin = s"\\begin{QuestionnaireQuestion}[$text]"
-      val end = "\n\\end{QuestionnaireQuestion}"
+      val begin = s"  \\begin{QuestionnaireQuestion}[${escapeLatex(text)}]\n"
+      val end = "\n  \\end{QuestionnaireQuestion}"
 
       begin + sa + end
   }
 
   def generateLatexForQuestions( g: GiftFile ) = {
-    g.questions.map( GiftToLatex.generateQuestionLatex ).mkString("\n")
+    val qq = g.questionnaireQuestions.map( GiftToLatex.generateQuestionLatex ).mkString("\n")
+    val oq = g.openQuestions.map( GiftToLatex.generateQuestionLatex ).mkString("\n")
+
+    s"\\begin{QuestionnaireQuestions}\n$qq\n\\end{QuestionnaireQuestions}\n$oq"
   }
 
   def generateLatexSolutionForSolution( g: GiftFile ) = {
@@ -37,7 +71,7 @@ object GiftToLatex {
 
     val options = indexes.map( i => (i.toChar + 'a').toChar )
 
-    "\\begin{Solution}\n" + options.mkString("\t") + "\n\\end{Solution}"
+    "\\Solution{" + options.mkString("\t") + "}"
   }
 
   def loadLatexTemplate  = {

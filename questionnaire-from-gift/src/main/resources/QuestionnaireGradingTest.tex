@@ -1,24 +1,55 @@
 
 
-\documentclass[10pt,a4paper,spanish,openany]{article}
+\documentclass[8pt,a4paper,spanish,openany]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{ifpdf}
+\usepackage{enumitem}
+\usepackage{multicol}
 
-\newcommand{\HorizontalLine}{
-\noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
+\usepackage[top=3cm,left=3cm,right=3cm,bottom=3cm,a4paper]{geometry}
+
+
+\newcommand{\Width}{\textwidth}
+\newcommand{\HalfWidth}{0.5\textwidth}
+\newcommand{\Height}{\textheight}
+\newcommand{\HalfHeight}{0.45\textheight}
+
+
+\newcommand{\HalfHorizontalLine}{
+\noindent\makebox[\linewidth]{\rule{\HalfWidth}{0.4pt}}
 }
 
+\newcommand{\HorizontalLine}{
+\noindent\makebox[\linewidth]{\rule{\Width}{0.4pt}}
+}
+
+\newcommand{\IndentOn}{\setlength{\parindent}{12pt}}
+\newcommand{\IndentOff}{\setlength{\parindent}{0pt}}
 
 \newcounter{QuestionCounter}
 \setcounter{QuestionCounter}{1}
 
+\newenvironment{QuestionnaireQuestions}
+{
+  \begin{small}
+    \setlength{\columnsep}{1cm}
+    \begin{multicols}{2}
+}
+{
+    \end{multicols}
+  \end{small}
+}
+
 \newenvironment{QuestionnaireQuestion}[1][]
 {
-  \HorizontalLine\\
-  \arabic{QuestionCounter}. #1
-  \begin{itemize}
+  \begin{minipage}{\HalfWidth}
+    \HorizontalLine\\
+    \arabic{QuestionCounter}. #1
+    \begin{enumerate}[label=\alph*)]
 }{
-  \end{itemize}
+    \end{enumerate}
+  \end{minipage}
+
   \stepcounter{QuestionCounter}
 }
 
@@ -29,12 +60,16 @@
 
 \newenvironment{OpenQuestion}
 {
-  \HorizontalLine
-  \arabic{QuestionCounter}.
+
+  \begin{minipage}[t][\HalfHeight][t]{\Width}
+    \HorizontalLine
+    \arabic{QuestionCounter}.
 }
 {
-  \\
+    \vfill
+  \end{minipage}
   \stepcounter{QuestionCounter}
+  \\
 }
 
 
@@ -54,491 +89,575 @@
 }
 \begin{document}
 
-\begin{QuestionnaireQuestion}[En la cadena de seguridad]
-\item Se mantiene la seguridad mientras no se rompa el último eslabón (el más cercano al usuario)
-\item se mantiene la seguridad mientras no se rompa el primer eslabón (el más cercano al origen)
-\item Es necesario que no se rompa ningún eslabón de los extremos para garantizar la seguridad, pero pueden comprometerse eslabones intermedios
-\item Es necesario que no se rompa ningún eslabón para garantizar la seguridad
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[El personal de una empresa]\item Forma parte de los activos
-\item Forma parte de los riesgos
-\item Forma parte de los impactos
-\item No se tiene en cuenta en el plan de actuación
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Las medidas de seguridad activas]\item Evitan las amenazas
-\item Evitan los ataques activos
-\item Eliminan vulnerabilidades de los activos
-\item Mitigan o corrigen el impacto que provoca un ataque
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Las medidas de seguridad pasivas]\item Evitan que las amenazas lleguen a producir daños
-\item Mitigan o corrigen el impacto que provoca un ataque
-\item Evitan los ataques activos
-\item Evitan que los activos tengan vulnerabilidades
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[La información]\item Es un activo de los sistemas informáticos
-\item Es el principio de la cadena de seguridad
-\item Es un activo de los sistemas de información
-\item Es el final de la cadena de seguridad
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Un ataque pasivo es]\item Aquel que daña la confidencialidad del sistema
-\item Aquel que no puede ser prevenido
-\item Aquel que puede ser prevenido
-\item Aquel que daña la integridad del sistema
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Un ataque activo es]\item Aquel que no es provocado por una amenaza
-\item Aquel que daña la integridad del sistema, pero no la disponibilidad
-\item Aquel que daña la integridad y/o la confidencialidad del sistema
-\item Aquel que es provocado por una amenaza
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Son objetivos de la seguridad informática (propiedades que se desea que debe tener un sistema seguro)]\item La disponibilidad y la encriptación
-\item La integridad y la disponibilidad
-\item La integridad y la auditoría
-\item La encriptación y el no repudio
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[La confidencialidad mejora con la siguiente medida]\item Firma digital
-\item Copias de seguridad
-\item Discos redundantes
-\item Encriptación
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[La disponibilidad no mejora con la siguiente medida]\item Cluster de servidores
-\item Discos redundantes
-\item RAID
-\item Firma digital
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Para evitar que las amenazas puedan crear problemas en un sistema es necesario eliminar]\item Los puntos de acceso local y remoto
-\item Las posibles vulnerabilidades
-\item Los puntos de acceso remoto
-\item Los posibles riesgos
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Las medidas de seguridad pasiva]\item Evitan las amenazas
-\item Restringen los accesos remotos
-\item Aplican medidas paliativas cuando se producen problemas
-\item Evitan las vulnerabilidades
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[¿Cuáles de estas medidas de seguridad son físicas?]\item SAI y antivirus
-\item Encriptación y copias de seguridad
-\item Encriptación y puertas anti-incendios
-\item SAI y toma de tierra
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[En caso de que un desastre afecte a los sistemas informáticos, es necesario poner en práctica]\item El plan de contingencia
-\item Las medidas activas
-\item Las medidas lógicas y físicas
-\item El plan de actuación
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Una auditioría de seguridad informática]\item Verifica que no hay amenazas
-\item Verifica que los activos no tienen vulnerabilidades
-\item Se utiliza como paso intermedio en un análisis de riesgos
-\item Verifica que se cumple una política de seguridad
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[El plan de emergencia forma parte de]\item El plan de contingencia
-\item El análisis de riesgos
-\item El plan de recuperación
-\item La auditoría de seguridad
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Los SAIS (UPS) más caros suelen ser]\item No hay diferencia de precio entre online u offline
-\item Los offline, si no incluyen AVR
-\item Los offline
-\item Los online
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Las baterías más comunes en un SAI son]\item Ión Litio
-\item Nanotubos
-\item Salinas
-\item De plomo y ácido
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Los SAIS que incluyen un conmutador son]\item Los offline
-\item Los online y los offline, indistintamente
-\item Los online
-\item Los offline, si no incluyen AVR
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Los SAIS que incluyen un inversor son]\item Los offline, si no incluyen AVR
-\item Los online y los offline, indistintamente
-\item Los online
-\item Los offline
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Se distingue entre los servidores y las estaciones de trabajo de una red]\item Por la versión de sistema operativo
-\item Por la capacidad de memoria y disco duro
-\item Por la potencia del procesador
-\item Por la función que se les asigna
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Un rango adecuado para la temperatura de un datacenter, según lo visto en clase, es de]\item Menor de 10º
-\item 20º a 35º
-\item 20º a 25º
-\item Menor de 20º
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[El frontal de un servidor de tipo "pizza box" mide ('' significa pulgadas)]\item 0.75'' x 10''
-\item 1.75'' x 19''
-\item 0.75'' x 19''
-\item 1.75'' x 10''
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[La corriente eléctrica proporcionada a consumidores particulares en España es de]\item 50Hz a 115V
-\item 60Hz a 230V
-\item 60Hz a 115V
-\item 50Hz a 230V
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[En una instalación informática tipo SOHO en la que se implementa un modelo de grupo de trabajo]\item Se centralizan las vulnerabilidades del sistema
-\item Puede existir más de un ordenador servidor
-\item Ningún ordenador puede ser un servidor
-\item Se mejora la característica segura de la confidencialidad
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Un extintor de polvo polivalente es válido para fuegos de tipo]\item B y C
-\item A, B y C
-\item A y B
-\item A, C y D
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Las señales de evacuación en caso de incendio son de color]\item Verde
-\item Rojo
-\item Verde y/o rojo
-\item No está normalizado el color, pero sí los símbolos que deben aparecer en ellas
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Un interrupor magnetotérmico marcado con C24]\item Permite el paso de corriente hasta los 24 Amperios
-\item Permite el paso de corriente, siempre que no supere los 240 Voltios
-\item Permite el paso de corriente, siempre que supere los 240 Voltios
-\item Permite el paso de corriente hasta los 24 Voltio-Amperios
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Los colores de los cables de fase, neutro y tierra son, respectivamente]\item rojo/marrón/negro, amarillo, azul
-\item rojo/marrón/negro, azul, amarillo
-\item azul, amarillo, rojo/marrón/negro
-\item amarillo, rojo/marrón/negro, azul
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Un aparato electrónico puede prescindir de la toma de tierra si]\item Está marcado con el símbolo de "doble aislamiento"
-\item Utiliza menos de 2.5 Amperios
-\item Utiliza un conector macho "schuko"
-\item Utiliza menos de 10 Amperios
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[A la hora de crear copias de seguridad, es preferible copiar]\item Todos los datos de todos los ordenadores de la empresa
-\item Aquellos programas y datos con mayor resultado (según el plan de contingencia)
-\item Los programas
-\item Aquellos datos con mayor impacto (según el plan de actuación)
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Las copias de seguridad mejoran]\item La confidencialidad
-\item La integridad y la confidencialidad
-\item La integridad
-\item La integridad y la disponibilidad
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Las copias incrementales se distinguen de las diferenciales]\item En UNIX/LINUX no hay diferencia, pero en Windows la incremental utiliza el atributo A de los ficheros
-\item Porque estadísticamente una copia diferencial ocupa menos espacio que una incremental
-\item En Windows no hay diferencia, pero en UNIX/LINUX la incremental utiliza el contenido de los ficheros
-\item Porque estadísticamente una copia incremental ocupa menos espacio que una diferencial
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[El tipo de copia que ofrece mayores garantías de integridad y disponibilidad es]\item La completa
-\item La estadística
-\item La diferencial
-\item La completa o la estadística, indistintamente
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Una empresa define una política de seguridad en la que un backup con todos los datos se transfiere semanalmente a GoogleDrive, y se mantiene allí dos meses. Es una copia]\item Off-site y completa
-\item On-line y diferencial
-\item On-line y completa
-\item Off-line y diferencial
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[El tipo de copia de seguridad que acaba utilizando el mayor espacio en disco es]\item La estadística o la incremental, indistintamente
-\item La incremental
-\item La diferencial
-\item La estadística
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Se necesita una copia completa inicial para basar en ella]\item Las copias incrementales y las diferenciales
-\item Las copias diferenciales
-\item Las copias incrementales
-\item Las copias estadísticas
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[El medio soporte de datos con peor tiempo de acceso (para lectura y escritura) es]\item Disco duro interno
-\item Cinta
-\item Dvd
-\item Disco duro externo
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Una copia de seguridad off-site es deseable porque]\item Mejora la rapidez con la que se realizan las copias
-\item Mejora la confidencialidad
-\item Mejora comunicación dentro de la empresa
-\item Mejora la disponibilidad
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Un grupo de discos de 1TB cada uno esta formando un RAID. El tiempo medio de escritura en el RAID sigue siendo el mismo que en cada disco individual. El RAID montado:]\item Es un RAID 0, con mas de 2 discos
-\item Es un RAID 5
-\item Es un RAID 1
-\item Es un RAID 0, con exactamente dos discos
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Un grupo de discos de 1TB cada uno esta formando un RAID. La capacidad total del RAID es de 4 TB. Se trata de]\item Un RAID 5, con 5 discos
-\item Un RAID 5, con 4 discos
-\item Un RAID 0, con 5 discos
-\item Un RAID 1, con 4 discos
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Se ha montado un sistema de discos RAID. Este sistema no mejora ninguno de los objetivos de la seguridad informática]\item Es un RAID 4
-\item Es un RAID 5, con solo dos discos
-\item Es un RAID 0
-\item Es un RAID 1, con solo dos discos
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Una empresa necesita mejorar el tiempo de escritura del disco de un servidor. Para ello]\item Ningún nivel de RAID mejora los tiempos de escritura de los discos
-\item Puede utilizar un RAID 0 o un RAID 5 en vez de un disco simple
-\item Puede utilizar cualquier tipo de RAID (0,1,5,6), pues todos mejoran la velocidad de escritura de los discos
-\item Puede utilizar un RAID 1 en vez de un disco simple
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Una empresa necesita mejorar el tiempo de lectura del disco de un servidor. Para ello]\item Puede utilizar cualquier tipo de RAID (0,1,5,6), pues todos mejoran la velocidad de lectura de los discos
-\item Ningún nivel de RAID mejora los tiempos de lectura de los discos
-\item Puede utilizar un RAID 1 en vez de un disco simple
-\item Puede utilizar un RAID 0 o un RAID 5 en vez de un disco simple
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Un spare disk en RAID es]\item Un disco que solo tiene paridad
-\item Un disco tradicional, que no forma parte de un RAID
-\item Un disco no utilizado hasta el estado de emergencia del RAID
-\item Un disco del que no hay paridad
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[La diferencia entre un RAID 6 y un RAID 6e es]\item El RAID 6e utiliza un sistema de paridad que ahorra espacio, por lo que puede almacenar más datos en los mismos discos
-\item El RAID 6e comienza su estado de recuperación nada más iniciarse el estado de emergencia
-\item El RAID 6e tiene mejores tiempos de lectura
-\item El RAID 6e tiene mejores tiempos de lectura y escritura
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[La tecnología S.M.A.R.T. se puede utilizar]\item Para predecir un fallo en un disco duro
-\item Para realizar una copia de respaldo de un disco que aún no es defectuoso
-\item Para realizar una copia de respaldo de un disco duro defectuoso
-\item Para detectar un fallo en un disco duro
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[La tecnología S.M.A.R.T. es una medida de seguridad]\item Pasiva
-\item Activa
-\item Remota
-\item Distribuida
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Un disco conectado por USB a un ordenador se considera]\item DAS
-\item NAS
-\item No entra dentro de estas categorías
-\item SAN
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Si un disco es accedido, desde el punto de vista del sistema operativo, mediante operaciones de lectura/escritura sobre sectores, es un disco]\item DAS o SAN
-\item DAS
-\item NAS o SAN
-\item NAS
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Un disco es utilizado a la vez por dos ordenadores. Los sistemas operativos de ambos acceden al disco mediante operaciones de lectura/escritura sobre sectores. Es un disco]\item NAS
-\item DAS
-\item SAN
-\item SAN o NAS
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[En una instalación NAS (Network Attached Storage)]\item Los discos duros no pueden compartirse entre ordenadores
-\item Los accesos a los discos se realizan en base a sectores
-\item Los accesos a los discos se realizan en base a ficheros
-\item Los discos duros no pueden tener una configuración RAID
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[iSCSI es un caso particular de]\item SAN
-\item NAS
-\item DAS
-\item RAID
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Una persona que extrae y analiza los datos que se transmiten por una línea de comunicación es un]\item DoS
-\item Phreaker
-\item Hacker
-\item Sniffer
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Cuando un servicio informático (por ejemplo, una web) es imitado por otro para hacerse pasar por el servicio original, se esta utilizando]\item Spamming
-\item Phishing
-\item Dos
-\item Spoofing
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Un adware]\item Es indetectable por el usuario
-\item Es un virus, del tipo troyano
-\item Es un virus, pero no un troyano
-\item Muestra mensajes al usuario
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Es spyware]\item Todos los keyloggers
-\item Todos los virus
-\item Todos los adware
-\item Todos los spoofing
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Un malware que modifica otros ficheros ejecutables para que contengan copias del malware es un]\item Hoax
-\item Virus
-\item Troyano
-\item Adware
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Un malware que se propaga, pero sin modificar otros ficheros ejecutables, es un]\item Gusano
-\item Troyano
-\item Virus
-\item Hoax
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[El payload]\item Es un sinónimo de spyware
-\item Es un sinónimo de adware
-\item Es la función maliciosa de un malware
-\item Es el sistema de propagación de un malware
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[La llamada a casa de un malware]\item Se usa para instalar un rootkit
-\item Se usa para infectar a nuevos sistemas
-\item Se usa para comunicar datos privados del usuario, o modificar el payload
-\item Puede evitarse instalando un firewall con NAT
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Un troyano se caracteriza porque]\item Roba contraseñas, especialmente de cuentas de banco
-\item Se instala a través de spam
-\item El usuario colabora en su instalación en el sistema
-\item Instala un keylogger
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[La ingeniería social]\item Se basa en el comportamiento social usual de las personas
-\item Se utiliza para hacer sniffing
-\item Consiste en manipular sistemas biométricos de autentificación
-\item Encuentra formas de construir contraseñas que las personas puedan recordar fácilmente
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Generalmente, se utiliza el email para enviar spam porque]\item Es el método tradicional
-\item Permite llegar a más gente, con menor inversión en dinero y tiempo
-\item Es más fácil engañar a un antivirus con un email que, por ejemplo, con Whatsapp
-\item No es fácil conseguir otro tipo de direcciones de personas, por ejemplo, de Whatsapp
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Las actualizaciones de software]\item No son importantes para la seguridad, pero sí para el usuario, ya que añaden nuevas funcionalidades
-\item Son importantes para la seguridad, ya que pueden arreglar vulnerabilidades
-\item No son importantes para la seguridad, excepto la del antivirus
-\item Deben retrasarse lo más posible, porque son una fuente de troyanos (excepto la actualización del antivirus)
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Las actividades del _______________ se orientan a perjudicar al atacado, y a veces a obtener algún provecho de ello]\item Cracker
-\item Samurai
-\item Nerd
-\item Hacker
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Se llama poisoning, en ocasiones, al]\item Fuerza bruta
-\item Phishing
-\item Spoofing
-\item Sniffing
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[La técnica de la inundación (flooding) suele utilizarse para realizar un ataque de]\item DNS hijacking
-\item Denial of service
-\item DNS spoofing
-\item Sniffing
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Para conseguir un ataque man-in-the-middle, suele ser necesario utilizar previamente]\item Phishing
-\item Denial of service
-\item Spoofing
-\item Fuerza bruta
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Desde el punto de vista del atacante, un ataque de diccionario es una alternativa a]\item Denial of service
-\item Fuerza bruta
-\item Flooding
-\item Code injection
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[El malware más complicado de detectar es]\item Un rootkit
-\item Un spam
-\item Un gusano
-\item Un DOS
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Un exploit es]\item Un software que automatiza los ataques
-\item Una vulnerabilidad aun desconocida por el fabricante
-\item Un hacker de reconocido prestigio
-\item Una vulnerabilidad ya conocida por el fabricante
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Un 0-day (zero day) es]\item Una vulnerabilidad aun desconocida por el fabricante
-\item Un hacker de reconocido prestigio
-\item Un software que automatiza los ataques
-\item Una vulnerabilidad ya conocida por el fabricante
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Elige la política de contraseñas más segura (sin incluir la ñ)]\item Cinco letras mayúsculas o minúsculas
-\item 8 números
-\item Cuatro letras minúsculas seguidas de tres números
-\item Tres letras mayúsculas o minúsculas seguidas de tres números
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Los ataques de code injection se caracterizan por]\item Provocar una denegación de servicio (DOS)
-\item Propagarse como un gusano
-\item Aprovechar vulnerabilidades de los programas o servicios para que ejecuten un código elegido por el atacante
-\item Propagarse como un troyano
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[El antivirus puede ejecutarse]\item Al vuelo y a demanda
-\item Al vuelo, a demanda, antes de la carga del sistema operativo y antes  del arranque BIOS
-\item A demanda
-\item Al vuelo, a demanda y antes de la carga del sistema operativo
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Realizar sniffing es más fácil]\item El sniffing no puede realizarse en redes ethernet, sólo en redes inalámbricas
-\item En una red con un hub
-\item En una red con un switch
-\item Es igual de complicado en una red con un hub o un switch
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Un ataque de flooding es un tipo concreto de]\item Phishing
-\item DOS
-\item Troyano
-\item Man in the middle
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Al cifrar un texto en claro con una de las claves de un sistema asimétrico, el texto cifrado resultante]\item Tiene siempre la misma longitud (por ejemplo, 32 bytes para MD5)
-\item Es igual al texto cifrado que se conseguiría con la otra clave asimétrica
-\item Se puede descifrar con la otra clave del sistema asimétrica
-\item Se puede descifrar con la misma clave del sistema asimétrico
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[¿Para qué puede utilizar un "hidden volume" de TrueCrypt?]\item Para poder presentar un conjunto de ficheros creible, pero falso
-\item Todos los discos son "hidden", porque los datos están encriptados
-\item El concepto de "hidden volume" no es de TrueCrypt, se aplica a los discos externos en la BIOS para no arrancar desde ellos
-\item El concepto de "hidden volume" no es de TrueCrypt, se aplica a los discos no montados en el fichero /etc/fstab
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Para mejorar el objetivo de "no repudio" de los envíos de información]\item Hay que enviar el fichero encriptado y sin encriptar, para su comparación
-\item Hay que firmar y encriptar los ficheros
-\item Basta con firmar los ficheros
-\item Basta con encriptar los ficheros
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[La criptografía híbrida]\item Mezcla claves públicas y privadas
-\item Mezcla métodos de sustitución y transposición
-\item Mezcla encriptación y firma
-\item Mezcla métodos simétricos y asimétricos
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Son funciones resumen]\item PKI, MD5
-\item SHA1, PKI
-\item MD5, GPL
-\item MD5, SHA1
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[La desventaja de un sistema de clave asimétrica respecto de uno con clave simétrica es que]\item Es menos seguro el intercambio de claves
-\item Es menos seguro, porque es una tecnología más antigua
-\item Es más lento, por el tiempo de proceso
-\item Es menos seguro, porque las claves son más cortas
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[La desventaja de un sistema de clave simétrica respecto de uno con clave asimétrica es que]\item Es menos seguro el intercambio de claves
-\item Es más difícil y caro realizar programas que lo implementen
-\item Es menos seguro, porque las claves son más cortas
-\item Es más lento, por el tiempo de proceso
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[En una comunicación se comienza utilizando una clave asimétrica para intercambiar una clave simétrica. Esto se hace para]\item Aumentar la confidencialidad
-\item Ahorrar tiempo de proceso, ya que las claves simétricas son más difíciles de computar
-\item Ahorrar tiempo de proceso, ya que las claves asimétricas son más difíciles de computar
-\item Aumentar el objetivo de "no repudio"
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[En un sistema de criptografía híbrida, como el estudiado en clase, hay]\item 3 claves (una pública, una privada y una simétrica)
-\item 2 claves (una pública y una privada)
-\item 3 claves (dos públicas y una privada)
-\item 2 claves (dos públicas)
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[En un sistema de criptografía híbrida, como el estudiado en clase]\item Una de las partes inventa sobre la marcha una clave simétrica
-\item Una de las partes inventa sobre la marcha una clave privada
-\item Una de las partes inventa sobre la marcha una clave pública
-\item Una de las partes inventa sobre la marcha un par de claves (pública y privada)
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[El "Cifrado del César" es]\item Criptografía híbrida, porque mezcla métodos manuales y automáticos
-\item Criptografía estadística, porque se necesitan probar varias posibilidades
-\item Criptografía simétrica, porque se usa la misma clave para cifrar y descifrar
-\item Criptografía asimétrica, porque se usa distinto algoritmo para cifrar que para descifrar
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[La autenticación consiste en]\item firmar un documento
-\item usar métodos biométricos
-\item otorgar permisos a cierto usuario
-\item verificar la identidad de un usuario
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[Se dice de un certificado que es raíz si]\item Es el certificado que se utilizó para instalar el sistema operativo
-\item Es un certificado considerado seguro, que puede firmar otros certificados
-\item Es el certificado asociado a la raíz del DNS (.)
-\item Es un certificado firmado por otro que tenga mayor nivel
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[En Linux, se puede encriptar]\item Particiones y discos completos, pero no las de inicio (para eso se crean "/" y "/home" en particiones separadas)
-\item Particiones completas
-\item Particiones y discos completos, incluso las particiones de inicio
-\item Discos completos
-\end{QuestionnaireQuestion}
-\begin{QuestionnaireQuestion}[En una comunicación HTTPS]\item Solo puede haber un certificado, que es el que el servidor envía al cliente
-\item El servidor podría requerir también un certificado del usuario, aunque no es común
-\item No hay certificados con claves públicas, ya que se usa criptografía híbrida
-\item No hay certificados con claves públicas, ya que se usa criptografía asimétrica
-\end{QuestionnaireQuestion}
+\IndentOff
+
+\begin{QuestionnaireQuestions}
+  \begin{QuestionnaireQuestion}[﻿En la cadena de seguridad]
+    \item Se mantiene la seguridad mientras no se rompa el último eslabón (el más cercano al usuario)
+    \item Es necesario que no se rompa ningún eslabón de los extremos para garantizar la seguridad, pero pueden comprometerse eslabones intermedios
+    \item se mantiene la seguridad mientras no se rompa el primer eslabón (el más cercano al origen)
+    \item Es necesario que no se rompa ningún eslabón para garantizar la seguridad
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[El personal de una empresa]
+    \item Forma parte de los activos
+    \item Forma parte de los impactos
+    \item Forma parte de los riesgos
+    \item No se tiene en cuenta en el plan de actuación
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Las medidas de seguridad activas]
+    \item Eliminan vulnerabilidades de los activos
+    \item Evitan las amenazas
+    \item Evitan los ataques activos
+    \item Mitigan o corrigen el impacto que provoca un ataque
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Las medidas de seguridad pasivas]
+    \item Evitan que las amenazas lleguen a producir daños
+    \item Evitan que los activos tengan vulnerabilidades
+    \item Evitan los ataques activos
+    \item Mitigan o corrigen el impacto que provoca un ataque
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[La información]
+    \item Es un activo de los sistemas informáticos
+    \item Es el final de la cadena de seguridad
+    \item Es el principio de la cadena de seguridad
+    \item Es un activo de los sistemas de información
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Un ataque pasivo es]
+    \item Aquel que no puede ser prevenido
+    \item Aquel que puede ser prevenido
+    \item Aquel que daña la integridad del sistema
+    \item Aquel que daña la confidencialidad del sistema
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Un ataque activo es]
+    \item Aquel que daña la integridad del sistema, pero no la disponibilidad
+    \item Aquel que no es provocado por una amenaza
+    \item Aquel que es provocado por una amenaza
+    \item Aquel que daña la integridad y/o la confidencialidad del sistema
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Son objetivos de la seguridad informática (propiedades que se desea que debe tener un sistema seguro)]
+    \item La encriptación y el no repudio
+    \item La disponibilidad y la encriptación
+    \item La integridad y la auditoría
+    \item La integridad y la disponibilidad
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[La confidencialidad mejora con la siguiente medida]
+    \item Discos redundantes
+    \item Encriptación
+    \item Copias de seguridad
+    \item Firma digital
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[La disponibilidad no mejora con la siguiente medida]
+    \item Discos redundantes
+    \item Cluster de servidores
+    \item RAID
+    \item Firma digital
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Para evitar que las amenazas puedan crear problemas en un sistema es necesario eliminar]
+    \item Los puntos de acceso remoto
+    \item Las posibles vulnerabilidades
+    \item Los posibles riesgos
+    \item Los puntos de acceso local y remoto
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Las medidas de seguridad pasiva]
+    \item Aplican medidas paliativas cuando se producen problemas
+    \item Evitan las vulnerabilidades
+    \item Evitan las amenazas
+    \item Restringen los accesos remotos
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[¿Cuáles de estas medidas de seguridad son físicas?]
+    \item Encriptación y copias de seguridad
+    \item SAI y antivirus
+    \item SAI y toma de tierra
+    \item Encriptación y puertas anti-incendios
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[En caso de que un desastre afecte a los sistemas informáticos, es necesario poner en práctica]
+    \item El plan de actuación
+    \item Las medidas lógicas y físicas
+    \item El plan de contingencia
+    \item Las medidas activas
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Una auditioría de seguridad informática]
+    \item Verifica que se cumple una política de seguridad
+    \item Verifica que no hay amenazas
+    \item Verifica que los activos no tienen vulnerabilidades
+    \item Se utiliza como paso intermedio en un análisis de riesgos
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[El plan de emergencia forma parte de]
+    \item El análisis de riesgos
+    \item El plan de contingencia
+    \item La auditoría de seguridad
+    \item El plan de recuperación
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Los SAIS (UPS) más caros suelen ser]
+    \item No hay diferencia de precio entre online u offline
+    \item Los offline
+    \item Los offline, si no incluyen AVR
+    \item Los online
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Las baterías más comunes en un SAI son]
+    \item Salinas
+    \item De plomo y ácido
+    \item Nanotubos
+    \item Ión Litio
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Los SAIS que incluyen un conmutador son]
+    \item Los online
+    \item Los offline
+    \item Los offline, si no incluyen AVR
+    \item Los online y los offline, indistintamente
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Los SAIS que incluyen un inversor son]
+    \item Los online
+    \item Los offline, si no incluyen AVR
+    \item Los online y los offline, indistintamente
+    \item Los offline
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Se distingue entre los servidores y las estaciones de trabajo de una red]
+    \item Por la versión de sistema operativo
+    \item Por la capacidad de memoria y disco duro
+    \item Por la potencia del procesador
+    \item Por la función que se les asigna
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Un rango adecuado para la temperatura de un datacenter, según lo visto en clase, es de]
+    \item 20º a 35º
+    \item 20º a 25º
+    \item Menor de 20º
+    \item Menor de 10º
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[El frontal de un servidor de tipo ``pizza box'' mide ('' significa pulgadas)]
+    \item 0.75'' x 19''
+    \item 1.75'' x 10''
+    \item 1.75'' x 19''
+    \item 0.75'' x 10''
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[La corriente eléctrica proporcionada a consumidores particulares en España es de]
+    \item 60Hz a 115V
+    \item 50Hz a 115V
+    \item 50Hz a 230V
+    \item 60Hz a 230V
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[En una instalación informática tipo SOHO en la que se implementa un modelo de grupo de trabajo]
+    \item Se mejora la característica segura de la confidencialidad
+    \item Ningún ordenador puede ser un servidor
+    \item Puede existir más de un ordenador servidor
+    \item Se centralizan las vulnerabilidades del sistema
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Un extintor de polvo polivalente es válido para fuegos de tipo]
+    \item A, C y D
+    \item A y B
+    \item B y C
+    \item A, B y C
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Las señales de evacuación en caso de incendio son de color]
+    \item No está normalizado el color, pero sí los símbolos que deben aparecer en ellas
+    \item Rojo
+    \item Verde
+    \item Verde y/o rojo
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Un interrupor magnetotérmico marcado con C24]
+    \item Permite el paso de corriente hasta los 24 Amperios
+    \item Permite el paso de corriente, siempre que no supere los 240 Voltios
+    \item Permite el paso de corriente hasta los 24 Voltio-Amperios
+    \item Permite el paso de corriente, siempre que supere los 240 Voltios
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Los colores de los cables de fase, neutro y tierra son, respectivamente]
+    \item amarillo, rojo/marrón/negro, azul
+    \item rojo/marrón/negro, azul, amarillo
+    \item azul, amarillo, rojo/marrón/negro
+    \item rojo/marrón/negro, amarillo, azul
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Un aparato electrónico puede prescindir de la toma de tierra si]
+    \item Está marcado con el símbolo de ``doble aislamiento''
+    \item Utiliza menos de 2.5 Amperios
+    \item Utiliza menos de 10 Amperios
+    \item Utiliza un conector macho ``schuko''
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[A la hora de crear copias de seguridad, es preferible copiar]
+    \item Aquellos datos con mayor impacto (según el plan de actuación)
+    \item Los programas
+    \item Aquellos programas y datos con mayor resultado (según el plan de contingencia)
+    \item Todos los datos de todos los ordenadores de la empresa
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Las copias de seguridad mejoran]
+    \item La integridad
+    \item La integridad y la confidencialidad
+    \item La integridad y la disponibilidad
+    \item La confidencialidad
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Las copias incrementales se distinguen de las diferenciales]
+    \item En Windows no hay diferencia, pero en UNIX/LINUX la incremental utiliza el contenido de los ficheros
+    \item Porque estadísticamente una copia diferencial ocupa menos espacio que una incremental
+    \item En UNIX/LINUX no hay diferencia, pero en Windows la incremental utiliza el atributo A de los ficheros
+    \item Porque estadísticamente una copia incremental ocupa menos espacio que una diferencial
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[El tipo de copia que ofrece mayores garantías de integridad y disponibilidad es]
+    \item La estadística
+    \item La completa
+    \item La completa o la estadística, indistintamente
+    \item La diferencial
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Una empresa define una política de seguridad en la que un backup con todos los datos se transfiere semanalmente a GoogleDrive, y se mantiene allí dos meses. Es una copia]
+    \item On-line y diferencial
+    \item Off-site y completa
+    \item Off-line y diferencial
+    \item On-line y completa
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[El tipo de copia de seguridad que acaba utilizando el mayor espacio en disco es]
+    \item La estadística o la incremental, indistintamente
+    \item La diferencial
+    \item La incremental
+    \item La estadística
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Se necesita una copia completa inicial para basar en ella]
+    \item Las copias estadísticas
+    \item Las copias incrementales y las diferenciales
+    \item Las copias incrementales
+    \item Las copias diferenciales
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[El medio soporte de datos con peor tiempo de acceso (para lectura y escritura) es]
+    \item Disco duro externo
+    \item Disco duro interno
+    \item Dvd
+    \item Cinta
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Una copia de seguridad off-site es deseable porque]
+    \item Mejora comunicación dentro de la empresa
+    \item Mejora la disponibilidad
+    \item Mejora la confidencialidad
+    \item Mejora la rapidez con la que se realizan las copias
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Un grupo de discos de 1TB cada uno esta formando un RAID. El tiempo medio de escritura en el RAID sigue siendo el mismo que en cada disco individual. El RAID montado:]
+    \item Es un RAID 0, con exactamente dos discos
+    \item Es un RAID 0, con mas de 2 discos
+    \item Es un RAID 1
+    \item Es un RAID 5
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Un grupo de discos de 1TB cada uno esta formando un RAID. La capacidad total del RAID es de 4 TB. Se trata de]
+    \item Un RAID 5, con 5 discos
+    \item Un RAID 0, con 5 discos
+    \item Un RAID 5, con 4 discos
+    \item Un RAID 1, con 4 discos
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Se ha montado un sistema de discos RAID. Este sistema no mejora ninguno de los objetivos de la seguridad informática]
+    \item Es un RAID 0
+    \item Es un RAID 4
+    \item Es un RAID 1, con solo dos discos
+    \item Es un RAID 5, con solo dos discos
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Una empresa necesita mejorar el tiempo de escritura del disco de un servidor. Para ello]
+    \item Puede utilizar cualquier tipo de RAID (0,1,5,6), pues todos mejoran la velocidad de escritura de los discos
+    \item Ningún nivel de RAID mejora los tiempos de escritura de los discos
+    \item Puede utilizar un RAID 0 o un RAID 5 en vez de un disco simple
+    \item Puede utilizar un RAID 1 en vez de un disco simple
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Una empresa necesita mejorar el tiempo de lectura del disco de un servidor. Para ello]
+    \item Puede utilizar cualquier tipo de RAID (0,1,5,6), pues todos mejoran la velocidad de lectura de los discos
+    \item Puede utilizar un RAID 1 en vez de un disco simple
+    \item Ningún nivel de RAID mejora los tiempos de lectura de los discos
+    \item Puede utilizar un RAID 0 o un RAID 5 en vez de un disco simple
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Un spare disk en RAID es]
+    \item Un disco tradicional, que no forma parte de un RAID
+    \item Un disco no utilizado hasta el estado de emergencia del RAID
+    \item Un disco que solo tiene paridad
+    \item Un disco del que no hay paridad
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[La diferencia entre un RAID 6 y un RAID 6e es]
+    \item El RAID 6e tiene mejores tiempos de lectura
+    \item El RAID 6e comienza su estado de recuperación nada más iniciarse el estado de emergencia
+    \item El RAID 6e utiliza un sistema de paridad que ahorra espacio, por lo que puede almacenar más datos en los mismos discos
+    \item El RAID 6e tiene mejores tiempos de lectura y escritura
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[La tecnología S.M.A.R.T. se puede utilizar]
+    \item Para predecir un fallo en un disco duro
+    \item Para realizar una copia de respaldo de un disco que aún no es defectuoso
+    \item Para detectar un fallo en un disco duro
+    \item Para realizar una copia de respaldo de un disco duro defectuoso
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[La tecnología S.M.A.R.T. es una medida de seguridad]
+    \item Distribuida
+    \item Remota
+    \item Pasiva
+    \item Activa
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Un disco conectado por USB a un ordenador se considera]
+    \item NAS
+    \item No entra dentro de estas categorías
+    \item DAS
+    \item SAN
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Si un disco es accedido, desde el punto de vista del sistema operativo, mediante operaciones de lectura/escritura sobre sectores, es un disco]
+    \item DAS
+    \item DAS o SAN
+    \item NAS
+    \item NAS o SAN
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Un disco es utilizado a la vez por dos ordenadores. Los sistemas operativos de ambos acceden al disco mediante operaciones de lectura/escritura sobre sectores. Es un disco]
+    \item SAN o NAS
+    \item DAS
+    \item NAS
+    \item SAN
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[En una instalación NAS (Network Attached Storage)]
+    \item Los accesos a los discos se realizan en base a ficheros
+    \item Los accesos a los discos se realizan en base a sectores
+    \item Los discos duros no pueden compartirse entre ordenadores
+    \item Los discos duros no pueden tener una configuración RAID
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[iSCSI es un caso particular de]
+    \item SAN
+    \item NAS
+    \item DAS
+    \item RAID
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Una persona que extrae y analiza los datos que se transmiten por una línea de comunicación es un]
+    \item Hacker
+    \item Sniffer
+    \item DoS
+    \item Phreaker
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Cuando un servicio informático (por ejemplo, una web) es imitado por otro para hacerse pasar por el servicio original, se esta utilizando]
+    \item Phishing
+    \item Spoofing
+    \item Dos
+    \item Spamming
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Un adware]
+    \item Es un virus, del tipo troyano
+    \item Es indetectable por el usuario
+    \item Muestra mensajes al usuario
+    \item Es un virus, pero no un troyano
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Es spyware]
+    \item Todos los virus
+    \item Todos los adware
+    \item Todos los keyloggers
+    \item Todos los spoofing
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Un malware que modifica otros ficheros ejecutables para que contengan copias del malware es un]
+    \item Virus
+    \item Adware
+    \item Troyano
+    \item Hoax
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Un malware que se propaga, pero sin modificar otros ficheros ejecutables, es un]
+    \item Gusano
+    \item Virus
+    \item Hoax
+    \item Troyano
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[El payload]
+    \item Es la función maliciosa de un malware
+    \item Es un sinónimo de spyware
+    \item Es un sinónimo de adware
+    \item Es el sistema de propagación de un malware
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[La llamada a casa de un malware]
+    \item Se usa para comunicar datos privados del usuario, o modificar el payload
+    \item Se usa para infectar a nuevos sistemas
+    \item Puede evitarse instalando un firewall con NAT
+    \item Se usa para instalar un rootkit
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Un troyano se caracteriza porque]
+    \item Instala un keylogger
+    \item Se instala a través de spam
+    \item El usuario colabora en su instalación en el sistema
+    \item Roba contraseñas, especialmente de cuentas de banco
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[La ingeniería social]
+    \item Encuentra formas de construir contraseñas que las personas puedan recordar fácilmente
+    \item Consiste en manipular sistemas biométricos de autentificación
+    \item Se utiliza para hacer sniffing
+    \item Se basa en el comportamiento social usual de las personas
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Generalmente, se utiliza el email para enviar spam porque]
+    \item Es el método tradicional
+    \item Permite llegar a más gente, con menor inversión en dinero y tiempo
+    \item No es fácil conseguir otro tipo de direcciones de personas, por ejemplo, de Whatsapp
+    \item Es más fácil engañar a un antivirus con un email que, por ejemplo, con Whatsapp
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Las actualizaciones de software]
+    \item No son importantes para la seguridad, excepto la del antivirus
+    \item Deben retrasarse lo más posible, porque son una fuente de troyanos (excepto la actualización del antivirus)
+    \item No son importantes para la seguridad, pero sí para el usuario, ya que añaden nuevas funcionalidades
+    \item Son importantes para la seguridad, ya que pueden arreglar vulnerabilidades
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Las actividades del \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ se orientan a perjudicar al atacado, y a veces a obtener algún provecho de ello]
+    \item Hacker
+    \item Nerd
+    \item Samurai
+    \item Cracker
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Se llama poisoning, en ocasiones, al]
+    \item Spoofing
+    \item Phishing
+    \item Fuerza bruta
+    \item Sniffing
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[La técnica de la inundación (flooding) suele utilizarse para realizar un ataque de]
+    \item Denial of service
+    \item DNS hijacking
+    \item DNS spoofing
+    \item Sniffing
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Para conseguir un ataque man-in-the-middle, suele ser necesario utilizar previamente]
+    \item Fuerza bruta
+    \item Spoofing
+    \item Phishing
+    \item Denial of service
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Desde el punto de vista del atacante, un ataque de diccionario es una alternativa a]
+    \item Denial of service
+    \item Fuerza bruta
+    \item Flooding
+    \item Code injection
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[El malware más complicado de detectar es]
+    \item Un gusano
+    \item Un rootkit
+    \item Un spam
+    \item Un DOS
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Un exploit es]
+    \item Una vulnerabilidad ya conocida por el fabricante
+    \item Una vulnerabilidad aun desconocida por el fabricante
+    \item Un hacker de reconocido prestigio
+    \item Un software que automatiza los ataques
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Un 0-day (zero day) es]
+    \item Un hacker de reconocido prestigio
+    \item Un software que automatiza los ataques
+    \item Una vulnerabilidad ya conocida por el fabricante
+    \item Una vulnerabilidad aun desconocida por el fabricante
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Elige la política de contraseñas más segura (sin incluir la ñ)]
+    \item Tres letras mayúsculas o minúsculas seguidas de tres números
+    \item 8 números
+    \item Cinco letras mayúsculas o minúsculas
+    \item Cuatro letras minúsculas seguidas de tres números
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Los ataques de code injection se caracterizan por]
+    \item Propagarse como un troyano
+    \item Aprovechar vulnerabilidades de los programas o servicios para que ejecuten un código elegido por el atacante
+    \item Propagarse como un gusano
+    \item Provocar una denegación de servicio (DOS)
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[El antivirus puede ejecutarse]
+    \item Al vuelo, a demanda, antes de la carga del sistema operativo y antes  del arranque BIOS
+    \item A demanda
+    \item Al vuelo, a demanda y antes de la carga del sistema operativo
+    \item Al vuelo y a demanda
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Realizar sniffing es más fácil]
+    \item El sniffing no puede realizarse en redes ethernet, sólo en redes inalámbricas
+    \item En una red con un switch
+    \item Es igual de complicado en una red con un hub o un switch
+    \item En una red con un hub
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Un ataque de flooding es un tipo concreto de]
+    \item Troyano
+    \item DOS
+    \item Phishing
+    \item Man in the middle
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Al cifrar un texto en claro con una de las claves de un sistema asimétrico, el texto cifrado resultante]
+    \item Tiene siempre la misma longitud (por ejemplo, 32 bytes para MD5)
+    \item Se puede descifrar con la otra clave del sistema asimétrica
+    \item Se puede descifrar con la misma clave del sistema asimétrico
+    \item Es igual al texto cifrado que se conseguiría con la otra clave asimétrica
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[¿Para qué puede utilizar un ``hidden volume'' de TrueCrypt?]
+    \item El concepto de ``hidden volume'' no es de TrueCrypt, se aplica a los discos no montados en el fichero /etc/fstab
+    \item Todos los discos son ``hidden'', porque los datos están encriptados
+    \item El concepto de ``hidden volume'' no es de TrueCrypt, se aplica a los discos externos en la BIOS para no arrancar desde ellos
+    \item Para poder presentar un conjunto de ficheros creible, pero falso
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Para mejorar el objetivo de ``no repudio'' de los envíos de información]
+    \item Hay que enviar el fichero encriptado y sin encriptar, para su comparación
+    \item Basta con encriptar los ficheros
+    \item Hay que firmar y encriptar los ficheros
+    \item Basta con firmar los ficheros
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[La criptografía híbrida]
+    \item Mezcla métodos de sustitución y transposición
+    \item Mezcla claves públicas y privadas
+    \item Mezcla encriptación y firma
+    \item Mezcla métodos simétricos y asimétricos
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Son funciones resumen]
+    \item SHA1, PKI
+    \item MD5, SHA1
+    \item PKI, MD5
+    \item MD5, GPL
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[La desventaja de un sistema de clave asimétrica respecto de uno con clave simétrica es que]
+    \item Es más lento, por el tiempo de proceso
+    \item Es menos seguro, porque es una tecnología más antigua
+    \item Es menos seguro, porque las claves son más cortas
+    \item Es menos seguro el intercambio de claves
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[La desventaja de un sistema de clave simétrica respecto de uno con clave asimétrica es que]
+    \item Es menos seguro el intercambio de claves
+    \item Es más lento, por el tiempo de proceso
+    \item Es más difícil y caro realizar programas que lo implementen
+    \item Es menos seguro, porque las claves son más cortas
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[En una comunicación se comienza utilizando una clave asimétrica para intercambiar una clave simétrica. Esto se hace para]
+    \item Ahorrar tiempo de proceso, ya que las claves asimétricas son más difíciles de computar
+    \item Ahorrar tiempo de proceso, ya que las claves simétricas son más difíciles de computar
+    \item Aumentar el objetivo de ``no repudio''
+    \item Aumentar la confidencialidad
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[En un sistema de criptografía híbrida, como el estudiado en clase, hay]
+    \item 2 claves (dos públicas)
+    \item 2 claves (una pública y una privada)
+    \item 3 claves (dos públicas y una privada)
+    \item 3 claves (una pública, una privada y una simétrica)
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[En un sistema de criptografía híbrida, como el estudiado en clase]
+    \item Una de las partes inventa sobre la marcha una clave simétrica
+    \item Una de las partes inventa sobre la marcha una clave privada
+    \item Una de las partes inventa sobre la marcha una clave pública
+    \item Una de las partes inventa sobre la marcha un par de claves (pública y privada)
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[El ``Cifrado del César'' es]
+    \item Criptografía híbrida, porque mezcla métodos manuales y automáticos
+    \item Criptografía asimétrica, porque se usa distinto algoritmo para cifrar que para descifrar
+    \item Criptografía estadística, porque se necesitan probar varias posibilidades
+    \item Criptografía simétrica, porque se usa la misma clave para cifrar y descifrar
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[La autenticación consiste en]
+    \item verificar la identidad de un usuario
+    \item usar métodos biométricos
+    \item firmar un documento
+    \item otorgar permisos a cierto usuario
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[Se dice de un certificado que es raíz si]
+    \item Es el certificado asociado a la raíz del DNS (.)
+    \item Es un certificado firmado por otro que tenga mayor nivel
+    \item Es el certificado que se utilizó para instalar el sistema operativo
+    \item Es un certificado considerado seguro, que puede firmar otros certificados
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[En Linux, se puede encriptar]
+    \item Discos completos
+    \item Particiones y discos completos, pero no las de inicio (para eso se crean ``/'' y ``/home'' en particiones separadas)
+    \item Particiones y discos completos, incluso las particiones de inicio
+    \item Particiones completas
+  \end{QuestionnaireQuestion}
+  \begin{QuestionnaireQuestion}[En una comunicación HTTPS]
+    \item No hay certificados con claves públicas, ya que se usa criptografía asimétrica
+    \item No hay certificados con claves públicas, ya que se usa criptografía híbrida
+    \item El servidor podría requerir también un certificado del usuario, aunque no es común
+    \item Solo puede haber un certificado, que es el que el servidor envía al cliente
+  \end{QuestionnaireQuestion}
+\end{QuestionnaireQuestions}
 \begin{OpenQuestion}Determina a cuál (o cuáles) de los objetivos de la seguridad informática (características seguras) ayuda cada una de estas medidas, especificando el por qué: Cuotas de disco, discos redundantes (RAID), antivirus, autentificación mediante contraseñas\end{OpenQuestion}
 \begin{OpenQuestion}Explica qué apartados debe incluir un plan de contingencias\end{OpenQuestion}
 \begin{OpenQuestion}Determina si cada una de estas medidas que aumentan la seguridad informática son activas o pasivas, especificando el por qué de esa clasificación: Cuotas de disco, discos redundantes (RAID), antivirus, autentificación mediante contraseñas\end{OpenQuestion}
 \begin{OpenQuestion}Describe qué pasos realiza un navegador web para decidir que una conexión https es segura\end{OpenQuestion}
 \Solution{
-d	a	c	b	c	a	c	b	d	d	b	c	d	a	d	a	d	d	a	b	d	b	b	d	b	b	a	a	b	a	d	d	d	a	a	c	a	b	d	c	a	c	b	a	c	b	a	b	a	a	c	c	a	d	d	d	a	b	a	c	c	c	a	b	b	a	c	b	c	b	a	a	a	c	c	d	b	b	c	a	c	d	d	c	a	c	a	a	c	d	b	c	b
+d	a	a	d	d	d	d	d	b	d	b	a	c	c	a	b	d	b	b	c	d	a	c	c	c	d	c	a	b	a	a	c	d	b	b	b	b	d	b	c	a	a	c	a	b	b	a	d	c	b	d	a	a	b	b	c	c	a	a	a	a	c	d	b	d	d	a	a	b	b	b	d	d	d	b	c	d	b	b	d	d	d	b	a	a	a	d	a	d	a	d	c	c
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
