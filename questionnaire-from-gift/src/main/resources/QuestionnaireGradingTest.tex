@@ -5,13 +5,13 @@
 \usepackage{ifpdf}
 \usepackage{enumitem}
 \usepackage{multicol}
-
+\usepackage{setspace}
 \usepackage[top=3cm,left=3cm,right=3cm,bottom=3cm,a4paper]{geometry}
 
 
 \newcommand{\Width}{\textwidth}
 \newcommand{\HalfWidth}{0.5\textwidth}
-\newcommand{\Height}{\textheight}
+\newcommand{\Height}{0.95\textheight}
 \newcommand{\HalfHeight}{0.45\textheight}
 
 
@@ -72,6 +72,20 @@
   \\
 }
 
+\newenvironment{FullPageOpenQuestion}
+{
+  \clearpage
+  \begin{minipage}[t][\Height][t]{\Width}
+    \HorizontalLine
+    \arabic{QuestionCounter}.
+}
+{
+    \vfill
+  \end{minipage}
+  \stepcounter{QuestionCounter}
+  \\
+}
+
 
 \newcommand{\Solution}[1]
 {
@@ -84,12 +98,38 @@
   }
 \fi
 }
-{
 
+\newcommand{\Instructions}[2]
+{
+  \begin{small}
+    Instrucciones generales para las preguntas cerradas:
+    \begin{itemize}
+      \item Marca solamente la respuesta más apropiada en cada caso, en la tabla de respuestas
+      \item No se tendrán en cuenta anotaciones fuera de la tabla de respuestas
+      \item Todas las preguntas tienen el mismo valor.
+      \item Hay una, y sólo una, respuesta correcta en cada pregunta.
+      \item Responde solamente las preguntas en las que estés seguro. Una respuesta incorrecta resta un tercio del valor de una respuesta acertada. Una pregunta sin responder no resta puntos.
+    \end{itemize}
+
+    Instrucciones generales para las preguntas abiertas:
+    \begin{itemize}
+      \item Es necesario responder a la pregunta y justificar dicha respuesta
+      \item Todas las preguntas tienen el mismo valor.
+    \end{itemize}
+    Puntuación:
+    \begin{itemize}
+      \item La parte tipo test es un  #1\% de la nota
+      \item La parte de preguntas abiertas es un #2\% de la nota
+    \end{itemize}
+  \end{small}
+  \newpage
 }
+
 \begin{document}
 
 \IndentOff
+
+\Instructions{60}{40}
 
 \begin{QuestionnaireQuestions}
   \begin{QuestionnaireQuestion}[﻿En la cadena de seguridad]
@@ -652,8 +692,8 @@
   \end{QuestionnaireQuestion}
 \end{QuestionnaireQuestions}
 \begin{OpenQuestion}Determina a cuál (o cuáles) de los objetivos de la seguridad informática (características seguras) ayuda cada una de estas medidas, especificando el por qué: Cuotas de disco, discos redundantes (RAID), antivirus, autentificación mediante contraseñas\end{OpenQuestion}
-\begin{OpenQuestion}Explica qué apartados debe incluir un plan de contingencias\end{OpenQuestion}
-\begin{OpenQuestion}Determina si cada una de estas medidas que aumentan la seguridad informática son activas o pasivas, especificando el por qué de esa clasificación: Cuotas de disco, discos redundantes (RAID), antivirus, autentificación mediante contraseñas\end{OpenQuestion}
+\begin{FullPageOpenQuestion}Explica qué apartados debe incluir un plan de contingencias\end{OpenQuestion}
+\begin{FullPageOpenQuestion}Determina si cada una de estas medidas que aumentan la seguridad informática son activas o pasivas, especificando el por qué de esa clasificación: Cuotas de disco, discos redundantes (RAID), antivirus, autentificación mediante contraseñas\end{OpenQuestion}
 \begin{OpenQuestion}Describe qué pasos realiza un navegador web para decidir que una conexión https es segura\end{OpenQuestion}
 \Solution{
 d	a	a	d	d	d	d	d	b	d	b	a	c	c	a	b	d	b	b	c	d	a	c	c	c	d	c	a	b	a	a	c	d	b	b	b	b	d	b	c	a	a	c	a	b	b	a	d	c	b	d	a	a	b	b	c	c	a	a	a	a	c	d	b	d	d	a	a	b	b	b	d	d	d	b	c	d	b	b	d	d	d	b	a	a	a	d	a	d	a	d	c	c

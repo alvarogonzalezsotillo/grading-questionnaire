@@ -12,18 +12,20 @@ import scala.util.Random
  */
 object GiftToLatex {
 
-  private val charsToLatexMap = Map(
-    '\n' -> """\\""",
-    '_' ->  """\_""",
-    '#' -> """\#""",
-    '%' -> """\%""",
-    '&' -> """\&""",
-    '\\' -> """\textbackslash""",
-    '{' -> """\{""",
-    '}' -> """\}"""
-  ).withDefault( _.toString )
 
   private object charsToLatex extends ((Char) => String){
+
+    private val charsToLatexMap = Map(
+      '\n' -> """\\""",
+      '_' ->  """\_""",
+      '#' -> """\#""",
+      '%' -> """\%""",
+      '&' -> """\&""",
+      '\\' -> """\textbackslash""",
+      '{' -> """\{""",
+      '}' -> """\}"""
+    ).withDefault( _.toString )
+
     var state = "``"
 
     private def toggle = state = state match{
