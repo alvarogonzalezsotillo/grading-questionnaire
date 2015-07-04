@@ -21,6 +21,7 @@ object GiftToLatex {
       '#' -> """\#""",
       '%' -> """\%""",
       '&' -> """\&""",
+      '$' -> """\$""",
       '\\' -> """\textbackslash""",
       '{' -> """\{""",
       '}' -> """\}"""
@@ -59,14 +60,14 @@ object GiftToLatex {
       begin + sa + end
   }
 
-  def generateLatexForQuestions( g: GiftFile ) = {
+  private def generateLatexForQuestions( g: GiftFile ) = {
     val qq = g.questionnaireQuestions.map( GiftToLatex.generateQuestionLatex ).mkString("\n")
     val oq = g.openQuestions.map( GiftToLatex.generateQuestionLatex ).mkString("\n")
 
     s"\\begin{QuestionnaireQuestions}\n$qq\n\\end{QuestionnaireQuestions}\n$oq"
   }
 
-  def generateLatexSolutionForSolution( g: GiftFile ) = {
+  private def generateLatexSolutionForSolution( g: GiftFile ) = {
     val indexes = g.questions.filter( _.isInstanceOf[QuestionnaireQuestion] ).map{ case QuestionnaireQuestion(_,answers) =>
         answers.indexWhere( _.correct )
     }
@@ -76,7 +77,7 @@ object GiftToLatex {
     "\\Solution{" + options.mkString("\t") + "}"
   }
 
-  def loadLatexTemplate  = {
+  private lazy val latexTemplate  = {
     def streamToString( in: InputStream ) ={
       val bos = new ByteArrayOutputStream()
       val buffer = new Array[Byte](1024)
@@ -89,7 +90,7 @@ object GiftToLatex {
       bos.toString
     }
 
-    val in = getClass.getResourceAsStream("QuestionnaireGradingTest.tex")
+    val in = getClass.getResourceAsStream("/QuestionnaireGradingTest.template.tex")
     try{
       streamToString(in)
     }
@@ -98,6 +99,19 @@ object GiftToLatex {
     }
   }
 
+  def generateLatex(f: GiftFile, questionnaireQuestionsWeight : Int = 60, openQuestionsWeight: Int = 40 ): String ={
+    val instructions = s"\\Instructions{$questionnaireQuestionsWeight}{$openQuestionsWeight}"
+    val answerTable = s"\\AnswerTable{${f.questionnaireQuestions.size}}"
+    val questions = generateLatexForQuestions(f)
+    val solutions = generateLatexSolutionForSolution(f)
+    val generatedContent = List(instructions,answerTable,questions,solutions).mkString("\n")
 
+
+    latexTemplate.replace("${GeneratedContent}",generatedContent)
+  }
+
+  def apply( f: GiftFile, questionnaireQuestionsWeight : Int = 60, openQuestionsWeight: Int = 40 ) = {
+    generateLatex(f,questionnaireQuestionsWeight,openQuestionsWeight)
+  }
 
 }

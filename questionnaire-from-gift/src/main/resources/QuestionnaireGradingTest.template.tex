@@ -1,0 +1,165 @@
+
+
+\documentclass[8pt,a4paper,spanish,openany]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{ifpdf}
+\usepackage{enumitem}
+\usepackage{multicol}
+\usepackage{setspace}
+\usepackage[top=3cm,left=3cm,right=3cm,bottom=3cm,a4paper]{geometry}
+\usepackage{forloop}
+\usepackage{longtable}
+\usepackage[spanish]{babel}
+
+
+\newcommand{\Width}{\textwidth}
+\newcommand{\HalfWidth}{0.5\textwidth}
+\newcommand{\Height}{0.95\textheight}
+\newcommand{\HalfHeight}{0.45\textheight}
+
+
+\newcommand{\HalfHorizontalLine}
+{
+  \noindent\makebox[\linewidth]{\rule{\HalfWidth}{0.4pt}}
+}
+
+\newcommand{\HorizontalLine}
+{
+  \noindent\makebox[\linewidth]{\rule{\Width}{0.4pt}}
+}
+
+\newcommand{\IndentOn}{\setlength{\parindent}{12pt}}
+\newcommand{\IndentOff}{\setlength{\parindent}{0pt}}
+
+\newcounter{QuestionCounter}
+\setcounter{QuestionCounter}{1}
+
+\newenvironment{QuestionnaireQuestions}
+{
+  \begin{small}
+    \setlength{\columnsep}{1cm}
+    \begin{multicols}{2}
+}
+{
+    \end{multicols}
+  \end{small}
+}
+
+\newenvironment{QuestionnaireQuestion}[1][]
+{
+  \begin{minipage}{\HalfWidth}
+    \HorizontalLine\\
+    \arabic{QuestionCounter}. #1
+    \begin{enumerate}[label=\alph*)]
+}
+{
+    \end{enumerate}
+  \end{minipage}
+
+  \stepcounter{QuestionCounter}
+}
+
+\newcommand{\Answer}[1]{
+  \item #1
+}
+
+\newenvironment{OpenQuestion}
+{
+
+  \begin{minipage}[t][\HalfHeight][t]{\Width}
+    \HorizontalLine
+    \arabic{QuestionCounter}.
+}
+{
+    \vfill
+  \end{minipage}
+  \stepcounter{QuestionCounter}
+  \\
+}
+
+\newenvironment{FullPageOpenQuestion}
+{
+  \clearpage
+  \begin{minipage}[t][\Height][t]{\Width}
+    \HorizontalLine
+    \arabic{QuestionCounter}.
+}
+{
+    \vfill
+  \end{minipage}
+  \stepcounter{QuestionCounter}
+  \\
+}
+
+
+\newcommand{\Solution}[1]
+{
+  \ifpdf
+    \pdfinfo{
+      /Author ('Alvaro Gonz'alez Sotillo)
+      /Title (Examen a partir de fichero GIFT y Latex, con Scala)
+      /Keywords (PDF;LaTeX)
+      /Subject (#1)
+    }
+  \fi
+}
+
+\newcommand{\Instructions}[2]
+{
+  \begin{small}
+    Instrucciones generales para las preguntas cerradas:
+    \begin{itemize}
+      \item Marca solamente la respuesta más apropiada en cada caso, en la tabla de respuestas
+      \item No se tendrán en cuenta anotaciones fuera de la tabla de respuestas
+      \item Todas las preguntas tienen el mismo valor.
+      \item Hay una, y sólo una, respuesta correcta en cada pregunta.
+      \item Responde solamente las preguntas en las que estés seguro. Una respuesta incorrecta resta un tercio del valor de una respuesta acertada. Una pregunta sin responder no resta puntos.
+    \end{itemize}
+
+    Instrucciones generales para las preguntas abiertas:
+    \begin{itemize}
+      \item Es necesario responder a la pregunta y justificar dicha respuesta
+      \item Todas las preguntas tienen el mismo valor.
+    \end{itemize}
+    Puntuación:
+    \begin{itemize}
+      \item La parte tipo test es un  #1\% de la nota
+      \item La parte de preguntas abiertas es un #2\% de la nota
+    \end{itemize}
+  \end{small}
+}
+
+\newcommand{\AnswerTable}[1]
+{
+  \setlength{\columnsep}{1cm}
+  \newcounter{AnswerCounter}
+    \begin{longtable}{|r|c|r|c|r|c|r|c|r|c|}
+      first head & \\
+      \endfirsthead
+      head & \\
+      \endhead
+      foot & \\
+      \endfoot
+      last foot & \\
+      \endlastfoot
+      \hline
+      \forloop[5]{AnswerCounter}{1}{\value{AnswerCounter}<#1}
+      {
+        \arabic{AnswerCounter} & & \arabic{AnswerCounter} & & \arabic{AnswerCounter} & & \arabic{AnswerCounter} & & \arabic{AnswerCounter}\\
+        \hline
+      }
+
+    \end{longtable}
+
+    \newpage
+
+}
+
+\begin{document}
+
+\IndentOff
+
+${GeneratedContent}
+
+
+\end{document}

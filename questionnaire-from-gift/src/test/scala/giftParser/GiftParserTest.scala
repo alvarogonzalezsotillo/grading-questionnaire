@@ -9,7 +9,6 @@ import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner
 
 
-
 /**
  * Created by alvaro on 21/09/2014.
  */
@@ -19,9 +18,9 @@ class GiftParserTest extends FlatSpec {
   "Empty file" should "have no questions" in {
     val s = ""
     val ret = GiftParser.parse(s)
-    assert( ret.successful )
+    assert(ret.successful)
     val giftFile = ret.questions
-    assert( giftFile.size == 0 )
+    assert(giftFile.size == 0)
   }
 
   val singleOpenQuestion =
@@ -32,18 +31,18 @@ class GiftParserTest extends FlatSpec {
 
   "Single open question" should "parse" in {
     val ret = GiftParser.parse(singleOpenQuestion)
-    assert( ret.successful )
+    assert(ret.successful)
     val giftFile = ret.questions
-    assert( giftFile(0).isInstanceOf[OpenQuestion] )
+    assert(giftFile(0).isInstanceOf[OpenQuestion])
   }
 
   val singleOpenQuestionNoBlanks = """hola{ }"""
 
   "Single open question with no extra new lines" should "parse" in {
     val ret = GiftParser.parse(singleOpenQuestionNoBlanks)
-    assert( ret.successful )
+    assert(ret.successful)
     val giftFile = ret.questions
-    assert( giftFile(0).isInstanceOf[OpenQuestion] )
+    assert(giftFile(0).isInstanceOf[OpenQuestion])
   }
 
   val singleClosedQuestion =
@@ -54,16 +53,16 @@ class GiftParserTest extends FlatSpec {
 
   "Single closed question" should "parse" in {
     val ret = GiftParser.parse(singleClosedQuestion)
-    assert( ret.successful )
+    assert(ret.successful)
     val giftFile = ret.questions
-    assert( giftFile(0).isInstanceOf[QuestionnaireQuestion] )
+    assert(giftFile(0).isInstanceOf[QuestionnaireQuestion])
   }
 
   "Single closed question" should "parse with correct answers" in {
     val ret = GiftParser.parse(singleClosedQuestion)
-    assert( ret.successful )
+    assert(ret.successful)
     val giftFile = ret.questions
-    assert( giftFile(0) == new QuestionnaireQuestion( "hola como estás yo bien gracias", List( new Answer("bien", true), new Answer("mal", false)) ) )
+    assert(giftFile(0) == new QuestionnaireQuestion("hola como estás yo bien gracias", List(new Answer("bien", true), new Answer("mal", false))))
   }
 
   val singleClosedQuestionNoBlanks =
@@ -72,22 +71,22 @@ class GiftParserTest extends FlatSpec {
   "Single closed question with no extra blanks" should "parse with correct answers" in {
     val ret = GiftParser.parse(singleClosedQuestion)
     val retnoblanks = GiftParser.parse(singleClosedQuestionNoBlanks)
-    assert( ret.questions == retnoblanks.questions )
+    assert(ret.questions == retnoblanks.questions)
   }
 
   "A malformed file" should "not parse" in {
-    val error =" this is an error "
+    val error = " this is an error "
     val ret = GiftParser.parse(error)
-    assert( !ret.successful )
+    assert(!ret.successful)
   }
 
   "Some questions" should "parse" in {
-    val questions = List(singleClosedQuestion, singleClosedQuestionNoBlanks, singleOpenQuestion, singleOpenQuestionNoBlanks )
+    val questions = List(singleClosedQuestion, singleClosedQuestionNoBlanks, singleOpenQuestion, singleOpenQuestionNoBlanks)
     val s = questions.mkString("\n")
 
     val ret = GiftParser.parse(s)
     val giftFile = ret.questions
-    assert( giftFile.size == 4 )
+    assert(giftFile.size == 4)
   }
 
   "A malformed question" should "not parse" in {
@@ -96,25 +95,36 @@ class GiftParserTest extends FlatSpec {
     assert(!ret.successful)
 
     ret match {
-      case GiftError(msg,line,column,lineContents) =>
-        assert( line == 1 )
+      case GiftError(msg, line, column, lineContents) =>
+        assert(line == 1)
         assert(lineContents == s)
     }
   }
 
+  val bigGiftFile = new File("/home/alvaro/SincronizadoCloud/copy/2014-2015-Alonso de Avellaneda/seguridad-informatica/examenes/SI-Extraordinaria-Junio.gift")
+
   "A big file" should "parse" in {
-    val file = new File("/home/alvaro/SincronizadoCloud/copy/2014-2015-Alonso de Avellaneda/seguridad-informatica/examenes/SI-Extraordinaria-Junio.gift")
-    val ret = GiftParser.parse(file)
+    val ret = GiftParser.parse(bigGiftFile)
 
     ret match {
-      case GiftError(msg,line,column,lineContents) =>
+      case GiftError(msg, line, column, lineContents) =>
+        fail(msg)
 
-      case g : GiftFile =>
-        println( GiftToLatex.generateLatexForQuestions(g) )
-        println( GiftToLatex.generateLatexSolutionForSolution(g) )
+      case g: GiftFile =>
     }
+  }
 
+  "A big file" should "generate latex" in {
+    val ret = GiftParser.parse(bigGiftFile)
 
+    ret match {
+      case GiftError(msg, line, column, lineContents) =>
+        fail(msg)
+
+      case g: GiftFile =>
+        val latex = GiftToLatex(g)
+        println( latex )
+    }
   }
 
 }
