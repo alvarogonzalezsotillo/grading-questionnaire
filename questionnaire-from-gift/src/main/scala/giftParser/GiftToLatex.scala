@@ -49,7 +49,7 @@ object GiftToLatex {
 
   private def generateQuestionLatex( q : Question ): String = q match {
     case OpenQuestion(text) =>
-      s"\\begin{OpenQuestion}${escapeLatex(text)}\\end{OpenQuestion}"
+      s"\\begin{OpenQuestion}\n  ${escapeLatex(text)}\n\\end{OpenQuestion}"
 
     case QuestionnaireQuestion(text, answers) =>
       val sa = answers.map {   a =>  s"    \\item ${escapeLatex(a.text)}"  }.mkString("\n")
@@ -74,7 +74,7 @@ object GiftToLatex {
 
     val options = indexes.map( i => (i.toChar + 'a').toChar )
 
-    "\\Solution{" + options.mkString("\t") + "}"
+    "\\Solution{" + options.mkString(",") + "}"
   }
 
   private lazy val latexTemplate  = {

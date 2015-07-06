@@ -127,4 +127,18 @@ class GiftParserTest extends FlatSpec {
     }
   }
 
+  "latex compile" should "work" in {
+    val ret = GiftParser.parse(bigGiftFile)
+
+    ret match {
+      case GiftError(msg, line, column, lineContents) =>
+        fail(msg)
+
+      case g: GiftFile =>
+        val latex = GiftToLatex(g)
+        LatexCompiler.compile( latex, new File( "test.pdf") )
+    }
+
+  }
+
 }
