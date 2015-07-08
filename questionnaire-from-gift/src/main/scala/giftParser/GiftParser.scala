@@ -20,41 +20,43 @@ class GiftParser extends JavaTokenParsers {
   def indent: Parser[String] = """\s*""".r
 
   // ONLY ~ OR =
-  def startOfAnswer: Parser[String] = "~" | "=" | failure( "~ or = expected")
+  def startOfAnswer: Parser[String] = "~" | "=" | failure("~ or = expected")
 
   // ANY CHARACTERS, NOT INCLUDING THE FIRST }, ~ OR =
-  def answerBody: Parser[String] = """[^\}~=]*""".r | failure( "}, = or ~ expected" )
+  def answerBody: Parser[String] = """[^\}~=]*""".r | failure("}, = or ~ expected")
 
   // ANY CHARACTERS, NOT INCLUDING THE FIRST {
-  def questionText: Parser[String] = """[^\{]*""".r | failure ( "{ expected" )
+  def questionText: Parser[String] = """[^\{]*""".r | failure("{ expected")
 
   // AN ANSWER CAN BE INDENTED, HAS A START AND A BODY
-  def answer: Parser[Answer] = indent ~> startOfAnswer ~ answerBody  ^^ {
+  def answer: Parser[Answer] = indent ~> startOfAnswer ~ answerBody ^^ {
     case "=" ~ b => Answer(b.trim, true)
     case "~" ~ b => Answer(b.trim, false)
-  } | failure( "An answer starts with = or ~" )
+  } | failure("An answer starts with = or ~")
 
   // A QUESTION HAS A TEXT, AND MAYBE SOME ANSWERS
-  def question: Parser[Question] = (questionText <~  "{" ) ~ ( rep(answer) <~ "}" )  ^^ {
-    case t ~ Nil  => OpenQuestion(t.trim)
-    case t ~ a    => QuestionnaireQuestion(t.trim, a)
-  } | failure( "A question has some text, and maybe some answers surrounded by {}");
+  def question: Parser[Question] = (questionText <~ "{") ~ (rep(answer) <~ "}") ^^ {
+    case t ~ Nil => OpenQuestion(t.trim)
+    case t ~ a => QuestionnaireQuestion(t.trim, a)
+  } | failure("A question has some text, and maybe some answers surrounded by {}");
 
   // A QUESTIONNAIRE IS COMPOSED OF SEVERAL QUESTIONS
   def questionnaire: Parser[Questions] = rep(question)
 }
 
-object GiftParser{
+object GiftParser {
 
 
   type Questions = List[GiftFile.Question]
 
-  trait GiftResult{
+  trait GiftResult {
     def questions: Questions
+
     val successful = true
   }
 
-  object GiftFile{
+  object GiftFile {
+
     case class Answer(text: String, correct: Boolean)
 
     trait Question {
@@ -67,13 +69,24 @@ object GiftParser{
 
     case class QuestionnaireQuestion(text: String, answers: List[Answer]) extends Question {
       override def shuffle = QuestionnaireQuestion(text, Random.shuffle(answers))
+
+      override def equals(o: Any) = o match {
+        case QuestionnaireQuestion(t, a) =>
+          t == text && answers.toSet == a.toSet
+
+        case _ =>
+          super.equals(o)
+      }
+
+      assert( answers.count( _.correct) == 1, s"Incorrect number of correct answers:$text" )
     }
 
-    def apply( questions: Questions ) = new GiftFile(questions)
-    def unapply( gf: GiftFile) : Option[Questions]= Some(gf.questions)
+    def apply(questions: Questions) = new GiftFile(questions)
+
+    def unapply(gf: GiftFile): Option[Questions] = Some(gf.questions)
   }
 
-  class GiftFile( val questions: Questions ) extends GiftResult{
+  class GiftFile(val questions: Questions) extends GiftResult {
 
     import GiftFile._
 
@@ -100,8 +113,10 @@ object GiftParser{
     }
 
   }
-  case class GiftError( msg: String, line: Int, column: Int, lineContents: String ) extends GiftResult{
+
+  case class GiftError(msg: String, line: Int, column: Int, lineContents: String) extends GiftResult {
     override def questions = throw new NoSuchElementException()
+
     override val successful = false
   }
 
@@ -111,24 +126,24 @@ object GiftParser{
     case parser.Failure(msg, next) => GiftError(msg, next.pos.line, next.pos.column, next.pos.longString.takeWhile(_ != '\n'))
   }
 
-  def parse( s: String ) = {
+  def parse(s: String) = {
     val parser = new GiftParser
     val ret = parser.parseAll(parser.questionnaire, s)
-    processResult( parser, ret )
+    processResult(parser, ret)
   }
 
-  def parse( reader: Reader ) = {
+  def parse(reader: Reader) = {
     val parser = new GiftParser
     val ret = parser.parseAll(parser.questionnaire, reader)
-    processResult( parser, ret )
+    processResult(parser, ret)
   }
 
-  def parse( f: File ) = {
+  def parse(f: File) = {
     val parser = new GiftParser
     val reader = new FileReader(f)
     val ret = parser.parseAll(parser.questionnaire, reader)
     reader.close()
-    processResult( parser, ret )
+    processResult(parser, ret)
   }
 
 }

@@ -8,6 +8,8 @@ import org.junit.runner.RunWith
 import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner
 
+import scala.util.Try
+
 
 /**
  * Created by alvaro on 21/09/2014.
@@ -43,6 +45,14 @@ class GiftParserTest extends FlatSpec {
     assert(ret.successful)
     val giftFile = ret.questions
     assert(giftFile(0).isInstanceOf[OpenQuestion])
+  }
+
+  "A question with more than one correct answer" should "not parse" in {
+
+    val s = "Incorrect{ =good =also good ~bad }"
+
+    val t = Try( GiftParser.parse(s) )
+    assert( t.isFailure )
   }
 
   val singleClosedQuestion =
@@ -101,44 +111,5 @@ class GiftParserTest extends FlatSpec {
     }
   }
 
-  val bigGiftFile = new File("/home/alvaro/SincronizadoCloud/copy/2014-2015-Alonso de Avellaneda/seguridad-informatica/examenes/SI-Extraordinaria-Junio.gift")
-
-  "A big file" should "parse" in {
-    val ret = GiftParser.parse(bigGiftFile)
-
-    ret match {
-      case GiftError(msg, line, column, lineContents) =>
-        fail(msg)
-
-      case g: GiftFile =>
-    }
-  }
-
-  "A big file" should "generate latex" in {
-    val ret = GiftParser.parse(bigGiftFile)
-
-    ret match {
-      case GiftError(msg, line, column, lineContents) =>
-        fail(msg)
-
-      case g: GiftFile =>
-        val latex = GiftToLatex(g)
-        println( latex )
-    }
-  }
-
-  "latex compile" should "work" in {
-    val ret = GiftParser.parse(bigGiftFile)
-
-    ret match {
-      case GiftError(msg, line, column, lineContents) =>
-        fail(msg)
-
-      case g: GiftFile =>
-        val latex = GiftToLatex(g)
-        LatexCompiler.compile( latex, new File( "test.pdf") )
-    }
-
-  }
 
 }

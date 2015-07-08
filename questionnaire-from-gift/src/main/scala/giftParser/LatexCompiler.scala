@@ -10,19 +10,9 @@ import scala.sys.process.{ProcessBuilder, Process}
  */
 object LatexCompiler{
 
-  private def createTempDirectory : File = {
-    val file = File.createTempFile("LatexCompile", "" + System.currentTimeMillis() )
-    file.delete()
-    file.mkdirs()
-    file.deleteOnExit()
-    file
-  }
+  import giftParser.Util._
 
-  private def createFile( content: String, file: File ) = {
-    val out = new FileWriter(file)
-    out.write(content)
-    out.close()
-  }
+
 
   private def compile(f: File): Process = {
     val fileName = f.getName
@@ -36,14 +26,6 @@ object LatexCompiler{
     java.nio.file.Files.move( src.toPath, dst.toPath )
   }
 
-  private def cleanDirOrFile( f: File ): Unit ={
-    if( f.isDirectory ){
-      for( file <- f.listFiles() ){
-        cleanDirOrFile( file )
-      }
-    }
-    f.delete()
-  }
 
   def compile( latex: String, outputFile : File, keepTexFile : Boolean = true, times: Int = 2 ) : IndexedSeq[Process] = {
     val dir = createTempDirectory
