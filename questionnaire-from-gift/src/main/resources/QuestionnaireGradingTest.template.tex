@@ -12,6 +12,7 @@
 \usepackage[spanish]{babel}
 
 
+
 \newcommand{\Width}{\textwidth}
 \newcommand{\HalfWidth}{0.5\textwidth}
 \newcommand{\Height}{0.95\textheight}
@@ -131,35 +132,63 @@
   \end{small}
 }
 
+\usepackage{fancybox}
+\newcommand{\StudentData}
+{
+  \newsavebox{\fmboxx}
+  \begin{lrbox}{\fmboxx}
+    \begin{minipage}{\Width}
+      \vspace{0.2cm}
+      \large{
+        \textbf{Nombre} \\
+        \textbf{Grupo} \\
+        \textbf{Fecha}
+      }
+      \vspace{0.2cm}
+    \end{minipage}
+  \end{lrbox}
+  \shadowbox{\usebox{\fmboxx}}
+  \\
+}
+
+
 \newcommand{\AnswerTable}[1]
 {
-  \setlength{\columnsep}{1cm}
-  \newcounter{AnswerCounter}
-    \begin{longtable}{|r|c|r|c|r|c|r|c|r|c|}
-      first head & \\
-      \endfirsthead
-      head & \\
-      \endhead
-      foot & \\
-      \endfoot
-      last foot & \\
-      \endlastfoot
-      \hline
-      \forloop[5]{AnswerCounter}{1}{\value{AnswerCounter}<#1}
-      {
-        \arabic{AnswerCounter} & & \arabic{AnswerCounter} & & \arabic{AnswerCounter} & & \arabic{AnswerCounter} & & \arabic{AnswerCounter}\\
-        \hline
-      }
+  \vspace{0.5cm}
 
-    \end{longtable}
+  \setlength{\columnsep}{1cm}
+
+  \newcommand{\AnswerWidth}{1.8cm}
+  \newcommand{\QuestionFill}{}
+
+  \newcounter{AnswerCounter}
+    \begin{tabular}{|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|}
+      %\endfirsthead
+
+      %\endhead
+
+      %\endfoot
+
+      %\endlastfoot
+
+      %\tiny{P} & \tiny{R} & \tiny{P} & \tiny{R} & \tiny{P} & \tiny{R} & \tiny{P} & \tiny{R} & \tiny{P} & \tiny{R} \\
+
+      \hline
+      \forloop[5]{AnswerCounter}{1}{\value{AnswerCounter}<#1}{\arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill  & \arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill \\ \hline}
+
+    \end{tabular}
 
     \newpage
 
 }
 
+
 \begin{document}
 
 \IndentOff
+
+\StudentData
+
 
 ${GeneratedContent}
 
