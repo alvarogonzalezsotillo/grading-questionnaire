@@ -7,10 +7,9 @@
 \usepackage{multicol}
 \usepackage{setspace}
 \usepackage[top=3cm,left=3cm,right=3cm,bottom=3cm,a4paper]{geometry}
-\usepackage{forloop}
 \usepackage{longtable}
 \usepackage[spanish]{babel}
-
+\usepackage{ifthen}
 
 
 \newcommand{\Width}{\textwidth}
@@ -151,6 +150,59 @@
   \\
 }
 
+\newcommand{\ForLoop}[5][1]%
+{%
+\setcounter{#2}{#3}%
+\ifthenelse{#4}%
+{%
+\addtocounter{#2}{#1}%
+#5%
+\ForLoop[#1]{#2}{\value{#2}}{#4}{#5}%
+}%
+{%
+}%
+}%
+
+
+\newcommand{\TableLoopInternal}[4]
+{%
+  \ifthenelse{\value{#2}=#1}
+  {
+    \end{tabular}
+  }
+  {
+    \ifthenelse{\value{#2} = 0}%
+    {%
+      \begin{tabular}{#3}%
+        \hline %
+        \addtocounter{#2}{1}%
+
+        #4 \\ \hline%
+        \TableLoopInternal{#1}{#2}{#3}{#4}%
+    }%
+    {%
+      \ifthenelse{\value{#2} < #1}%
+      {%
+        \addtocounter{#2}{1}%
+
+        #4 \\ \hline%
+        \TableLoopInternal{#1}{#2}{#3}{#4}%
+      }%
+      {
+      }
+    }
+  }
+}%
+
+\newcommand{\TableLoop}[4]
+{
+  % #1: number of rows
+  % #2: counter of row, 1 up to rows
+  % #3: colum definitions
+  % #4: body of each row
+  \setcounter{#2}{0}
+  \TableLoopInternal{#1}{#2}{#3}{#4}
+}
 
 \newcommand{\AnswerTable}[1]
 {
@@ -162,28 +214,22 @@
   \newcommand{\QuestionFill}{}
 
   \newcounter{AnswerCounter}
-    \begin{tabular}{|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|}
-      %\endfirsthead
+  \begin{tabular}{|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|}
+    \hline
+    \ForLoop[5]{AnswerCounter}{1}{\value{AnswerCounter}<#1}{\arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill  & \arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill \\ \hline}
+  \end{tabular}
 
-      %\endhead
+  \TableLoop{4}{AnswerCounter}{|l|r|}{
+    hola & adios \arabic{AnswerCounter}
+  }
 
-      %\endfoot
-
-      %\endlastfoot
-
-      %\tiny{P} & \tiny{R} & \tiny{P} & \tiny{R} & \tiny{P} & \tiny{R} & \tiny{P} & \tiny{R} & \tiny{P} & \tiny{R} \\
-
-      \hline
-      \forloop[5]{AnswerCounter}{1}{\value{AnswerCounter}<#1}{\arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill  & \arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill \\ \hline}
-
-    \end{tabular}
-
-    \newpage
+  \newpage
 
 }
 
 
 \begin{document}
+
 
 \IndentOff
 
