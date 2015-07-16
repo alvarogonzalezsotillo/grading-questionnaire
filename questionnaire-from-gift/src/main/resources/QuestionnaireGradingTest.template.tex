@@ -9,7 +9,7 @@
 \usepackage[top=3cm,left=3cm,right=3cm,bottom=3cm,a4paper]{geometry}
 \usepackage{longtable}
 \usepackage[spanish]{babel}
-\usepackage{ifthen}
+\usepackage{forloop}
 
 
 \newcommand{\Width}{\textwidth}
@@ -150,43 +150,28 @@
   \\
 }
 
-\newcommand{\ForLoop}[5][1]%
-{%
-\setcounter{#2}{#3}%
-\ifthenelse{#4}%
-{%
-\addtocounter{#2}{#1}%
-#5%
-\ForLoop[#1]{#2}{\value{#2}}{#4}{#5}%
-}%
-{%
-}%
-}%
-
 \newcommand{\TableLoopInternal}[4]
 {%
-  \ifthenelse{\value{TableLoopCounter} = #1}
+  \ifthenelse{\value{#2} = \value{EndOfTableLoop}  \OR \value{#2} > \value{EndOfTableLoop} }
   {
       \addtocounter{#2}{1}%
       #4 \\ \hline%
     \end{tabular}
   }
   {
-    \ifthenelse{\value{TableLoopCounter} = 1}%
+    \ifthenelse{\value{#2} = 0}%
     {%
       \begin{tabular}{#3}%
         \hline %
         \addtocounter{#2}{1}%
-        \addtocounter{TableLoopCounter}{1}%
 
         #4 \\ \hline%
         \TableLoopInternal{#1}{#2}{#3}{#4}%
     }%
     {%
-      \ifthenelse{\value{TableLoopCounter} < #1}%
+      \ifthenelse{\value{#2} < \value{EndOfTableLoop}}%
       {%
         \addtocounter{#2}{1}%
-        \addtocounter{TableLoopCounter}{1}%
 
         #4 \\ \hline%
         \TableLoopInternal{#1}{#2}{#3}{#4}%
@@ -197,19 +182,22 @@
   }
 }%
 
+\newcounter{EndOfTableLoop}
 \newcommand{\TableLoop}[4]
 {
   % #1: number of rows
   % #2: counter of row, 1 up to rows
   % #3: colum definitions
   % #4: body of each row
-  \newcounter{TableLoopCounter}
-  \setcounter{TableLoopCounter}{1}
+
+  \setcounter{EndOfTableLoop}{#1}
+  \addtocounter{EndOfTableLoop}{-1}
   \setcounter{#2}{0}
   \TableLoopInternal{#1}{#2}{#3}{#4}
 }
 
-\newcommand{\AnswerTable}[1]
+
+\newcommand{\AnswerTableBis}[1]
 {
   \vspace{0.5cm}
 
@@ -219,27 +207,35 @@
   \newcommand{\QuestionFill}{}
 
   \newcounter{AnswerCounter}
-  \newcommand{\UseAndAvanceAnswerCounter}{\addtocounter{AnswerCounter}{1}\arabic{AnswerCounter}}
-  %\begin{tabular}{|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|}
-  %  \hline
-  %  \ForLoop[5]{AnswerCounter}{1}{\value{AnswerCounter}<#1}{\arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill  & \arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill \\ \hline}
-  %\end{tabular}
-
-  \TableLoop{#1}
-  {AnswerCounter}
-  {|r|r|}
-  { \arabic{AnswerCounter} & \QuestionFill }
-
+  \newcommand{\UseAnswerCounter}{\ifthenelse{\value{AnswerCounter}>#1}{}{\arabic{AnswerCounter}}}
+  \newcommand{\UseAndAvanceAnswerCounter}{\addtocounter{AnswerCounter}{1}\UseAnswerCounter}
 
   \TableLoop{#1}
   {AnswerCounter}
   {|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|}
-  {\arabic{AnswerCounter} & \QuestionFill & \UseAndAvanceAnswerCounter & \QuestionFill & \UseAndAvanceAnswerCounter & \QuestionFill  & \UseAndAvanceAnswerCounter & \QuestionFill & \UseAndAvanceAnswerCounter & \QuestionFill }
+  {
+    \UseAnswerCounter & \QuestionFill & \UseAndAvanceAnswerCounter & \QuestionFill & \UseAndAvanceAnswerCounter & \QuestionFill  & \UseAndAvanceAnswerCounter & \QuestionFill & \UseAndAvanceAnswerCounter & \QuestionFill
+  }
 
   \newpage
-
 }
 
+\newcommand{\AnswerTable}[1]
+{
+  \vspace{0.5cm}
+  \newcounter{AnswerTableC}
+  \begin{multicols}{5}
+    \forloop{AnswerTableC}{1}{\value{AnswerTableC}<#1 \OR \value{AnswerTableC}=#1}
+    {
+      \begin{tabular}{|p{0.5cm}|p{1.5cm}|}
+        \hline
+        \arabic{AnswerTableC} & \\
+        \hline
+      \end{tabular}
+    }
+  \end{multicols}
+  \newpage
+}
 
 \begin{document}
 
