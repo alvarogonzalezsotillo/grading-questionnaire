@@ -163,6 +163,46 @@
 }%
 }%
 
+\newcommand{\TableLoopInternal}[4]
+{%
+  \ifthenelse{\value{#2}=#1}
+  {
+        #4 \\ \hline%
+    \end{tabular}
+  }
+  {
+    \ifthenelse{\value{#2} = 0}%
+    {%
+      \begin{tabular}{#3}%
+        \hline %
+        \addtocounter{#2}{1}%
+
+        #4 \\ \hline%
+        \TableLoopInternal{#1}{#2}{#3}{#4}%
+    }%
+    {%
+      \ifthenelse{\value{#2} < #1}%
+      {%
+        \addtocounter{#2}{1}%
+
+        #4 \\ \hline%
+        \TableLoopInternal{#1}{#2}{#3}{#4}%
+      }%
+      {
+      }
+    }
+  }
+}%
+
+\newcommand{\TableLoop}[4]
+{
+  % #1: number of rows
+  % #2: counter of row, 1 up to rows
+  % #3: colum definitions
+  % #4: body of each row
+  \setcounter{#2}{0}
+  \TableLoopInternal{#1}{#2}{#3}{#4}
+}
 
 \newcommand{\AnswerTable}[1]
 {
@@ -179,6 +219,8 @@
     \ForLoop[5]{AnswerCounter}{1}{\value{AnswerCounter}<#1}{\arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill  & \arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill \\ \hline}
   \end{tabular}
 
+
+  \TableLoop{5}{AnswerCounter}{|c|r|}{ hola & \arabic{AnswerCount}}
 
   \newpage
 
