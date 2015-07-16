@@ -165,25 +165,28 @@
 
 \newcommand{\TableLoopInternal}[4]
 {%
-  \ifthenelse{\value{#2}=#1}
+  \ifthenelse{\value{TableLoopCounter} = #1}
   {
-        #4 \\ \hline%
+      \addtocounter{#2}{1}%
+      #4 \\ \hline%
     \end{tabular}
   }
   {
-    \ifthenelse{\value{#2} = 0}%
+    \ifthenelse{\value{TableLoopCounter} = 1}%
     {%
       \begin{tabular}{#3}%
         \hline %
         \addtocounter{#2}{1}%
+        \addtocounter{TableLoopCounter}{1}%
 
         #4 \\ \hline%
         \TableLoopInternal{#1}{#2}{#3}{#4}%
     }%
     {%
-      \ifthenelse{\value{#2} < #1}%
+      \ifthenelse{\value{TableLoopCounter} < #1}%
       {%
         \addtocounter{#2}{1}%
+        \addtocounter{TableLoopCounter}{1}%
 
         #4 \\ \hline%
         \TableLoopInternal{#1}{#2}{#3}{#4}%
@@ -200,6 +203,8 @@
   % #2: counter of row, 1 up to rows
   % #3: colum definitions
   % #4: body of each row
+  \newcounter{TableLoopCounter}
+  \setcounter{TableLoopCounter}{1}
   \setcounter{#2}{0}
   \TableLoopInternal{#1}{#2}{#3}{#4}
 }
@@ -214,13 +219,22 @@
   \newcommand{\QuestionFill}{}
 
   \newcounter{AnswerCounter}
-  \begin{tabular}{|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|}
-    \hline
-    \ForLoop[5]{AnswerCounter}{1}{\value{AnswerCounter}<#1}{\arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill  & \arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill \\ \hline}
-  \end{tabular}
+  \newcommand{\UseAndAvanceAnswerCounter}{\addtocounter{AnswerCounter}{1}\arabic{AnswerCounter}}
+  %\begin{tabular}{|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|}
+  %  \hline
+  %  \ForLoop[5]{AnswerCounter}{1}{\value{AnswerCounter}<#1}{\arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill  & \arabic{AnswerCounter} & \QuestionFill & \arabic{AnswerCounter} & \QuestionFill \\ \hline}
+  %\end{tabular}
+
+  \TableLoop{#1}
+  {AnswerCounter}
+  {|r|r|}
+  { \arabic{AnswerCounter} & \QuestionFill }
 
 
-  \TableLoop{5}{AnswerCounter}{|c|r|}{ hola & \arabic{AnswerCount}}
+  \TableLoop{#1}
+  {AnswerCounter}
+  {|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|}
+  {\arabic{AnswerCounter} & \QuestionFill & \UseAndAvanceAnswerCounter & \QuestionFill & \UseAndAvanceAnswerCounter & \QuestionFill  & \UseAndAvanceAnswerCounter & \QuestionFill & \UseAndAvanceAnswerCounter & \QuestionFill }
 
   \newpage
 
