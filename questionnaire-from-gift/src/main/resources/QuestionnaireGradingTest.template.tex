@@ -6,22 +6,35 @@
 \usepackage{enumitem}
 \usepackage{multicol}
 \usepackage{setspace}
-\usepackage[top=3cm,left=3cm,right=3cm,bottom=3cm,a4paper]{geometry}
+\usepackage[top=2.5cm,left=2.5cm,right=2.5cm,bottom=2.5cm,a4paper]{geometry}
 \usepackage{longtable}
 \usepackage[spanish]{babel}
 \usepackage{forloop}
+\usepackage{attachfile}
+\usepackage{currfile}
+\usepackage{fancyhdr} % Required for custom headers
+\usepackage{lastpage} % Required to determine the last page for the footer
+\usepackage{extramarks} % Required for headers and footers
+
+% Set up the header and footer
+\pagestyle{fancy}
+%\lhead{\hmwkAuthorName} % Top left header
+\lhead{\hmwkClass}
+\rhead{\hmwkTitle} % Top right header
+\chead{} % Top center head
+\lfoot{\scriptsize{\currfilename}} % Bottom left footer
+\cfoot{} % Bottom center footer
+\rfoot{ \scriptsize{\thepage\ / \protect\pageref{LastPage}}} % Bottom right footer
+\renewcommand\headrulewidth{0pt} % Size of the header rule
+\renewcommand\footrulewidth{0.4pt} % Size of the footer rule
 
 
 \newcommand{\Width}{\textwidth}
-\newcommand{\HalfWidth}{0.5\textwidth}
+\newcommand{\HalfWidth}{0.46\textwidth}
 \newcommand{\Height}{0.95\textheight}
 \newcommand{\HalfHeight}{0.45\textheight}
 
 
-\newcommand{\HalfHorizontalLine}
-{
-  \noindent\makebox[\linewidth]{\rule{\HalfWidth}{0.4pt}}
-}
 
 \newcommand{\HorizontalLine}
 {
@@ -38,7 +51,7 @@
 {
   \begin{small}
     \setlength{\columnsep}{1cm}
-    \begin{multicols}{2}
+    \noindent \begin{multicols}{2}
 }
 {
     \end{multicols}
@@ -132,11 +145,23 @@
 }
 
 \usepackage{fancybox}
-\newcommand{\StudentData}
+
+\newenvironment{ShadowBox}[1]
 {
   \newsavebox{\fmboxx}
   \begin{lrbox}{\fmboxx}
-    \begin{minipage}{\Width}
+    \begin{minipage}{#1}
+
+}
+{
+    \end{minipage}
+  \end{lrbox}
+  \shadowbox{\usebox{\fmboxx}}
+}
+
+\newcommand{\StudentData}
+{
+    \begin{ShadowBox}{\Width}
       \vspace{0.2cm}
       \large{
         \textbf{Nombre} \\
@@ -144,11 +169,18 @@
         \textbf{Fecha}
       }
       \vspace{0.2cm}
-    \end{minipage}
-  \end{lrbox}
-  \shadowbox{\usebox{\fmboxx}}
+    \end{ShadowBox}
   \\
 }
+
+
+\newcommand{\FileAutoref}[0]{
+	\attachfile[mimetype=text/plain,
+	            description={El fichero TEX original para crear este documento, no sea que se nos pierda},
+	            subject={El fichero TEX original para crear este documento, no sea que se nos pierda}]
+	  {\currfilename}
+}
+
 
 \newcommand{\TableLoopInternal}[4]
 {%
@@ -239,6 +271,7 @@
 
 \begin{document}
 
+%\FileAutoref
 
 \IndentOff
 
