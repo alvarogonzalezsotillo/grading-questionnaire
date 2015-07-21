@@ -29,6 +29,15 @@
 \renewcommand\footrulewidth{0.4pt} % Size of the footer rule
 
 
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=blue
+}
+
+
 \newcommand{\Width}{\textwidth}
 \newcommand{\HalfWidth}{0.46\textwidth}
 \newcommand{\Height}{0.95\textheight}
@@ -181,23 +190,23 @@
 	  {\currfilename}
 }
 
-
+\newcommand{\TableLoopHLine}{}
 \newcommand{\TableLoopInternal}[4]
 {%
   \ifthenelse{\value{#2} = \value{EndOfTableLoop}  \OR \value{#2} > \value{EndOfTableLoop} }
   {
       \addtocounter{#2}{1}%
-      #4 \\ \hline%
+      #4 \\ \TableLoopHLine%
     \end{tabular}
   }
   {
     \ifthenelse{\value{#2} = 0}%
     {%
       \begin{tabular}{#3}%
-        \hline %
+        \TableLoopHLine %
         \addtocounter{#2}{1}%
 
-        #4 \\ \hline%
+        #4 \\ \TableLoopHLine%
         \TableLoopInternal{#1}{#2}{#3}{#4}%
     }%
     {%
@@ -205,7 +214,7 @@
       {%
         \addtocounter{#2}{1}%
 
-        #4 \\ \hline%
+        #4 \\ \TableLoopHLine%
         \TableLoopInternal{#1}{#2}{#3}{#4}%
       }%
       {
@@ -229,30 +238,52 @@
 }
 
 
-\newcommand{\AnswerTableBis}[1]
+\newcommand{\HorizontalAnswerTable}[1]
 {
   \vspace{0.5cm}
 
   \setlength{\columnsep}{1cm}
 
-  \newcommand{\AnswerWidth}{1.8cm}
+  \newcommand{\AnswerWidth}{2.7cm}
   \newcommand{\QuestionFill}{}
 
   \newcounter{AnswerCounter}
   \newcommand{\UseAnswerCounter}{\ifthenelse{\value{AnswerCounter}>#1}{}{\arabic{AnswerCounter}}}
   \newcommand{\UseAndAvanceAnswerCounter}{\addtocounter{AnswerCounter}{1}\UseAnswerCounter}
 
-  \TableLoop{#1}
-  {AnswerCounter}
-  {|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|r|p{\AnswerWidth}|}
+  \newcommand{\AnswerCell}
   {
-    \UseAnswerCounter & \QuestionFill & \UseAndAvanceAnswerCounter & \QuestionFill & \UseAndAvanceAnswerCounter & \QuestionFill  & \UseAndAvanceAnswerCounter & \QuestionFill & \UseAndAvanceAnswerCounter & \QuestionFill
+    \ifthenelse{\value{AnswerCounter}>#1}
+    {}
+    {
+      \begin{tabular}{|p{0.5cm}|p{1.5cm}|}
+        \hline
+        \arabic{AnswerCounter} &  \\
+        \hline
+      \end{tabular}
+    }
   }
+
+  %\TableLoop{#1}
+  %{AnswerCounter}
+  %{ p{\AnswerWidth} p{\AnswerWidth} p{\AnswerWidth} p{\AnswerWidth} p{\AnswerWidth} }
+  %{
+  %  \AnswerCell \addtocounter{AnswerCounter}{1} & \AnswerCell \addtocounter{AnswerCounter}{1} & \AnswerCell \addtocounter{AnswerCounter}{1} & \AnswerCell \addtocounter{AnswerCounter}{1} & \AnswerCell
+  %}
+
+  \begin{tabular}{p{\AnswerWidth} p{\AnswerWidth} p{\AnswerWidth} p{\AnswerWidth} p{\AnswerWidth}}
+    \forloop[5]{AnswerCounter}{1}{\value{AnswerCounter}<#1 \OR \value{AnswerTableC}=#1}
+    {
+      \AnswerCell \addtocounter{AnswerCounter}{1} & \AnswerCell \addtocounter{AnswerCounter}{1} & \AnswerCell \addtocounter{AnswerCounter}{1} & \AnswerCell \addtocounter{AnswerCounter}{1} & \AnswerCell \\
+      \hline
+
+    }
+  \end{tabular}
 
   \newpage
 }
 
-\newcommand{\AnswerTable}[1]
+\newcommand{\VerticalAnswerTable}[1]
 {
   \vspace{0.5cm}
   \newcounter{AnswerTableC}
@@ -268,6 +299,8 @@
   \end{multicols}
   \newpage
 }
+
+\newcommand{\AnswerTable}[1]{\HorizontalAnswerTable{#1}\VerticalAnswerTable{#1}}
 
 \begin{document}
 
