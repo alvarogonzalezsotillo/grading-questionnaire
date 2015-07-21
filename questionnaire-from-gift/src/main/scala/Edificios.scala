@@ -31,10 +31,10 @@ object Edificios extends App{
       return 1.0
     }
 
-    val visiblesPorLaDerecha = contarEdificiosHastaQueLaAlturaSeaMayorQue(alturaEdificioPropio)
-    val visiblesPorLaIzquierda = contarEdificiosHastaQueLaAlturaSeaMayorQue(alturaEdificioPropio)
+    val visiblesPorLaDerecha = contarEdificiosHastaQueLaAlturaSeaMayorQue(alturaEdificioPropio) ensuring (_ >= 1)
+    val visiblesPorLaIzquierda = contarEdificiosHastaQueLaAlturaSeaMayorQue(alturaEdificioPropio) ensuring (_ >= 1)
 
-    probabilidadDeVerLosDosColores(visiblesPorLaDerecha + 1 + visiblesPorLaIzquierda)
+    probabilidadDeVerLosDosColores(visiblesPorLaDerecha + 1 + visiblesPorLaIzquierda) ensuring ( r => r >= 0 && r <= 1 )
   }
 
   def experimento( veces: Int)(implicit alturaMaxima: Altura ) = {
