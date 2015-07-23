@@ -15,40 +15,24 @@ object Edificios extends App{
 
   def colorAleatorio() = Random.nextInt(2)
 
-  def vemosLosDosColores( edificios: Int ) = {
-    val primerColor = colorAleatorio()
-    val diferente = (1 to edificios-1).find( _ => colorAleatorio() != primerColor )
-    diferente.nonEmpty
-  }
-
-  def probabilidadDeVerLosDosColoresConExperimentos( veces: Int = 100 )( edificios: Int) = {
-    ( 1 to veces ).map( _ => vemosLosDosColores(edificios) ).count( b => b ).toDouble / veces
-  }
 
   def probabilidadDeQueSeanDelMismoColor( edificios: Int ) = 1.0/pow(2,edificios-1)
 
-  def probabilidadDeVerLosDosColoresConMatematicas( edificios: Int ) = 1 - probabilidadDeQueSeanDelMismoColor(edificios)
-
-  val probabilidadDeVerLosDosColores = probabilidadDeVerLosDosColoresConMatematicas _
+  def probabilidadDeVerLosDosColores( edificios: Int ) = 1 - probabilidadDeQueSeanDelMismoColor(edificios)
 
   def alturaAleatoria( implicit max: Altura ) = Random.nextInt(max+1)
 
   def alturasAleatorias(implicit max: Altura ) = Iterator.continually(alturaAleatoria(max))
 
-  def contarEdificiosHastaQueLaAlturaSeaMayorQue( alturaInicial: Int)(implicit alturaMaxima: Altura  ) = {
+  def contarEdificiosHastaQueLaAlturaSeaMayorOIgualQue( alturaInicial: Int)(implicit alturaMaxima: Altura  ) = {
     alturasAleatorias.indexWhere( _ >= alturaInicial ) + 1
   }
 
   def unExperimento( implicit alturaMaxima: Altura ) : Double = {
     val alturaEdificioPropio = alturaAleatoria
 
-    if( alturaEdificioPropio == alturaMaxima.altura ){
-      // SI ES LA ALTURA MAXIMA, SEGURO QUE VEMOS TODOS LOS INFINITOS EDIFICIOS
-      return 1.0
-    }
-
-    val visiblesPorLaDerecha = contarEdificiosHastaQueLaAlturaSeaMayorQue(alturaEdificioPropio) ensuring (_ >= 1)
-    val visiblesPorLaIzquierda = contarEdificiosHastaQueLaAlturaSeaMayorQue(alturaEdificioPropio) ensuring (_ >= 1)
+    val visiblesPorLaDerecha = contarEdificiosHastaQueLaAlturaSeaMayorOIgualQue(alturaEdificioPropio) ensuring (_ >= 1)
+    val visiblesPorLaIzquierda = contarEdificiosHastaQueLaAlturaSeaMayorOIgualQue(alturaEdificioPropio) ensuring (_ >= 1)
 
     probabilidadDeVerLosDosColores(visiblesPorLaDerecha + visiblesPorLaIzquierda) ensuring ( r => r >= 0 && r <= 1 )
   }
@@ -58,7 +42,7 @@ object Edificios extends App{
   }
 
 
-  val veces = 100000
+  val veces = 10000000
   for( a <- 1 to 200 ) {
     print( s"altura máxima:$a\t resultado:${experimento(veces)(Altura(a))}\n" )
   }

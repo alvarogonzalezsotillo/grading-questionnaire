@@ -12,6 +12,8 @@
 \usepackage{forloop}
 \usepackage{attachfile}
 \usepackage{currfile}
+\usepackage{color}
+\usepackage{colortbl}
 \usepackage{fancyhdr} % Required for custom headers
 \usepackage{lastpage} % Required to determine the last page for the footer
 \usepackage{extramarks} % Required for headers and footers
@@ -155,17 +157,18 @@
 
 \usepackage{fancybox}
 
-\newenvironment{ShadowBox}[1]
+\newenvironment{ShadowBox}[2][0.04cm]
 {
+  \fboxrule=#1
   \newsavebox{\fmboxx}
   \begin{lrbox}{\fmboxx}
-    \begin{minipage}{#1}
+    \begin{minipage}{#2}
 
 }
 {
     \end{minipage}
   \end{lrbox}
-  \shadowbox{\usebox{\fmboxx}}
+  \fbox{\usebox{\fmboxx}}
 }
 
 \newcommand{\StudentData}
@@ -223,7 +226,6 @@
   }
 }%
 
-\newcounter{EndOfTableLoop}
 \newcommand{\TableLoop}[4]
 {
   % #1: number of rows
@@ -231,6 +233,7 @@
   % #3: colum definitions
   % #4: body of each row
 
+  \newcounter{EndOfTableLoop}
   \setcounter{EndOfTableLoop}{#1}
   \addtocounter{EndOfTableLoop}{-1}
   \setcounter{#2}{0}
@@ -242,43 +245,38 @@
 {
   \vspace{0.5cm}
 
-  \setlength{\columnsep}{1cm}
-
-  \newcommand{\AnswerWidth}{2.7cm}
-  \newcommand{\QuestionFill}{}
-
+  \newcounter{AnswerTableC}
+  \setcounter{AnswerTableC}{1}
   \newcounter{AnswerCounter}
-  \newcommand{\UseAnswerCounter}{\ifthenelse{\value{AnswerCounter}>#1}{}{\arabic{AnswerCounter}}}
-  \newcommand{\UseAndAvanceAnswerCounter}{\addtocounter{AnswerCounter}{1}\UseAnswerCounter}
+
 
   \newcommand{\AnswerCell}
   {
-    \ifthenelse{\value{AnswerCounter}>#1}
-    {}
+    \ifthenelse{\value{AnswerTableC}>#1}
+    {
+      \begin{tabular}{p{0.5cm}p{1.5cm}}
+         &  \\
+      \end{tabular}
+    }
     {
       \begin{tabular}{|p{0.5cm}|p{1.5cm}|}
         \hline
-        \arabic{AnswerCounter} &  \\
+        \cellcolor{black}\textcolor{white}{\textbf{\arabic{AnswerTableC}}} &  \\
         \hline
       \end{tabular}
     }
+    \hspace{0.3mm}
+    \addtocounter{AnswerTableC}{1}
   }
 
-  %\TableLoop{#1}
-  %{AnswerCounter}
-  %{ p{\AnswerWidth} p{\AnswerWidth} p{\AnswerWidth} p{\AnswerWidth} p{\AnswerWidth} }
-  %{
-  %  \AnswerCell \addtocounter{AnswerCounter}{1} & \AnswerCell \addtocounter{AnswerCounter}{1} & \AnswerCell \addtocounter{AnswerCounter}{1} & \AnswerCell \addtocounter{AnswerCounter}{1} & \AnswerCell
-  %}
-
-  \begin{tabular}{p{\AnswerWidth} p{\AnswerWidth} p{\AnswerWidth} p{\AnswerWidth} p{\AnswerWidth}}
-    \forloop[5]{AnswerCounter}{1}{\value{AnswerCounter}<#1 \OR \value{AnswerTableC}=#1}
-    {
-      \AnswerCell \addtocounter{AnswerCounter}{1} & \AnswerCell \addtocounter{AnswerCounter}{1} & \AnswerCell \addtocounter{AnswerCounter}{1} & \AnswerCell \addtocounter{AnswerCounter}{1} & \AnswerCell \\
-      \hline
-
-    }
-  \end{tabular}
+  \forloop[5]{AnswerCounter}{1}{\value{AnswerTableC}<#1 \OR \value{AnswerTableC}=#1}
+  {
+    \AnswerCell
+    \AnswerCell
+    \AnswerCell
+    \AnswerCell
+    \AnswerCell
+  }
 
   \newpage
 }
@@ -292,7 +290,7 @@
     {
       \begin{tabular}{|p{0.5cm}|p{1.5cm}|}
         \hline
-        \arabic{AnswerTableC} & \\
+        \cellcolor{black}\textcolor{white}{\textbf{\arabic{AnswerTableC}}} & \\
         \hline
       \end{tabular}
     }
@@ -300,7 +298,12 @@
   \newpage
 }
 
-\newcommand{\AnswerTable}[1]{\HorizontalAnswerTable{#1}\VerticalAnswerTable{#1}}
+\newcommand{\AnswerTable}[1]{
+  \begin{ShadowBox}[0.2cm]{\Width}
+    \VerticalAnswerTable{#1}
+  \end{ShadowBox}
+  \HorizontalAnswerTable{#1}
+}
 
 \begin{document}
 
