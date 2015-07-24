@@ -35,7 +35,7 @@ class GiftToLatexTest extends FlatSpec {
 
   "latex compile" should "work with a generated file" in {
 
-    val s = generateGift(39,4)
+    val s = generateGift(300,10)
     val f = Util.createFile(renderGift(s), new File("generated.gift"))
 
     val ret = GiftParser.parse(f)

@@ -6,7 +6,7 @@
 \usepackage{enumitem}
 \usepackage{multicol}
 \usepackage{setspace}
-\usepackage[top=2.5cm,left=2.5cm,right=2.5cm,bottom=2.5cm,a4paper]{geometry}
+\usepackage[top=2.0cm,left=2.2cm,right=2.2cm,bottom=2.2cm,a4paper]{geometry}
 \usepackage{longtable}
 \usepackage[spanish]{babel}
 \usepackage{forloop}
@@ -20,9 +20,8 @@
 
 % Set up the header and footer
 \pagestyle{fancy}
-%\lhead{\hmwkAuthorName} % Top left header
-\lhead{\hmwkClass}
-\rhead{\hmwkTitle} % Top right header
+\lhead{} % Top left header
+\rhead{} % Top right header
 \chead{} % Top center head
 \lfoot{\scriptsize{\currfilename}} % Bottom left footer
 \cfoot{} % Bottom center footer
@@ -32,11 +31,11 @@
 
 
 \hypersetup{
-    colorlinks,
-    citecolor=black,
-    filecolor=black,
-    linkcolor=black,
-    urlcolor=blue
+  colorlinks,
+  citecolor=black,
+  filecolor=black,
+  linkcolor=black,
+  urlcolor=blue
 }
 
 
@@ -173,71 +172,24 @@
 
 \newcommand{\StudentData}
 {
-    \begin{ShadowBox}{\Width}
-      \vspace{0.2cm}
-      \large{
-        \textbf{Nombre} \\
-        \textbf{Grupo} \\
-        \textbf{Fecha}
-      }
-      \vspace{0.2cm}
-    \end{ShadowBox}
+  \begin{ShadowBox}{\Width}
+    \vspace{0.3cm}
+    \large{
+      \textbf{Nombre} \hrulefill \\
+      \textbf{Grupo} \hrulefill \\
+      \textbf{Fecha} \hrulefill \\
+    }
+    %\vspace{0.2cm}
+  \end{ShadowBox}
   \\
 }
 
 
 \newcommand{\FileAutoref}[0]{
-	\attachfile[mimetype=text/plain,
-	            description={El fichero TEX original para crear este documento, no sea que se nos pierda},
-	            subject={El fichero TEX original para crear este documento, no sea que se nos pierda}]
-	  {\currfilename}
-}
-
-\newcommand{\TableLoopHLine}{}
-\newcommand{\TableLoopInternal}[4]
-{%
-  \ifthenelse{\value{#2} = \value{EndOfTableLoop}  \OR \value{#2} > \value{EndOfTableLoop} }
-  {
-      \addtocounter{#2}{1}%
-      #4 \\ \TableLoopHLine%
-    \end{tabular}
-  }
-  {
-    \ifthenelse{\value{#2} = 0}%
-    {%
-      \begin{tabular}{#3}%
-        \TableLoopHLine %
-        \addtocounter{#2}{1}%
-
-        #4 \\ \TableLoopHLine%
-        \TableLoopInternal{#1}{#2}{#3}{#4}%
-    }%
-    {%
-      \ifthenelse{\value{#2} < \value{EndOfTableLoop}}%
-      {%
-        \addtocounter{#2}{1}%
-
-        #4 \\ \TableLoopHLine%
-        \TableLoopInternal{#1}{#2}{#3}{#4}%
-      }%
-      {
-      }
-    }
-  }
-}%
-
-\newcommand{\TableLoop}[4]
-{
-  % #1: number of rows
-  % #2: counter of row, 1 up to rows
-  % #3: colum definitions
-  % #4: body of each row
-
-  \newcounter{EndOfTableLoop}
-  \setcounter{EndOfTableLoop}{#1}
-  \addtocounter{EndOfTableLoop}{-1}
-  \setcounter{#2}{0}
-  \TableLoopInternal{#1}{#2}{#3}{#4}
+  \attachfile[mimetype=text/plain,
+            description={El fichero TEX original para crear este documento, no sea que se nos pierda},
+            subject={El fichero TEX original para crear este documento, no sea que se nos pierda}]
+    {\currfilename}
 }
 
 
@@ -247,7 +199,7 @@
 
   \newcounter{AnswerTableC}
   \setcounter{AnswerTableC}{1}
-  \newcounter{AnswerCounter}
+  \newcounter{DummyAnswerCounter}
 
 
   \newcommand{\AnswerCell}
@@ -257,19 +209,20 @@
       \begin{tabular}{p{0.5cm}p{1.5cm}}
          &  \\
       \end{tabular}
+      \hspace{0.4pt}
     }
     {
-      \begin{tabular}{|p{0.5cm}|p{1.5cm}|}
+      \begin{tabular}{|p{0.6cm}|p{1.4cm}|}
         \hline
-        \cellcolor{black}\textcolor{white}{\textbf{\arabic{AnswerTableC}}} &  \\
+        \cellcolor{black}\textcolor{white}{{\hfill\arabic{AnswerTableC}}} &  \\
         \hline
       \end{tabular}
     }
-    \hspace{0.3mm}
+    \hspace{0.2mm}
     \addtocounter{AnswerTableC}{1}
   }
 
-  \forloop[5]{AnswerCounter}{1}{\value{AnswerTableC}<#1 \OR \value{AnswerTableC}=#1}
+  \forloop[5]{DummyAnswerCounter}{1}{\value{DummyAnswerCounter}<#1}
   {
     \AnswerCell
     \AnswerCell
@@ -288,9 +241,9 @@
   \begin{multicols}{5}
     \forloop{AnswerTableC}{1}{\value{AnswerTableC}<#1 \OR \value{AnswerTableC}=#1}
     {
-      \begin{tabular}{|p{0.5cm}|p{1.5cm}|}
+      \begin{tabular}{|p{0.6cm}|p{1.4cm}|}
         \hline
-        \cellcolor{black}\textcolor{white}{\textbf{\arabic{AnswerTableC}}} & \\
+        \cellcolor{black}\textcolor{white}{\hfill\arabic{AnswerTableC}} & \\
         \hline
       \end{tabular}
     }
@@ -299,9 +252,7 @@
 }
 
 \newcommand{\AnswerTable}[1]{
-  \begin{ShadowBox}[0.2cm]{\Width}
-    \VerticalAnswerTable{#1}
-  \end{ShadowBox}
+  %\VerticalAnswerTable{#1}
   \HorizontalAnswerTable{#1}
 }
 
