@@ -35,7 +35,7 @@ class GiftToLatexTest extends FlatSpec {
 
   "latex compile" should "work with a generated file" in {
 
-    val s = generateGift(300,10)
+    val s = generateGift(38,5)
     val f = Util.createFile(renderGift(s), new File("generated.gift"))
 
     val ret = GiftParser.parse(f)
@@ -76,23 +76,24 @@ class GiftToLatexTest extends FlatSpec {
     }
   }
 
-  "A generated file" should "parse" in {
-
-    val s = TestGiftGenerator.generateGift(40,4)
-    val f = createFile(renderGift(s), new File("generated.gift"))
-
-    val ret = GiftParser.parse(f)
-
-    ret match {
-      case GiftError(msg, line, column, lineContents) =>
-        fail(msg)
-
-      case g: GiftFile =>
-        assert(g.openQuestions.size == 4)
-        assert(g.questionnaireQuestions.size == 40)
-
-    }
+  "An image in html" should "translate to latex" in {
+    val html = """a question <img src="image.jpg"> and some text """
+    val tex = GiftToLatex.translateImagesToLatex(html)
+    assert( tex == """a question \includegraphics{image.jpg} and some text """ )
   }
+
+  "Some images in html" should "translate to latex" in {
+    val html = """a question <img src="image.jpg"> and some text <img src="image2.jpg"> """
+    val tex = GiftToLatex.translateImagesToLatex(html)
+    assert( tex == """a question \includegraphics{image.jpg} and some text \includegraphics{image2.jpg} """ )
+  }
+
+  "Some images in html (quoted or not)" should "translate to latex" in {
+    val html = """a question <img src="image.jpg"> and some text <img src="image2.jpg"> and another image <img src=image3.jpg> more """
+    val tex = GiftToLatex.translateImagesToLatex(html)
+    assert( tex == """a question \includegraphics{image.jpg} and some text \includegraphics{image2.jpg} and another image \includegraphics{image3.jpg} more """ )
+  }
+
 
 }
 

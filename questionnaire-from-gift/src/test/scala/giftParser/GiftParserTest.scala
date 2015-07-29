@@ -4,6 +4,8 @@ import java.io.File
 
 import giftParser.GiftParser.GiftFile._
 import giftParser.GiftParser._
+import giftParser.TestGiftGenerator._
+import giftParser.Util._
 import org.junit.runner.RunWith
 import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner
@@ -33,6 +35,7 @@ class GiftParserTest extends FlatSpec {
 
   "Single open question" should "parse" in {
     val ret = GiftParser.parse(singleOpenQuestion)
+    println( ret )
     assert(ret.successful)
     val giftFile = ret.questions
     assert(giftFile(0).isInstanceOf[OpenQuestion])
@@ -111,5 +114,22 @@ class GiftParserTest extends FlatSpec {
     }
   }
 
+  "A generated file" should "parse" in {
+
+    val s = TestGiftGenerator.generateGift(40,4)
+    val f = createFile(renderGift(s), new File("generated.gift"))
+
+    val ret = GiftParser.parse(f)
+
+    ret match {
+      case GiftError(msg, line, column, lineContents) =>
+        fail(msg)
+
+      case g: GiftFile =>
+        assert(g.openQuestions.size == 4)
+        assert(g.questionnaireQuestions.size == 40)
+
+    }
+  }
 
 }

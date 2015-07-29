@@ -29,6 +29,7 @@
 \renewcommand\headrulewidth{0pt} % Size of the header rule
 \renewcommand\footrulewidth{0.4pt} % Size of the footer rule
 
+\includeimagepath{${ImagePath}}
 
 \hypersetup{
   colorlinks,
@@ -87,7 +88,7 @@
   \item #1
 }
 
-\newenvironment{OpenQuestion}
+\newenvironment{HalfPageOpenQuestion}
 {
 
   \begin{minipage}[t][\HalfHeight][t]{\Width}
@@ -206,10 +207,11 @@
   {
     \ifthenelse{\value{AnswerTableC}>#1}
     {
-      \begin{tabular}{p{0.5cm}p{1.5cm}}
-         &  \\
+      \begin{tabular}{ | p{0.6cm} | p{1.4cm} | }
+      \hline
+          &  \\
+      \hline
       \end{tabular}
-      \hspace{0.4pt}
     }
     {
       \begin{tabular}{|p{0.6cm}|p{1.4cm}|}
@@ -218,7 +220,7 @@
         \hline
       \end{tabular}
     }
-    \hspace{0.2mm}
+    \hspace{0mm}
     \addtocounter{AnswerTableC}{1}
   }
 
@@ -229,7 +231,9 @@
     \AnswerCell
     \AnswerCell
     \AnswerCell
+
   }
+
 
   \newpage
 }

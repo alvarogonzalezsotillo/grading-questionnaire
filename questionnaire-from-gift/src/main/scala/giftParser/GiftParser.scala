@@ -20,24 +20,25 @@ class GiftParser extends JavaTokenParsers {
   def indent: Parser[String] = """\s*""".r
 
   // ONLY ~ OR =
-  def startOfAnswer: Parser[String] = "~" | "=" | failure("~ or = expected")
+  def startOfAnswer: Parser[String] = "~" | "="  | failure("~ or = expected")
 
   // ANY CHARACTERS, NOT INCLUDING THE FIRST }, ~ OR =
-  def answerBody: Parser[String] = """[^\}~=]*""".r | failure("}, = or ~ expected")
+  // Note: }, ~ and = can be escaped as \}, \~ and \=
+  def answerBody: Parser[String] = """(\\=|\\\}|\\~|\\=|[^\\\}~=])*""".r | failure("}, = or ~ expected")
 
   // ANY CHARACTERS, NOT INCLUDING THE FIRST {
   def questionText: Parser[String] = """[^\{]*""".r | failure("{ expected")
 
   // AN ANSWER CAN BE INDENTED, HAS A START AND A BODY
   def answer: Parser[Answer] = indent ~> startOfAnswer ~ answerBody ^^ {
-    case "=" ~ b => Answer(b.trim, true)
-    case "~" ~ b => Answer(b.trim, false)
+    case "=" ~ b => Answer(unescape(b.trim), true)
+    case "~" ~ b => Answer(unescape(b.trim), false)
   } | failure("An answer starts with = or ~")
 
   // A QUESTION HAS A TEXT, AND MAYBE SOME ANSWERS
   def question: Parser[Question] = (questionText <~ "{") ~ (rep(answer) <~ "}") ^^ {
-    case t ~ Nil => OpenQuestion(t.trim)
-    case t ~ a => QuestionnaireQuestion(t.trim, a)
+    case t ~ Nil => OpenQuestion(unescape(t.trim))
+    case t ~ a => QuestionnaireQuestion(unescape(t.trim), a)
   } | failure("A question has some text, and maybe some answers surrounded by {}");
 
   // A QUESTIONNAIRE IS COMPOSED OF SEVERAL QUESTIONS
@@ -57,11 +58,17 @@ object GiftParser {
 
   object GiftFile {
 
+    def unescape( s: String ) = {
+      val escaped = Seq( "{", "}", "=", ":", "~" )
+      escaped.fold(s)( (ret,esc) => ret.replaceAll( """\\""" + esc, esc) )
+    }
+
     case class Answer(text: String, correct: Boolean)
+
 
     trait Question {
       val text: String
-
+      val hasImages = GiftToLatex.hasHtmlImages(text)
       def shuffle = this
     }
 
@@ -78,7 +85,9 @@ object GiftParser {
           super.equals(o)
       }
 
-      assert( answers.count( _.correct) == 1, s"Incorrect number of correct answers:$text" )
+      override def toString = text + answers.mkString("[","|","]")
+
+      assert( answers.count( _.correct) == 1, s"Incorrect number of correct answers:$this" )
     }
 
     def apply(questions: Questions) = new GiftFile(questions)
