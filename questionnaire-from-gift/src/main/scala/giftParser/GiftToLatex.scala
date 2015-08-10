@@ -6,6 +6,7 @@ import giftParser.GiftParser.GiftFile._
 import giftParser.GiftParser._
 
 import scala.util.Random
+import scala.util.parsing.combinator.RegexParsers
 
 /**
  * Created by alvaro on 18/06/15.
@@ -13,7 +14,36 @@ import scala.util.Random
 object GiftToLatex {
 
 
-  private object charsToLatex extends ((Char) => String) {
+  object GiftHTMLParser extends RegexParsers {
+
+    trait Chunk{
+      val text: String
+      val toLatex : String
+    }
+
+    case class TextChunk( text: String ) extends Chunk{
+      lazy val toLatex = charToLatex.escapeLatex(text)
+    }
+    case class HTMLChunk( text: String ) extends Chunk{
+      lazy val toLatex = translateImagesToLatex(text)
+    }
+
+    def textChunk : Parser[TextChunk] = "[^<]+".r ^^ {
+      case s => TextChunk(s)
+    }
+
+    def htmlChunk : Parser[HTMLChunk] = "<(.*?)>".r ^^ {
+      case s => HTMLChunk(s)
+    }
+
+    def chunk : Parser[Chunk] = htmlChunk | textChunk
+
+    // THE TEXT HAS SOME TEXTS IN PLAIN UTF8 AND SOME HTML TEXT
+    def chunks: Parser[List[Chunk]] = rep(chunk)
+  }
+
+
+  private object charToLatex extends ((Char) => String) {
 
     private val charsToLatexMap = Map(
       '\n' -> """\\""",
@@ -43,27 +73,51 @@ object GiftToLatex {
       case c => charsToLatexMap(c)
 
     }
+
+    def escapeLatex(s: String) = s.map(charToLatex).mkString
+
   }
 
-  private def escapeLatex(s: String) = s.map(charsToLatex).mkString
+  private def escapeLatex(s: String) = charToLatex.escapeLatex(s)
 
-  private val htmlImgRexs = Seq( """(?i)<img src="(.*?)">""", """(?i)<img src=(.*?)>""" )
+  private val htmlImgRexs = Seq( """(?i)<img src="(.*?)">""", """(?i)<img src=(.*?)>""")
 
-  def hasHtmlImages( s: String ) = htmlImgRexs.contains( s.matches(_) )
+  def hasHtmlImages(s: String) = htmlImgRexs.contains(s.matches(_))
 
-  def translateImagesToLatex( s: String ) =  htmlImgRexs.fold(s)( (ret,rex) => ret.replaceAll( rex, """\\includegraphics{$1}""" ) )
+  def translateImagesToLatex(s: String) = htmlImgRexs.fold(s)((ret, rex) => ret.replaceAll(rex, """\\\\ \\includegraphics{$1}"""))
 
-  private def translateHtmlToTex( s: String ) = escapeLatex( translateImagesToLatex(s) )
+  private def translateHtmlToTex(s: String) = {
+
+    val chunks = GiftHTMLParser.parseAll(GiftHTMLParser.chunks, s).getOrElse( List(GiftHTMLParser.TextChunk("Error parsing:" + s)) )
+    val ret = chunks.map(_.toLatex).mkString
+
+    if (s contains "<img") {
+      println(s"$s --> $ret")
+    }
+    ret
+  }
 
   private def generateQuestionLatex(q: Question): String = q match {
     case OpenQuestion(text) =>
-      val typeOfQuestion = if( q.hasImages ) "FullPageOpenQuestion" else "HalfPageOpenQuestion"
-      s"\\begin{${typeOfQuestion}}\n  ${translateHtmlToTex(text)}\n\\end{${typeOfQuestion}}"
+      val typeOfQuestion = if (q.hasImages) "FullPageOpenQuestion" else "HalfPageOpenQuestion"
+      s"\\begin{${
+        typeOfQuestion
+      }}\n  ${
+        translateHtmlToTex(text)
+      }\n\\end{${
+        typeOfQuestion
+      }}"
 
     case QuestionnaireQuestion(text, answers) =>
-      val sa = answers.map { a => s"    \\item ${translateHtmlToTex(a.text)}"}.mkString("\n")
+      val sa = answers.map {
+        a => s"    \\item ${
+          translateHtmlToTex(a.text)
+        }"
+      }.mkString("\n")
 
-      val begin = s"  \\begin{QuestionnaireQuestion}[${translateHtmlToTex(text)}]\n"
+      val begin = s"  \\begin{QuestionnaireQuestion}[${
+        translateHtmlToTex(text)
+      }]\n"
       val end = "\n  \\end{QuestionnaireQuestion}"
 
       begin + sa + end
@@ -77,8 +131,9 @@ object GiftToLatex {
   }
 
   private def generateLatexSolutionForSolution(g: GiftFile) = {
-    val indexes = g.questions.filter(_.isInstanceOf[QuestionnaireQuestion]).map { case QuestionnaireQuestion(_, answers) =>
-      answers.indexWhere(_.correct)
+    val indexes = g.questions.filter(_.isInstanceOf[QuestionnaireQuestion]).map {
+      case QuestionnaireQuestion(_, answers) =>
+        answers.indexWhere(_.correct)
     }
 
     val options = indexes.map(i => (i.toChar + 'a').toChar)
@@ -110,7 +165,9 @@ object GiftToLatex {
 
   def generateLatex(f: GiftFile, imagePath: Seq[String], questionnaireQuestionsWeight: Int = 60, openQuestionsWeight: Int = 40): String = {
     val instructions = s"\\Instructions{$questionnaireQuestionsWeight}{$openQuestionsWeight}"
-    val answerTable = s"\\AnswerTable{${f.questionnaireQuestions.size}}"
+    val answerTable = s"\\AnswerTable{${
+      f.questionnaireQuestions.size
+    }}"
     val questions = generateLatexForQuestions(f)
     val solutions = generateLatexSolutionForSolution(f)
     val generatedContent = List(instructions, answerTable, questions, solutions).mkString("\n")
@@ -118,7 +175,7 @@ object GiftToLatex {
 
     latexTemplate
       .replace("${GeneratedContent}", generatedContent)
-      .replace("${ImagePath}", imagePath.map( i => s"{$i}" ).mkString )
+      .replace("${ImagePath}", imagePath.map(i => s"{$i}").mkString)
 
   }
 

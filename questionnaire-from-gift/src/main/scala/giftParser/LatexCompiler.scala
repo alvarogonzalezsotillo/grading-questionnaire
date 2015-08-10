@@ -3,7 +3,7 @@ package giftParser
 import java.io.{FileWriter, File}
 import java.nio.file.Path
 
-import scala.sys.process.{ProcessBuilder, Process}
+import scala.sys.process.{ProcessIO, ProcessBuilder, Process}
 
 /**
  * Created by alvaro on 4/07/15.
@@ -18,7 +18,8 @@ object LatexCompiler{
     val fileName = f.getName
     val quotes = '\"'
     val cmd = s"pdflatex  --shell-escape -synctex=1 -interaction=nonstopmode $quotes$fileName$quotes"
-    Process( cmd, f.getParentFile).run()
+    val io = new ProcessIO( _ => (), _ => (), _ => () )
+    Process( cmd, f.getParentFile).run(io)
   }
 
   private def move(src: File, dst: File){

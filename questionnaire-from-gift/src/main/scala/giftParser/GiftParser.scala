@@ -11,7 +11,7 @@ import scala.util.parsing.combinator._
 
 // SEE https://docs.moodle.org/23/en/GIFT_format
 // NOT SUPPORTED: missing word, matching, title, feedback, numerics
-class GiftParser extends JavaTokenParsers {
+class GiftParser extends RegexParsers {
 
   import GiftParser._
   import GiftParser.GiftFile._
@@ -31,14 +31,14 @@ class GiftParser extends JavaTokenParsers {
 
   // AN ANSWER CAN BE INDENTED, HAS A START AND A BODY
   def answer: Parser[Answer] = indent ~> startOfAnswer ~ answerBody ^^ {
-    case "=" ~ b => Answer(unescape(b.trim), true)
-    case "~" ~ b => Answer(unescape(b.trim), false)
+    case "=" ~ b => Answer(unescapeGiftText(b.trim), true)
+    case "~" ~ b => Answer(unescapeGiftText(b.trim), false)
   } | failure("An answer starts with = or ~")
 
   // A QUESTION HAS A TEXT, AND MAYBE SOME ANSWERS
   def question: Parser[Question] = (questionText <~ "{") ~ (rep(answer) <~ "}") ^^ {
-    case t ~ Nil => OpenQuestion(unescape(t.trim))
-    case t ~ a => QuestionnaireQuestion(unescape(t.trim), a)
+    case t ~ Nil => OpenQuestion(unescapeGiftText(t.trim))
+    case t ~ a => QuestionnaireQuestion(unescapeGiftText(t.trim), a)
   } | failure("A question has some text, and maybe some answers surrounded by {}");
 
   // A QUESTIONNAIRE IS COMPOSED OF SEVERAL QUESTIONS
@@ -58,13 +58,16 @@ object GiftParser {
 
   object GiftFile {
 
-    def unescape( s: String ) = {
-      val escaped = Seq( "{", "}", "=", ":", "~" )
-      escaped.fold(s)( (ret,esc) => ret.replaceAll( """\\""" + esc, esc) )
+
+    def unescapeGiftText( s: String ) = {
+      val escaped = Map( "\\{" -> "{", "\\}" -> "}", "=" -> "=", ":" -> ":", "~" -> "~" )
+      escaped.foldLeft(s)( (ret,esc) => ret.replaceAll( """\\""" + esc._1, esc._2) )
     }
 
-    case class Answer(text: String, correct: Boolean)
 
+
+
+    case class Answer(text: String, correct: Boolean)
 
     trait Question {
       val text: String
@@ -133,6 +136,7 @@ object GiftParser {
     case parser.Success(_, _) => GiftFile(ret.get).reorder()
     case parser.Error(msg, next) => GiftError(msg, next.pos.line, next.pos.column, next.pos.longString.takeWhile(_ != '\n'))
     case parser.Failure(msg, next) => GiftError(msg, next.pos.line, next.pos.column, next.pos.longString.takeWhile(_ != '\n'))
+    case _ => throw new IllegalStateException()
   }
 
   def parse(s: String) = {

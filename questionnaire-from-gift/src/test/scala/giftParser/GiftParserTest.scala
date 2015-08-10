@@ -19,6 +19,7 @@ import scala.util.Try
 @RunWith(classOf[JUnitRunner])
 class GiftParserTest extends FlatSpec {
 
+
   "Empty file" should "have no questions" in {
     val s = ""
     val ret = GiftParser.parse(s)
