@@ -177,7 +177,7 @@ object GiftToLatex {
 
     latexTemplate
       .replace("${GeneratedContent}", generatedContent)
-      .replace("${ImagePath}", imagePath.map(toImagePath).mkString)
+      .replace("${ImagePath}", imagePath.map(toImagePath).mkString(","))
 
   }
 
