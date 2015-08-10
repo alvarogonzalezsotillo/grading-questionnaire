@@ -5,6 +5,7 @@ import java.io.{InputStream, ByteArrayOutputStream, File}
 import giftParser.GiftParser.GiftFile._
 import giftParser.GiftParser._
 
+import scala.sys.process.Process
 import scala.util.Random
 import scala.util.parsing.combinator.RegexParsers
 
@@ -91,9 +92,6 @@ object GiftToLatex {
     val chunks = GiftHTMLParser.parseAll(GiftHTMLParser.chunks, s).getOrElse( List(GiftHTMLParser.TextChunk("Error parsing:" + s)) )
     val ret = chunks.map(_.toLatex).mkString
 
-    if (s contains "<img") {
-      println(s"$s --> $ret")
-    }
     ret
   }
 
@@ -163,7 +161,8 @@ object GiftToLatex {
     }
   }
 
-  def generateLatex(f: GiftFile, imagePath: Seq[String], questionnaireQuestionsWeight: Int = 60, openQuestionsWeight: Int = 40): String = {
+  def generateLatex(f: GiftFile, imagePath: Seq[String] = Seq(), questionnaireQuestionsWeight: Int = 60, openQuestionsWeight: Int = 40): String = {
+
     val instructions = s"\\Instructions{$questionnaireQuestionsWeight}{$openQuestionsWeight}"
     val answerTable = s"\\AnswerTable{${
       f.questionnaireQuestions.size
@@ -172,15 +171,29 @@ object GiftToLatex {
     val solutions = generateLatexSolutionForSolution(f)
     val generatedContent = List(instructions, answerTable, questions, solutions).mkString("\n")
 
+    def toImagePath(s: String ) = {
+      s"{${if( s.last == '/' ) s else s + '/'}}"
+    }
 
     latexTemplate
       .replace("${GeneratedContent}", generatedContent)
-      .replace("${ImagePath}", imagePath.map(i => s"{$i}").mkString)
+      .replace("${ImagePath}", imagePath.map(toImagePath).mkString)
 
   }
 
-  def apply(f: GiftFile, imagePath: Seq[String] = Seq("./"), questionnaireQuestionsWeight: Int = 60, openQuestionsWeight: Int = 40) = {
-    generateLatex(f, imagePath, questionnaireQuestionsWeight, openQuestionsWeight)
+
+  def apply(f: File, imagePath: Seq[String] = Seq(), questionnaireQuestionsWeight: Int = 60, openQuestionsWeight: Int = 40): String = {
+    GiftParser.parse(f) match {
+      case GiftError(msg, line, column, lineContents) =>
+        throw new IllegalArgumentException(s"Error:$msg, at $line,$column\n$lineContents")
+
+      case g: GiftFile =>
+        val aditionalImagePath = f.getAbsoluteFile.getParent
+        val ip = aditionalImagePath +: imagePath
+        println( ip )
+        generateLatex(g, ip, questionnaireQuestionsWeight, openQuestionsWeight)
+    }
+
   }
 
 }

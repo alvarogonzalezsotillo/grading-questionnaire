@@ -36,7 +36,6 @@ class GiftParserTest extends FlatSpec {
 
   "Single open question" should "parse" in {
     val ret = GiftParser.parse(singleOpenQuestion)
-    println( ret )
     assert(ret.successful)
     val giftFile = ret.questions
     assert(giftFile(0).isInstanceOf[OpenQuestion])

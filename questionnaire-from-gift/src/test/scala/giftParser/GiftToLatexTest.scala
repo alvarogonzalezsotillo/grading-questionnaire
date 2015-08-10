@@ -20,17 +20,8 @@ class GiftToLatexTest extends FlatSpec {
   val bigGiftFile = new File("/home/alvaro/SincronizadoCloud/copy/2014-2015-Alonso de Avellaneda/seguridad-informatica/examenes/SI-Extraordinaria-Junio.gift")
 
   "latex compile" should "work with an example file" in {
-    val ret = GiftParser.parse(bigGiftFile)
-
-    ret match {
-      case GiftError(msg, line, column, lineContents) =>
-        fail(msg)
-
-      case g: GiftFile =>
-        val latex = GiftToLatex(g)
-        LatexCompiler.compile( latex, new File( "example.pdf") )
-    }
-
+    val latex = GiftToLatex(bigGiftFile)
+    LatexCompiler.compile( latex, new File( "example.pdf") )
   }
 
   "latex compile" should "work with a generated file" in {
@@ -38,16 +29,8 @@ class GiftToLatexTest extends FlatSpec {
     val s = generateGift(38,5)
     val f = Util.createFile(renderGift(s), new File("generated.gift"))
 
-    val ret = GiftParser.parse(f)
-
-    ret match {
-      case GiftError(msg, line, column, lineContents) =>
-        fail(msg)
-
-      case g: GiftFile =>
-        val latex = GiftToLatex(g)
-        LatexCompiler.compile( latex, new File( "generated.pdf") )
-    }
+    val latex = GiftToLatex(f)
+    LatexCompiler.compile( latex, new File( "generated.pdf") )
 
   }
 
@@ -59,8 +42,7 @@ class GiftToLatexTest extends FlatSpec {
         fail(msg)
 
       case g: GiftFile =>
-        val latex = GiftToLatex(g)
-        println( latex )
+        val latex = GiftToLatex.generateLatex(g)
     }
   }
 
