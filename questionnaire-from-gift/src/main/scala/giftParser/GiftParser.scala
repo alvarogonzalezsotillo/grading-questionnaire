@@ -6,6 +6,8 @@ package giftParser
 
 import java.io.{FileReader, File, Reader}
 
+import giftToLatex.GiftToLatex
+
 import scala.util.{Random}
 import scala.util.parsing.combinator._
 

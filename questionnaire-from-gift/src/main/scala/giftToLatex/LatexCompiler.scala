@@ -1,9 +1,8 @@
-package giftParser
+package giftToLatex
 
-import java.io.{FileWriter, File}
-import java.nio.file.Path
+import java.io.File
 
-import scala.sys.process.{ProcessIO, ProcessBuilder, Process}
+import scala.sys.process.{Process, ProcessIO}
 
 /**
  * Created by alvaro on 4/07/15.

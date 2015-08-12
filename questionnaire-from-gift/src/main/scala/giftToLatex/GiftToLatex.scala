@@ -1,12 +1,11 @@
-package giftParser
+package giftToLatex
 
-import java.io.{InputStream, ByteArrayOutputStream, File}
+import java.io.{ByteArrayOutputStream, File, InputStream}
 
+import giftParser.GiftParser
 import giftParser.GiftParser.GiftFile._
 import giftParser.GiftParser._
 
-import scala.sys.process.Process
-import scala.util.Random
 import scala.util.parsing.combinator.RegexParsers
 
 /**

@@ -4,7 +4,8 @@ import java.io.File
 
 import giftParser.GiftParser.GiftFile._
 import giftParser.GiftParser._
-import giftParser.GiftToLatex.GiftHTMLParser
+import giftToLatex.GiftToLatex
+import GiftToLatex.GiftHTMLParser
 import giftParser.TestGiftGenerator._
 import giftParser.Util._
 import org.junit.runner.RunWith

@@ -7,7 +7,7 @@ object NumerosRomanosScala extends App {
 
   object cantidades {
 
-    private val initialMap = SortedMap[Int, String](
+    private val initialMap = SortedMap(
       1 -> "i",
       4 -> "iv",
       9 -> "ix",

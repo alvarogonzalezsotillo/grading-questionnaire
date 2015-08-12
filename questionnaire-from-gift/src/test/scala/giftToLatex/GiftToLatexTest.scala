@@ -1,4 +1,4 @@
-package giftParser
+package giftToLatex
 
 /**
  * Created by alvaro on 8/07/15.
@@ -6,12 +6,12 @@ package giftParser
 
 import java.io.File
 
-import giftParser.GiftParser.{GiftFile, GiftError}
+import giftParser.GiftParser.{GiftError, GiftFile}
+import giftParser.TestGiftGenerator._
+import giftParser.{GiftParser, Util}
 import org.junit.runner.RunWith
 import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner
-import giftParser.TestGiftGenerator._
-import giftParser.Util._
 
 
 @RunWith(classOf[JUnitRunner])
