@@ -1,3 +1,5 @@
+package experiments
+
 import scala.util.Random
 
 /**
@@ -7,7 +9,7 @@ import scala.util.Random
  */
 object Edificios extends App{
 
-  import Math.pow
+  import java.lang.Math.pow
 
   case class Altura( altura: Int )
 

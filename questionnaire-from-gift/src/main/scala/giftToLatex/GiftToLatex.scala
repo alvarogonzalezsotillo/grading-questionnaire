@@ -25,7 +25,7 @@ object GiftToLatex {
       lazy val toLatex = charToLatex.escapeLatex(text)
     }
     case class HTMLChunk( text: String ) extends Chunk{
-      lazy val toLatex = translateImagesToLatex(text)
+      lazy val toLatex = htmlToLatex(text)
     }
 
     def textChunk : Parser[TextChunk] = "[^<]+".r ^^ {
@@ -78,13 +78,14 @@ object GiftToLatex {
 
   }
 
-  private def escapeLatex(s: String) = charToLatex.escapeLatex(s)
+  object htmlToLatex {
+    private val htmlImgRexs = Seq( """(?i)<img src="(.*?)">""", """(?i)<img src=(.*?)>""")
 
-  private val htmlImgRexs = Seq( """(?i)<img src="(.*?)">""", """(?i)<img src=(.*?)>""")
+    def hasHtmlImages(s: String) = htmlImgRexs.contains(s.matches(_))
 
-  def hasHtmlImages(s: String) = htmlImgRexs.contains(s.matches(_))
-
-  def translateImagesToLatex(s: String) = htmlImgRexs.fold(s)((ret, rex) => ret.replaceAll(rex, """\\\\ \\includegraphics{$1}"""))
+    def translateImagesToLatex(s: String) = htmlImgRexs.fold(s)((ret, rex) => ret.replaceAll(rex, """\\\\ \\includegraphics{$1}"""))
+    def apply(s:String) = translateImagesToLatex(s)
+  }
 
   private def translateHtmlToTex(s: String) = {
 

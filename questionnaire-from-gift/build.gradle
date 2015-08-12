@@ -24,6 +24,7 @@ dependencies {
 task fatjar( type: Jar, dependsOn: 'assemble' ){
     archiveName = "gifttolatex.jar"
     duplicatesStrategy = 'exclude'
+    mainClassName = "giftToLatex.Main"
 
     from {
         from files(sourceSets.main.output.classesDir)
