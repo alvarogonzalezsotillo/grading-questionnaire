@@ -26,6 +26,9 @@ object LatexCompiler{
     java.nio.file.Files.move( src.toPath, dst.toPath )
   }
 
+  def apply( latex: String, outputFile : File, keepTexFile : Boolean = true, times: Int = 2 ) = {
+    compile(latex, outputFile, keepTexFile, times )
+  }
 
   def compile( latex: String, outputFile : File, keepTexFile : Boolean = true, times: Int = 2 ) : IndexedSeq[Process] = {
     val dir = createTempDirectory

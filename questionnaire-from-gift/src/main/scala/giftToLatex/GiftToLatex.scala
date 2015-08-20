@@ -182,7 +182,7 @@ object GiftToLatex {
   }
 
 
-  def apply(f: File, imagePath: Seq[String] = Seq(), questionnaireQuestionsWeight: Int = 60, openQuestionsWeight: Int = 40): String = {
+  def apply(f: File, questionnaireQuestionsWeight: Int = 60, openQuestionsWeight: Int = 40, imagePath: Seq[String] = Seq()): String = {
     GiftParser.parse(f) match {
       case GiftError(msg, line, column, lineContents) =>
         throw new IllegalArgumentException(s"Error:$msg, at $line,$column\n$lineContents")
