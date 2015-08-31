@@ -30,7 +30,7 @@
 \renewcommand\headrulewidth{0pt} % Size of the header rule
 \renewcommand\footrulewidth{0.4pt} % Size of the footer rule
 
-\graphics path{${ImagePath}}
+\graphicspath{${ImagePath}}
 
 \hypersetup{
   colorlinks,
@@ -63,6 +63,7 @@
 {
   \begin{small}
     \setlength{\columnsep}{1cm}
+    \setlength{\parskip}{12pt minus9pt} % ELASTIC SPACE BETWEEN QUESTIONS
     \noindent \begin{multicols}{2}
 }
 {
@@ -177,9 +178,9 @@
   \begin{ShadowBox}{\Width}
     \vspace{0.3cm}
     \large{
-      \textbf{Nombre} \hrulefill \\
-      \textbf{Grupo} \hrulefill \\
-      \textbf{Fecha} \hrulefill \\
+      \textbf{Nombre:} \hrulefill \\
+      \textbf{Grupo:} \hrulefill \\
+      \textbf{Fecha:} \hrulefill \\
     }
     %\vspace{0.2cm}
   \end{ShadowBox}
@@ -217,7 +218,7 @@
     {
       \begin{tabular}{|p{0.6cm}|p{1.4cm}|}
         \hline
-        \cellcolor{black}\textcolor{white}{{\hfill\arabic{AnswerTableC}}} &  \\
+        \cellcolor{black}\textcolor{white}{\textbf{\hfill\arabic{AnswerTableC}}} &  \\
         \hline
       \end{tabular}
     }
@@ -248,7 +249,7 @@
     {
       \begin{tabular}{|p{0.6cm}|p{1.4cm}|}
         \hline
-        \cellcolor{black}\textcolor{white}{\hfill\arabic{AnswerTableC}} & \\
+        \cellcolor{black}\textcolor{white}{\textbf{\hfill\arabic{AnswerTableC}}} & \\
         \hline
       \end{tabular}
     }

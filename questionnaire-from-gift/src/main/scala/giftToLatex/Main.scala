@@ -43,4 +43,9 @@ object Main extends App {
     case None =>
   }
   */
+  implicit def toFile(s: String) = new File(s)
+
+  val latex = GiftToLatex("/home/alvaro/SincronizadoCloud/copy/2014-2015-Alonso de Avellaneda/aplicaciones-web-ampliada/Examenes/AW-A-EvaluacionExtraordinaria.gift", 50, 50)
+  LatexCompiler(latex, "AW-A-EvaluacionExtraordinaria.pdf", true)
+
 }

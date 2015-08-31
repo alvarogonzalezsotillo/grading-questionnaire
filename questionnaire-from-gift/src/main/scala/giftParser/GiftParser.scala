@@ -12,7 +12,7 @@ import scala.util.{Random}
 import scala.util.parsing.combinator._
 
 // SEE https://docs.moodle.org/23/en/GIFT_format
-// NOT SUPPORTED: missing word, matching, title, feedback, numerics
+// NOT SUPPORTED: comments, missing word, matching, title, feedback, numerics
 class GiftParser extends RegexParsers {
 
   import GiftParser._
