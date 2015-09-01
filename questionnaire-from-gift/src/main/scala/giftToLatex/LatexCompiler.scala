@@ -2,12 +2,14 @@ package giftToLatex
 
 import java.io.File
 
+import com.typesafe.scalalogging.slf4j.LazyLogging
+
 import scala.sys.process.{Process, ProcessIO}
 
 /**
  * Created by alvaro on 4/07/15.
  */
-object LatexCompiler{
+object LatexCompiler extends LazyLogging{
 
   import giftParser.Util._
 
@@ -33,9 +35,11 @@ object LatexCompiler{
   def compile( latex: String, outputFile : File, keepTexFile : Boolean = true, times: Int = 2 ) : IndexedSeq[Process] = {
     val dir = createTempDirectory
 
-    val fileName = outputFile.getName.take( outputFile.getName.indexOf('.') )
+    val fileName = outputFile.getName.take( outputFile.getName.lastIndexOf('.') )
     val texFileName = fileName + ".tex"
     val texFile = new File(dir, texFileName)
+
+    logger.error( s"outputFile:$outputFile fileName:$fileName texFileName:$texFileName ")
 
     createFile( latex, texFile )
     val processes = for( t <- 0 to times ) yield {

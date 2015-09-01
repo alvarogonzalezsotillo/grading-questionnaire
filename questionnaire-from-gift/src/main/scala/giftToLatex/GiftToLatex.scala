@@ -2,6 +2,7 @@ package giftToLatex
 
 import java.io.{ByteArrayOutputStream, File, InputStream}
 
+import com.typesafe.scalalogging.slf4j.LazyLogging
 import giftParser.GiftParser
 import giftParser.GiftParser.GiftFile._
 import giftParser.GiftParser._
@@ -11,7 +12,7 @@ import scala.util.parsing.combinator.RegexParsers
 /**
  * Created by alvaro on 18/06/15.
  */
-object GiftToLatex {
+object GiftToLatex extends LazyLogging{
 
 
   object GiftHTMLParser extends RegexParsers {
@@ -190,7 +191,7 @@ object GiftToLatex {
       case g: GiftFile =>
         val aditionalImagePath = f.getAbsoluteFile.getParent
         val ip = aditionalImagePath +: imagePath
-        println( ip )
+        logger.debug( ip.toString )
         generateLatex(g, ip, questionnaireQuestionsWeight, openQuestionsWeight)
     }
 

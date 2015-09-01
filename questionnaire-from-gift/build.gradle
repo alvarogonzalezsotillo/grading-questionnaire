@@ -9,11 +9,10 @@ apply plugin: 'scala'
 
 dependencies {
     compile group: 'org.scala-lang', name: 'scala-library', version: '2.11.2'
-    compile group: 'org.scala-lang.modules', name: 'scala-parser-combinators_2.11', version : '1.0.4'
+    compile group: 'org.scala-lang.modules', name: 'scala-parser-combinators_2.11', version: '1.0.4'
     compile 'com.github.scopt:scopt_2.11:3.3.0'
-    testCompile group: "org.scalatest", name : "scalatest_2.11", version: "2.1.7"
+    testCompile group: "org.scalatest", name: "scalatest_2.11", version: "2.1.7"
     testCompile 'junit:junit:4.11'
-
 
     // logging
     compile 'com.typesafe.scala-logging:scala-logging-slf4j_2.11:2.0.3'
@@ -21,13 +20,15 @@ dependencies {
     runtime 'org.slf4j:slf4j-jdk14:1.7.7'
 }
 
-task fatjar( type: Jar, dependsOn: 'assemble' ){
+task fatjar(type: Jar, dependsOn: 'assemble') {
     archiveName = "gifttolatex.jar"
     duplicatesStrategy = 'exclude'
-    mainClassName = "giftToLatex.Main"
+    def mainClassName = "giftToLatex.Main"
 
     from {
         from files(sourceSets.main.output.classesDir)
+
+        from files(sourceSets.main.output.resourcesDir)
 
         configurations.compile.collect {
             it.isDirectory() ? it : zipTree(it)
@@ -37,9 +38,10 @@ task fatjar( type: Jar, dependsOn: 'assemble' ){
         }
     }
 
-    manifest { attributes 'Built-By': System.getProperty('user.name'),
-            'Built-Date': new Date(),
-            'Built-JDK': System.getProperty('java.version'),
-            'Main-Class': mainClassName
+    manifest {
+        attributes 'Built-By': System.getProperty('user.name'),
+                'Built-Date': new Date(),
+                'Built-JDK': System.getProperty('java.version'),
+                'Main-Class': mainClassName
     }
 }
