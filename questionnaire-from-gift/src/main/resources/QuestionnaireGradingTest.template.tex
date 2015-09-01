@@ -21,8 +21,8 @@
 
 % Set up the header and footer
 \pagestyle{fancy}
-\lhead{} % Top left header
-\rhead{} % Top right header
+\lhead{\scriptsize{${HeaderText}}} % Top left header
+\rhead{\scriptsize{Impreso el \today}} % Top right header
 \chead{} % Top center head
 \lfoot{\scriptsize{\currfilename}} % Bottom left footer
 \cfoot{} % Bottom center footer
@@ -175,7 +175,7 @@
 
 \newcommand{\StudentData}
 {
-  \begin{ShadowBox}{\Width}
+  \begin{ShadowBox}{0.98\Width}
     \vspace{0.3cm}
     \large{
       \textbf{Nombre:} \hrulefill \\
@@ -189,7 +189,7 @@
 
 
 \newcommand{\FileAutoref}[0]{
-  \attachfile[mimetype=text/plain,
+  \attachfile[mimetype={text/plain},
             print=false,
             appearance=false,
             zoom=false,

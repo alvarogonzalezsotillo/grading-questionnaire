@@ -162,12 +162,11 @@ object GiftToLatex extends LazyLogging{
     }
   }
 
-  def generateLatex(f: GiftFile, imagePath: Seq[String] = Seq(), questionnaireQuestionsWeight: Int = 60, openQuestionsWeight: Int = 40): String = {
+  def generateLatex(f: GiftFile, headerText: String = "", questionnaireQuestionsWeight: Int = 60, imagePath: Seq[String] = Seq() ): String = {
 
+    val openQuestionsWeight = 100 - questionnaireQuestionsWeight
     val instructions = s"\\Instructions{$questionnaireQuestionsWeight}{$openQuestionsWeight}"
-    val answerTable = s"\\AnswerTable{${
-      f.questionnaireQuestions.size
-    }}"
+    val answerTable = s"\\AnswerTable{${f.questionnaireQuestions.size}}"
     val questions = generateLatexForQuestions(f)
     val solutions = generateLatexSolutionForSolution(f)
     val generatedContent = List(instructions, answerTable, questions, solutions).mkString("\n")
@@ -179,20 +178,21 @@ object GiftToLatex extends LazyLogging{
     latexTemplate
       .replace("${GeneratedContent}", generatedContent)
       .replace("${ImagePath}", imagePath.map(toImagePath).mkString(","))
+      .replace("${HeaderText}", headerText )
 
   }
 
 
-  def apply(f: File, questionnaireQuestionsWeight: Int = 60, openQuestionsWeight: Int = 40, imagePath: Seq[String] = Seq()): String = {
+  def apply(f: File,  headerText: String = "", questionnaireQuestionsWeight: Int = 60, imagePath: Seq[String] = Seq()): String = {
     GiftParser.parse(f) match {
       case GiftError(msg, line, column, lineContents) =>
         throw new IllegalArgumentException(s"Error:$msg, at $line,$column\n$lineContents")
 
       case g: GiftFile =>
-        val aditionalImagePath = f.getAbsoluteFile.getParent
-        val ip = aditionalImagePath +: imagePath
+        val additionalImagePath = f.getAbsoluteFile.getParent
+        val ip = additionalImagePath +: imagePath
         logger.debug( ip.toString )
-        generateLatex(g, ip, questionnaireQuestionsWeight, openQuestionsWeight)
+        generateLatex(g, headerText, questionnaireQuestionsWeight, ip )
     }
 
   }
