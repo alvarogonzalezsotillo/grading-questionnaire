@@ -190,8 +190,11 @@
 
 \newcommand{\FileAutoref}[0]{
   \attachfile[mimetype=text/plain,
-            description={El fichero TEX original para crear este documento, no sea que se nos pierda},
-            subject={El fichero TEX original para crear este documento, no sea que se nos pierda}]
+            print=false,
+            appearance=false,
+            zoom=false,
+            description={El fichero TEX original para crear este documento},
+            subject={El fichero TEX original para crear este documento}]
     {\currfilename}
 }
 
@@ -264,11 +267,12 @@
 
 \begin{document}
 
-%\FileAutoref
 
 \IndentOff
 
 \StudentData
+
+\FileAutoref
 
 
 ${GeneratedContent}

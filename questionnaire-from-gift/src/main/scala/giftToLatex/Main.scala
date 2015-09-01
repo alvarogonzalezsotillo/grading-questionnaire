@@ -16,7 +16,7 @@ object Main extends App with LazyLogging {
     val openQuestionsWeight = 100 - questionnaireQuestionsWeight
   }
 
-  realMain
+  test
 
   def realMain = {
     val parser = new scopt.OptionParser[Config]("gifttolatex") {
