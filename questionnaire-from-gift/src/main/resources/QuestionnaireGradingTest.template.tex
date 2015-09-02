@@ -195,9 +195,17 @@
             zoom=false,
             description={El fichero TEX original para crear este documento},
             subject={El fichero TEX original para crear este documento}]
-    {\currfilename}
-}
+    {\currfilename}%
+}%
 
+\newcommand{\OriginalGiftFile}[1]{
+  \attachfile[print=false,
+            appearance=false,
+            zoom=false,
+            description={El fichero GIFT original para crear este documento},
+            subject={El fichero GIFT original para crear este documento}]
+    {#1}%
+}%
 
 \newcommand{\HorizontalAnswerTable}[1]
 {
@@ -272,7 +280,7 @@
 
 \StudentData
 
-\FileAutoref
+\FileAutoref \OriginalGiftFile{${GiftFile}}
 
 
 ${GeneratedContent}

@@ -95,12 +95,12 @@ object GiftParser {
       assert( answers.count( _.correct) == 1, s"Incorrect number of correct answers:$this" )
     }
 
-    def apply(questions: Questions) = new GiftFile(questions)
+    def apply(questions: Questions, file: Option[File] ) = new GiftFile(questions,file)
 
     def unapply(gf: GiftFile): Option[Questions] = Some(gf.questions)
   }
 
-  class GiftFile(val questions: Questions) extends GiftResult {
+  class GiftFile(val questions: Questions, val file: Option[File]  ) extends GiftResult {
 
     import GiftFile._
 
@@ -123,7 +123,7 @@ object GiftParser {
         qQuestions = qQuestions.map(_.shuffle)
       }
 
-      GiftFile(qQuestions ++ oQuestions)
+      GiftFile(qQuestions ++ oQuestions, file )
     }
 
   }
@@ -134,8 +134,8 @@ object GiftParser {
     override val successful = false
   }
 
-  private def processResult(parser: GiftParser, ret: GiftParser#ParseResult[Questions]): GiftResult = ret match {
-    case parser.Success(_, _) => GiftFile(ret.get).reorder()
+  private def processResult(parser: GiftParser, ret: GiftParser#ParseResult[Questions], file: Option[File] ): GiftResult = ret match {
+    case parser.Success(_, _) => GiftFile(ret.get,file).reorder()
     case parser.Error(msg, next) => GiftError(msg, next.pos.line, next.pos.column, next.pos.longString.takeWhile(_ != '\n'))
     case parser.Failure(msg, next) => GiftError(msg, next.pos.line, next.pos.column, next.pos.longString.takeWhile(_ != '\n'))
     case _ => throw new IllegalStateException()
@@ -144,13 +144,13 @@ object GiftParser {
   def parse(s: String) = {
     val parser = new GiftParser
     val ret = parser.parseAll(parser.questionnaire, s)
-    processResult(parser, ret)
+    processResult(parser, ret, None)
   }
 
   def parse(reader: Reader) = {
     val parser = new GiftParser
     val ret = parser.parseAll(parser.questionnaire, reader)
-    processResult(parser, ret)
+    processResult(parser, ret, None )
   }
 
   def parse(f: File) = {
@@ -158,7 +158,7 @@ object GiftParser {
     val reader = new FileReader(f)
     val ret = parser.parseAll(parser.questionnaire, reader)
     reader.close()
-    processResult(parser, ret)
+    processResult(parser, ret, Some(f) )
   }
 
 }

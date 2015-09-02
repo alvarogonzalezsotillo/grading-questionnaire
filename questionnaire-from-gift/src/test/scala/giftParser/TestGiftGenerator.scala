@@ -35,9 +35,9 @@ object TestGiftGenerator {
     val qq = (1 to questionnaireQuestions).map(_ => QuestionnaireQuestion(randomLine, randomAnswers())).toList
     val oq = (1 to openQuestions).map(_ => OpenQuestion(randomLine)).toList
 
-    GiftFile(qq ++ oq)
+    GiftFile(qq ++ oq, None)
   }
-
+  
   def renderGift(g: GiftFile) = {
 
     def answerToString(a: Answer) = {

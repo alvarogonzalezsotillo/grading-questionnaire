@@ -179,6 +179,7 @@ object GiftToLatex extends LazyLogging{
       .replace("${GeneratedContent}", generatedContent)
       .replace("${ImagePath}", imagePath.map(toImagePath).mkString(","))
       .replace("${HeaderText}", headerText )
+      .replace("${GiftFile}", f.file.map(_.getAbsolutePath).getOrElse(""))
 
   }
 
