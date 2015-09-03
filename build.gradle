@@ -2,6 +2,29 @@ repositories {
     mavenCentral()
 }
 
+subprojects{
+    repositories {
+        mavenCentral()
+    }
+
+
+    apply plugin: 'java'
+    apply plugin: 'scala'
+
+
+    dependencies {
+        compile group: 'org.scala-lang', name: 'scala-library', version: '2.11.2'
+        compile group: 'org.scala-lang.modules', name: 'scala-parser-combinators_2.11', version: '1.0.4'
+        compile 'com.github.scopt:scopt_2.11:3.3.0'
+        testCompile group: "org.scalatest", name: "scalatest_2.11", version: "2.1.7"
+        testCompile 'junit:junit:4.11'
+
+        // logging
+        compile 'com.typesafe.scala-logging:scala-logging-slf4j_2.11:2.0.3'
+        compile 'org.slf4j:slf4j-api:1.7.7'
+        runtime 'org.slf4j:slf4j-jdk14:1.7.7'
+    }
+}
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.4'

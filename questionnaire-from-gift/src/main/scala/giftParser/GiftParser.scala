@@ -18,11 +18,17 @@ class GiftParser extends RegexParsers {
   import GiftParser._
   import GiftParser.GiftFile._
 
+  def unescapeGiftText(s: String) = {
+    val escaped = Map("\\{" -> "{", "\\}" -> "}", "=" -> "=", ":" -> ":", "~" -> "~")
+    escaped.foldLeft(s)((ret, esc) => ret.replaceAll( """\\""" + esc._1, esc._2))
+  }
+
+
   // ANY NUMBER OF BLANKS
   def indent: Parser[String] = """\s*""".r
 
   // ONLY ~ OR =
-  def startOfAnswer: Parser[String] = "~" | "="  | failure("~ or = expected")
+  def startOfAnswer: Parser[String] = "~" | "=" | failure("~ or = expected")
 
   // ANY CHARACTERS, NOT INCLUDING THE FIRST }, ~ OR =
   // Note: }, ~ and = can be escaped as \}, \~ and \=
@@ -41,7 +47,7 @@ class GiftParser extends RegexParsers {
   def question: Parser[Question] = (questionText <~ "{") ~ (rep(answer) <~ "}") ^^ {
     case t ~ Nil => OpenQuestion(unescapeGiftText(t.trim))
     case t ~ a => QuestionnaireQuestion(unescapeGiftText(t.trim), a)
-  } | failure("A question has some text, and maybe some answers surrounded by {}");
+  } | failure("A question has some text, and maybe some answers surrounded by {}")
 
   // A QUESTIONNAIRE IS COMPOSED OF SEVERAL QUESTIONS
   def questionnaire: Parser[Questions] = rep(question)
@@ -49,31 +55,20 @@ class GiftParser extends RegexParsers {
 
 object GiftParser {
 
-
   type Questions = List[GiftFile.Question]
 
-  trait GiftResult {
-    def questions: Questions
-
-    val successful = true
+  trait GiftParserResult {
+    val successful = false
   }
 
   object GiftFile {
-
-
-    def unescapeGiftText( s: String ) = {
-      val escaped = Map( "\\{" -> "{", "\\}" -> "}", "=" -> "=", ":" -> ":", "~" -> "~" )
-      escaped.foldLeft(s)( (ret,esc) => ret.replaceAll( """\\""" + esc._1, esc._2) )
-    }
-
-
-
 
     case class Answer(text: String, correct: Boolean)
 
     trait Question {
       val text: String
       val hasImages = GiftToLatex.htmlToLatex.hasHtmlImages(text)
+
       def shuffle = this
     }
 
@@ -89,20 +84,19 @@ object GiftParser {
         case _ =>
           super.equals(o)
       }
-
-      override def toString = text + answers.mkString("[","|","]")
-
-      assert( answers.count( _.correct) == 1, s"Incorrect number of correct answers:$this" )
+      assert(answers.count(_.correct) == 1, s"Incorrect number of correct answers:$this")
     }
 
-    def apply(questions: Questions, file: Option[File] ) = new GiftFile(questions,file)
+    def apply(questions: Questions, file: Option[File]) = new GiftFile(questions, file)
 
     def unapply(gf: GiftFile): Option[Questions] = Some(gf.questions)
   }
 
-  class GiftFile(val questions: Questions, val file: Option[File]  ) extends GiftResult {
+  class GiftFile(val questions: Questions, val file: Option[File]) extends GiftParserResult {
 
     import GiftFile._
+
+    override val successful = true
 
     val openQuestions = questions.filter(_.isInstanceOf[OpenQuestion])
     val questionnaireQuestions = questions.filter(_.isInstanceOf[QuestionnaireQuestion])
@@ -123,19 +117,15 @@ object GiftParser {
         qQuestions = qQuestions.map(_.shuffle)
       }
 
-      GiftFile(qQuestions ++ oQuestions, file )
+      GiftFile(qQuestions ++ oQuestions, file)
     }
 
   }
 
-  case class GiftError(msg: String, line: Int, column: Int, lineContents: String) extends GiftResult {
-    override def questions = throw new NoSuchElementException()
+  case class GiftError(msg: String, line: Int, column: Int, lineContents: String) extends GiftParserResult
 
-    override val successful = false
-  }
-
-  private def processResult(parser: GiftParser, ret: GiftParser#ParseResult[Questions], file: Option[File] ): GiftResult = ret match {
-    case parser.Success(_, _) => GiftFile(ret.get,file).reorder()
+  private def processResult(parser: GiftParser, ret: GiftParser#ParseResult[Questions], file: Option[File]): GiftParserResult = ret match {
+    case parser.Success(_, _) => GiftFile(ret.get, file).reorder()
     case parser.Error(msg, next) => GiftError(msg, next.pos.line, next.pos.column, next.pos.longString.takeWhile(_ != '\n'))
     case parser.Failure(msg, next) => GiftError(msg, next.pos.line, next.pos.column, next.pos.longString.takeWhile(_ != '\n'))
     case _ => throw new IllegalStateException()
@@ -150,7 +140,7 @@ object GiftParser {
   def parse(reader: Reader) = {
     val parser = new GiftParser
     val ret = parser.parseAll(parser.questionnaire, reader)
-    processResult(parser, ret, None )
+    processResult(parser, ret, None)
   }
 
   def parse(f: File) = {
@@ -158,7 +148,7 @@ object GiftParser {
     val reader = new FileReader(f)
     val ret = parser.parseAll(parser.questionnaire, reader)
     reader.close()
-    processResult(parser, ret, Some(f) )
+    processResult(parser, ret, Some(f))
   }
 
 }

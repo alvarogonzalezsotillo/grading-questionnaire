@@ -24,7 +24,7 @@ class GiftParserTest extends FlatSpec {
     val s = ""
     val ret = GiftParser.parse(s)
     assert(ret.successful)
-    val giftFile = ret.questions
+    val giftFile = ret.asInstanceOf[GiftFile].questions
     assert(giftFile.size == 0)
   }
 
@@ -37,7 +37,7 @@ class GiftParserTest extends FlatSpec {
   "Single open question" should "parse" in {
     val ret = GiftParser.parse(singleOpenQuestion)
     assert(ret.successful)
-    val giftFile = ret.questions
+    val giftFile = ret.asInstanceOf[GiftFile].questions
     assert(giftFile(0).isInstanceOf[OpenQuestion])
   }
 
@@ -46,7 +46,7 @@ class GiftParserTest extends FlatSpec {
   "Single open question with no extra new lines" should "parse" in {
     val ret = GiftParser.parse(singleOpenQuestionNoBlanks)
     assert(ret.successful)
-    val giftFile = ret.questions
+    val giftFile = ret.asInstanceOf[GiftFile].questions
     assert(giftFile(0).isInstanceOf[OpenQuestion])
   }
 
@@ -67,14 +67,14 @@ class GiftParserTest extends FlatSpec {
   "Single closed question" should "parse" in {
     val ret = GiftParser.parse(singleClosedQuestion)
     assert(ret.successful)
-    val giftFile = ret.questions
+    val giftFile = ret.asInstanceOf[GiftFile].questions
     assert(giftFile(0).isInstanceOf[QuestionnaireQuestion])
   }
 
   "Single closed question" should "parse with correct answers" in {
     val ret = GiftParser.parse(singleClosedQuestion)
     assert(ret.successful)
-    val giftFile = ret.questions
+    val giftFile = ret.asInstanceOf[GiftFile].questions
     assert(giftFile(0) == new QuestionnaireQuestion("hola como estás yo bien gracias", List(new Answer("bien", true), new Answer("mal", false))))
   }
 
@@ -84,7 +84,7 @@ class GiftParserTest extends FlatSpec {
   "Single closed question with no extra blanks" should "parse with correct answers" in {
     val ret = GiftParser.parse(singleClosedQuestion)
     val retnoblanks = GiftParser.parse(singleClosedQuestionNoBlanks)
-    assert(ret.questions == retnoblanks.questions)
+    assert(ret.asInstanceOf[GiftFile].questions == retnoblanks.asInstanceOf[GiftFile].questions)
   }
 
   "A malformed file" should "not parse" in {
@@ -98,7 +98,7 @@ class GiftParserTest extends FlatSpec {
     val s = questions.mkString("\n")
 
     val ret = GiftParser.parse(s)
-    val giftFile = ret.questions
+    val giftFile = ret.asInstanceOf[GiftFile].questions
     assert(giftFile.size == 4)
   }
 
