@@ -1,4 +1,0 @@
-
-dependencies {
-    compile group: 'org.bytedeco', name: 'javacv', version: '1.0'
-}

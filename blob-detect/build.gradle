@@ -1,0 +1,11 @@
+
+dependencies {
+    // SEE https://github.com/PatternConsulting/opencv
+    compile 'nu.pattern:opencv:2.4.9-4'
+}
+
+task run(type: JavaExec, dependsOn: classes) {
+    main = 'BlobDetect'
+    classpath sourceSets.main.runtimeClasspath
+    classpath configurations.runtime
+}

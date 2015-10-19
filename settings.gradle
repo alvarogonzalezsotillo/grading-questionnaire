@@ -1,1 +1,1 @@
-include "questionnaire-from-gift", "webcam-detect-questionaire"
+include "questionnaire-from-gift", "blob-detect"
