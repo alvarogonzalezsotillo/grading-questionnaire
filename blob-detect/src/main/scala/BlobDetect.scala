@@ -27,48 +27,9 @@ object BlobDetect extends App{
   val mMinContourArea = 0.1
 
 
-  def process(rgbaImage: Mat) = {
-    import scala.collection.JavaConversions._
 
-    Imgproc.pyrDown(rgbaImage, mPyrDownMat);
-    Imgproc.pyrDown(mPyrDownMat, mPyrDownMat);
 
-    Imgproc.cvtColor(mPyrDownMat, mHsvMat, Imgproc.COLOR_RGB2HSV_FULL);
-
-    Core.inRange(mHsvMat, mLowerBound, mUpperBound, mMask);
-    Imgproc.dilate(mMask, mDilatedMask, new Mat());
-
-    val contours : java.util.List[MatOfPoint] = new util.ArrayList[MatOfPoint]();
-
-    Imgproc.findContours(mDilatedMask, contours, mHierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
-
-    // Find max contour area
-    val maxArea = contours.map( Imgproc.contourArea ).max
-
-    // Filter contours by area and resize to fit the original image size
-    contours.filter( c => Imgproc.contourArea(c) > mMinContourArea*maxArea ).map( c => Core.multiply(c, new Scalar(4,4), c ) )
-
-  }
-
-  implicit def Mat2BufferedImage(m:Mat): BufferedImage = {
-    // source: http://answers.opencv.org/question/10344/opencv-java-load-image-to-gui/
-    // Fastest code
-    // The output can be assigned either to a BufferedImage or to an Image
-
-    val imageType = if ( m.channels() > 1 )
-      BufferedImage.TYPE_3BYTE_BGR
-    else
-      BufferedImage.TYPE_BYTE_GRAY
-
-    val bufferSize = m.channels()*m.cols()*m.rows()
-    val b = new Array[Byte](bufferSize)
-    m.get(0,0,b); // get all the pixels
-    val image = new BufferedImage(m.cols(),m.rows(), imageType )
-    val targetPixels = (image.getRaster().getDataBuffer()).asInstanceOf[DataBufferByte].getData()
-    System.arraycopy(b, 0, targetPixels, 0, b.length)
-
-    image
-  }
+  import Implicits._
 
   def show( title: String, m : Mat ) = {
     val f = new JFrame(title)
@@ -85,6 +46,7 @@ object BlobDetect extends App{
   }
 
   readAndShow( getClass().getResource("2015-10-09-093027.jpg").getPath )
+  show( "Hola" , VideoSource().read )
 
   def simpleTest() = {
     val m = new Mat(5, 10, CvType.CV_8UC1, new Scalar(0))

@@ -8,15 +8,28 @@ import javax.swing.JPanel
  */
 class ImageCanvas( img: Image ) extends JPanel{
 
-  val imageWidth = img.getWidth(null)
-  val imageHeight = img.getHeight(null)
-  setPreferredSize( new Dimension(imageWidth,imageHeight))
+  def imageWidth = image.getWidth(null)
+  def imageHeight = image.getHeight(null)
+
+  private var _image = img
+
+
+  def image_=(img: Image) : Unit = {
+    _image = img
+    setPreferredSize( new Dimension(imageWidth,imageHeight))
+    repaint()
+  }
+
+  def image : Image = _image
+
+  image_=(img)
+
 
   setDoubleBuffered(true)
 
   override def paintComponent(g: Graphics) = {
     import scala.collection.JavaConversions._
-    g.drawImage(img,0,0,getWidth,getHeight,null)
+    g.drawImage(_image,0,0,getWidth,getHeight,null)
     for( p <- puntosDeCirculos ) drawCircles(p,g)
   }
 
