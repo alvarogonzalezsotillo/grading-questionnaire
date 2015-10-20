@@ -1,6 +1,7 @@
+import java.awt.AlphaComposite
 import java.awt.image.{DataBufferByte, BufferedImage}
 
-import org.opencv.core.Mat
+import org.opencv.core.{CvType, Mat}
 
 /**
  * Created by alvaro on 19/10/15.
@@ -27,13 +28,59 @@ object Implicits {
     image
   }
 
-  /*
+
   implicit def BufferedImage2Mat( image: BufferedImage ) : Mat = {
-    val pixels = (image.getRaster().getDataBuffer()).asInstanceOf[DataBufferByte].getData()
-    val ret = new Mat()
-    ret.put(0,0,pixels)
+    val ret = new Mat(image.getHeight,image.getWidth,CvType.CV_8UC3)
+    BufferedImage2Mat(image, ret)
     ret
   }
-  */
+
+
+  def toBufferedImageOfType(original:BufferedImage, typeI: Int) = {
+
+    // Don't convert if it already has correct type
+    if (original.getType() == typeI) {
+      original
+    }
+    else {
+      // Create a buffered image
+      val image = new BufferedImage(original.getWidth(), original.getHeight(), typeI)
+
+      // Draw the image onto the new buffer
+      val g = image.createGraphics();
+      try {
+        g.setComposite(AlphaComposite.Src);
+        g.drawImage(original, 0, 0, null);
+      }
+      finally {
+        g.dispose()
+      }
+
+      image
+    }
+  }
+  def BufferedImage2Mat( src: BufferedImage, dst: Mat ){
+    val image = toBufferedImageOfType(src,BufferedImage.TYPE_3BYTE_BGR)
+    try {
+      println(Thread.currentThread().getName)
+      println("a")
+      assert(image.getType == BufferedImage.TYPE_3BYTE_BGR)
+      println("b")
+      assert(dst.`type` == CvType.CV_8UC3)
+      println(dst.width() + " " + image.getWidth )
+      assert(dst.width == image.getWidth)
+      println("d")
+      assert(dst.height == image.getHeight)
+      println("e")
+      val pixels = (image.getRaster().getDataBuffer()).asInstanceOf[DataBufferByte].getData()
+      println("f")
+      dst.put(0, 0, pixels)
+      println("g")
+    }
+    catch{
+      case t => t.printStackTrace()
+    }
+  }
+
 
 }
