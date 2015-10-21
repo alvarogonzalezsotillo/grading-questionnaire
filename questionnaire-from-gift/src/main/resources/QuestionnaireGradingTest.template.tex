@@ -220,14 +220,14 @@
   {
     \ifthenelse{\value{AnswerTableC}>#1}
     {
-      \begin{tabular}{ | p{0.6cm} | p{1.4cm} | }
+      \begin{tabular}{ | p{0.7cm} | p{1.3cm} | }
       \hline
           &  \\
       \hline
       \end{tabular}
     }
     {
-      \begin{tabular}{|p{0.6cm}|p{1.4cm}|}
+      \begin{tabular}{|p{0.7cm}|p{1.3cm}|}
         \hline
         \cellcolor{black}\textcolor{white}{\textbf{\hfill\arabic{AnswerTableC}}} &  \\
         \hline
@@ -258,7 +258,7 @@
   \begin{multicols}{5}
     \forloop{AnswerTableC}{1}{\value{AnswerTableC}<#1 \OR \value{AnswerTableC}=#1}
     {
-      \begin{tabular}{|p{0.6cm}|p{1.4cm}|}
+      \begin{tabular}{|p{0.7cm}|p{1.3cm}|}
         \hline
         \cellcolor{black}\textcolor{white}{\textbf{\hfill\arabic{AnswerTableC}}} & \\
         \hline
