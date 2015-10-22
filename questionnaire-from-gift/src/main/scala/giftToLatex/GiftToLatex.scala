@@ -55,7 +55,8 @@ object GiftToLatex extends LazyLogging{
       '$' -> """\$""",
       '\\' -> """\textbackslash""",
       '{' -> """\{""",
-      '}' -> """\}"""
+      '}' -> """\}""",
+      '^' -> """\string^"""
     ).withDefault(_.toString)
 
     var state = "``"
@@ -90,7 +91,7 @@ object GiftToLatex extends LazyLogging{
 
   private def translateHtmlToTex(s: String) = {
 
-    val chunks = GiftHTMLParser.parseAll(GiftHTMLParser.chunks, s).getOrElse( List(GiftHTMLParser.TextChunk("Error parsing:" + s)) )
+    val chunks = GiftHTMLParser.parseAll(GiftHTMLParser.chunks, s).getOrElse( List(GiftHTMLParser.TextChunk(s)) )
     val ret = chunks.map(_.toLatex).mkString
 
     ret
