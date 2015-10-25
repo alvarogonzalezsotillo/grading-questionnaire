@@ -3,7 +3,8 @@ import java.awt.image.{DataBufferByte, BufferedImage}
 import java.util
 import javax.swing.{JFrame, SwingWorker}
 
-import org.opencv.core.Mat
+import org.opencv.core.{CvType, Mat}
+import org.opencv.imgproc.Imgproc
 
 /**
  * Created by alvaro on 19/10/15.
@@ -19,7 +20,7 @@ object VideoCanvas{
 
 
 
-class VideoCanvas(camera: Int) extends ImageCanvas(VideoCanvas.defaultImage){
+class VideoCanvas(camera: Int, proc: Option[(Mat)=>Mat] = None ) extends ImageCanvas(VideoCanvas.defaultImage){
   val source = VideoSource(camera)
 
   var terminateASAP = false
@@ -31,7 +32,11 @@ class VideoCanvas(camera: Int) extends ImageCanvas(VideoCanvas.defaultImage){
     override def doInBackground(): Unit = {
       while(!terminateASAP){
         val mat = source.read
-        publish(mat)
+        val processed = proc match{
+          case Some(p) => p(mat)
+          case None => mat
+        }
+        publish(processed)
       }
 
     }
@@ -53,12 +58,26 @@ class VideoCanvas(camera: Int) extends ImageCanvas(VideoCanvas.defaultImage){
 
 object VideoCanvasApp extends App{
 
+  def threshold(src: Mat) : Mat = {
+    val dst = new Mat(src.height(),src.width(),CvType.CV_8UC1)
+    Imgproc.cvtColor(src,dst,Imgproc.COLOR_RGB2GRAY)
+    Imgproc.adaptiveThreshold( dst, dst, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY,101,3)
+    dst
+  }
+
+  def clean(src: Mat) : Mat = {
+    Imgproc.morphologyEx(src,src,Imgproc.MORPH_OPEN,null)
+    src
+  }
+
   nu.pattern.OpenCV.loadLibrary()
 
   val f = new JFrame("Video")
   f.setLayout( new BorderLayout() )
-  f.add( new VideoCanvas(0), BorderLayout.CENTER )
+  val proc = threshold _ // andThen clean
+  f.add( new VideoCanvas(0, Some(proc) ), BorderLayout.CENTER )
   f.pack()
+  f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
   f.setVisible(true)
 
 }

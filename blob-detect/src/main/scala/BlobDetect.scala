@@ -16,16 +16,6 @@ object BlobDetect extends App{
 
   loadLibrary()
 
-  val mLowerBound = new Scalar(0);
-  val mUpperBound = new Scalar(0);
-
-  val mPyrDownMat = new Mat()
-  val mHsvMat = new Mat()
-  val mMask = new Mat()
-  val mDilatedMask = new Mat()
-  val mHierarchy = new Mat()
-  val mMinContourArea = 0.1
-
 
 
 
@@ -44,6 +34,8 @@ object BlobDetect extends App{
     val mat = Highgui.imread(file)
     show( file, mat )
   }
+
+
 
   readAndShow( getClass().getResource("2015-10-09-093027.jpg").getPath )
   show( "Hola" , VideoSource().read )
