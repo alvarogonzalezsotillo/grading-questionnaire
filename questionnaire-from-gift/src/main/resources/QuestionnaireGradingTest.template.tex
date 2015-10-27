@@ -238,7 +238,7 @@
     \addtocounter{AnswerTableC}{1}
   }
 
-  \forloop[5]{DummyAnswerCounter}{1}{\value{DummyAnswerCounter}<#1}
+  \forloop[5]{DummyAnswerCounter}{1}{\value{DummyAnswerCounter}<#1 \OR \value{AnswerTableC}=#1}
   {
     \AnswerCell
     \AnswerCell
