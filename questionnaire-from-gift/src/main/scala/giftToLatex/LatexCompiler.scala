@@ -25,6 +25,8 @@ object LatexCompiler extends LazyLogging{
 
   private def move(src: File, dst: File){
     dst.delete()
+
+    logger.error( s"movig:${src.toPath} to:${dst.toPath}")
     java.nio.file.Files.move( src.toPath, dst.toPath )
   }
 

@@ -62,20 +62,20 @@ object Implicits {
   def BufferedImage2Mat( src: BufferedImage, dst: Mat ){
     val image = toBufferedImageOfType(src,BufferedImage.TYPE_3BYTE_BGR)
     try {
-      println(Thread.currentThread().getName)
-      println("a")
+      //println(Thread.currentThread().getName)
+      //println("a")
       assert(image.getType == BufferedImage.TYPE_3BYTE_BGR)
-      println("b")
+      //println("b")
       assert(dst.`type` == CvType.CV_8UC3)
-      println(dst.width() + " " + image.getWidth )
+      //println(dst.width() + " " + image.getWidth )
       assert(dst.width == image.getWidth)
-      println("d")
+      //println("d")
       assert(dst.height == image.getHeight)
-      println("e")
+      //println("e")
       val pixels = (image.getRaster().getDataBuffer()).asInstanceOf[DataBufferByte].getData()
-      println("f")
+      //println("f")
       dst.put(0, 0, pixels)
-      println("g")
+      //println("g")
     }
     catch{
       case t => t.printStackTrace()

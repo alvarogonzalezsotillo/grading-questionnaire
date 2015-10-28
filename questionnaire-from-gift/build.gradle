@@ -1,8 +1,21 @@
 
+apply plugin: 'application'
+
+def mainClass = "giftToLatex.Main"
+
+mainClassName = mainClass
+
+run {
+    if(project.hasProperty('args')){
+        args project.args.split('\\s')
+    }
+}
+
+
+
 task fatjar(type: Jar, dependsOn: 'assemble') {
     archiveName = "gifttolatex.jar"
     duplicatesStrategy = 'exclude'
-    def mainClassName = "giftToLatex.Main"
 
     from {
         from files(sourceSets.main.output.classesDir)
@@ -21,6 +34,6 @@ task fatjar(type: Jar, dependsOn: 'assemble') {
         attributes 'Built-By': System.getProperty('user.name'),
                 'Built-Date': new Date(),
                 'Built-JDK': System.getProperty('java.version'),
-                'Main-Class': mainClassName
+                'Main-Class': mainClass
     }
 }

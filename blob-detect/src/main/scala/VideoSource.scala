@@ -32,7 +32,7 @@ object VideoSource {
     vc.set(Highgui.CV_CAP_PROP_FRAME_HEIGHT, 1024)
 
 
-    println(vc.get(Highgui.CV_CAP_PROP_FRAME_WIDTH) + "," + vc.get(Highgui.CV_CAP_PROP_FRAME_HEIGHT))
+    //println(vc.get(Highgui.CV_CAP_PROP_FRAME_WIDTH) + "," + vc.get(Highgui.CV_CAP_PROP_FRAME_HEIGHT))
     //println( vc.getSupportedPreviewSizes )
 
 
@@ -51,9 +51,9 @@ object VideoSource {
       val d = new Dimension(1280, 1024)
       webcam.setCustomViewSizes(Array[Dimension](d))
       webcam.setViewSize(d)
-      System.out.println("Camera size:" + webcam.getViewSize)
+      //System.out.println("Camera size:" + webcam.getViewSize)
       webcam.open
-      System.out.println("Camera size:" + webcam.getViewSize)
+      //System.out.println("Camera size:" + webcam.getViewSize)
       webcam
     }
 
@@ -65,17 +65,17 @@ object VideoSource {
     override def read: Mat = {
       import Implicits._
       val image = webcam.getImage
-      System.out.println( image )
-      System.out.printf( s"${image.getWidth}x${image.getHeight}\n" )
+      //System.out.println( image )
+      //System.out.printf( s"${image.getWidth}x${image.getHeight}\n" )
 
       if( !_someRead ){
-        println( "Primera lectura")
+        //println( "Primera lectura")
         _lastRead = BufferedImage2Mat(image)
-        println( "convertido")
+        //println( "convertido")
         _someRead = true
       }
       else {
-        println( "otras lecturas")
+        //println( "otras lecturas")
         BufferedImage2Mat(image,_lastRead)
       }
       _lastRead
