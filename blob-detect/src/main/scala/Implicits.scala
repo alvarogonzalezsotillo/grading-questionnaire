@@ -78,7 +78,7 @@ object Implicits {
       //println("g")
     }
     catch{
-      case t => t.printStackTrace()
+      case t : Throwable => t.printStackTrace()
     }
   }
 

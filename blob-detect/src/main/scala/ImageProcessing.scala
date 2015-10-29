@@ -1,4 +1,4 @@
-import org.opencv.core.{Size, CvType, Mat}
+import org.opencv.core.{Size, CvType, Mat, MatOfPoint,Scalar,Core}
 import org.opencv.imgproc.Imgproc
 
 /**
@@ -26,5 +26,22 @@ object ImageProcessing {
     src
   }
 
+  def findContours(rgbaImage: Mat ) : Seq[MatOfPoint]= {
+      import java.util.ArrayList;
+      import scala.collection.JavaConversions._
+      
+      val mPyrDownMat = new Mat
+        Imgproc.pyrDown(rgbaImage, mPyrDownMat);
+        Imgproc.pyrDown(mPyrDownMat, mPyrDownMat);
 
+
+        val contours = new ArrayList[MatOfPoint]();
+        val mHierarchy = new Mat
+        Imgproc.findContours(mPyrDownMat, contours, mHierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+
+        val scale = new Scalar(4,4)        
+        contours.map{ c => Core.multiply(c, scale, c);c }
+  }
+      
+   
 }
