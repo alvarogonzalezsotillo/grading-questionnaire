@@ -11,18 +11,17 @@ import org.opencv.imgproc.Imgproc
 /**
  * Created by alvaro on 19/10/15.
  */
-object VideoCanvas{
-  val defaultImage = new BufferedImage(10,10,BufferedImage.TYPE_INT_RGB)
+object VideoCanvas {
+  val defaultImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB)
   val g = defaultImage.getGraphics
 
   g.setColor(Color.blue)
-  g.drawLine(0,0,10,10)
+  g.drawLine(0, 0, 10, 10)
   g.dispose()
 }
 
 
-
-class VideoCanvas(camera: Int, proc: Option[(Mat)=>Mat] = None ) extends ImageCanvas(VideoCanvas.defaultImage){
+class VideoCanvas(camera: Int, proc: Option[(Mat) => Mat] = None) extends ImageCanvas(VideoCanvas.defaultImage) {
   val source = VideoSource(camera)
 
   var terminateASAP = false
@@ -30,11 +29,11 @@ class VideoCanvas(camera: Int, proc: Option[(Mat)=>Mat] = None ) extends ImageCa
   import Implicits._
 
 
-  val worker = new SwingWorker[Unit,Mat]{
+  val worker = new SwingWorker[Unit, Mat] {
     override def doInBackground(): Unit = {
-      while(!terminateASAP){
+      while (!terminateASAP) {
         val mat = source.read
-        val processed = proc match{
+        val processed = proc match {
           case Some(p) => p(mat)
           case None => mat
         }
@@ -42,11 +41,13 @@ class VideoCanvas(camera: Int, proc: Option[(Mat)=>Mat] = None ) extends ImageCa
       }
 
     }
-    override def done() : Unit = {
+
+    override def done(): Unit = {
 
     }
+
     override def process(chunks: util.List[Mat]): Unit = {
-      val lastMat = chunks.get(chunks.size()-1)
+      val lastMat = chunks.get(chunks.size() - 1)
       image = lastMat
     }
   }
@@ -56,61 +57,46 @@ class VideoCanvas(camera: Int, proc: Option[(Mat)=>Mat] = None ) extends ImageCa
   def stop = terminateASAP = true
 }
 
-object VideoCanvasApp extends App{
+object VideoCanvasApp extends App {
 
-  def threshold(src: Mat) : Mat = {
-    val dst = new Mat(src.height(),src.width(),CvType.CV_8UC1)
-    Imgproc.cvtColor(src,dst,Imgproc.COLOR_RGB2GRAY)
-    Imgproc.adaptiveThreshold( dst, dst, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY,101,3)
-    dst
-  }
+  import ImageProcessing._
 
   var sizeOpen = 18
   var sizeClose = 7
 
 
-  def clean(src: Mat) : Mat = {
-    val open = Imgproc.getStructuringElement(Imgproc.MORPH_RECT,new Size(sizeOpen,sizeOpen))
-    val close = Imgproc.getStructuringElement(Imgproc.MORPH_RECT,new Size(sizeClose,sizeClose))
-    try {
-      Imgproc.morphologyEx(src, src, Imgproc.MORPH_CLOSE, close)
-      Imgproc.morphologyEx(src, src, Imgproc.MORPH_OPEN, open)
-    }
-    catch{
-      case t : Throwable => t.printStackTrace()
-    }
-    src
-  }
 
   nu.pattern.OpenCV.loadLibrary()
 
   val f = new JFrame("Video")
-  f.setLayout( new BorderLayout() )
-  val proc = threshold _  andThen clean
-  f.add( new VideoCanvas(0, Some(proc) ), BorderLayout.CENTER )
+  f.setLayout(new BorderLayout())
+
+  def proc(m: Mat) : Mat = clean(sizeOpen,sizeClose)( threshold()(m) )
+
+  f.add(new VideoCanvas(0, Some(proc)), BorderLayout.CENTER)
 
 
-  val openSlider = new JSlider(1,30)
+  val openSlider = new JSlider(1, 30)
   openSlider.setValue(sizeOpen)
-  openSlider.getModel.addChangeListener( new ChangeListener {
+  openSlider.getModel.addChangeListener(new ChangeListener {
     override def stateChanged(e: ChangeEvent): Unit = {
       sizeOpen = openSlider.getValue
-      println( s"sizeOpen:$sizeOpen")
+      println(s"sizeOpen:$sizeOpen")
     }
   })
-  val closeSlider = new JSlider(1,30)
+  val closeSlider = new JSlider(1, 30)
   closeSlider.setValue(sizeClose)
-  closeSlider.getModel.addChangeListener( new ChangeListener {
+  closeSlider.getModel.addChangeListener(new ChangeListener {
     override def stateChanged(e: ChangeEvent): Unit = {
       sizeClose = closeSlider.getValue
-      println( s"sizeClose:$sizeClose")
+      println(s"sizeClose:$sizeClose")
     }
   })
 
-  val sliders = new JPanel( new GridLayout(2,1) )
-  sliders.add( openSlider )
-  sliders.add( closeSlider )
-  f.add( sliders, BorderLayout.NORTH)
+  val sliders = new JPanel(new GridLayout(2, 1))
+  sliders.add(openSlider)
+  sliders.add(closeSlider)
+  f.add(sliders, BorderLayout.NORTH)
 
 
   f.pack()
