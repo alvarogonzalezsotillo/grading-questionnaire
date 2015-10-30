@@ -5,7 +5,7 @@ import java.util
 import javax.swing.event.{ChangeEvent, ChangeListener}
 import javax.swing.{JPanel, JSlider, JFrame, SwingWorker}
 
-import org.opencv.core.{Size, CvType, Mat}
+import org.opencv.core.{Scalar, Size, CvType, Mat}
 import org.opencv.imgproc.Imgproc
 
 /**
@@ -71,9 +71,21 @@ object VideoCanvasApp extends App {
   val f = new JFrame("Video")
   f.setLayout(new BorderLayout())
 
-  def proc(m: Mat) : Mat = clean(sizeOpen,sizeClose)( threshold()(m) )
 
-  f.add(new VideoCanvas(0, Some(proc)), BorderLayout.CENTER)
+
+  def thresholdAndClean(m: Mat) : Mat = clean(sizeOpen,sizeClose)()( threshold()(m) )
+
+  def detectContours(m:Mat) : Mat = {
+    val cleaned = clean(sizeOpen,sizeClose)()( threshold()(m) ) //thresholdAndClean(m)
+    val contours = findContours(cleaned)
+
+
+    //drawContours(m,contours,new Scalar(0,255,0))
+    drawContours(m,approximateContoursToQuadrilaterals(10)(contours),new Scalar(255,0,255),3)
+    m
+  }
+
+  f.add(new VideoCanvas(0, Some(detectContours)), BorderLayout.CENTER)
 
 
   val openSlider = new JSlider(1, 30)
