@@ -1,7 +1,7 @@
 import javax.swing.event.{ChangeEvent, ChangeListener}
 import javax.swing.{SwingConstants, JTabbedPane, JComponent, JFrame}
 
-import org.opencv.core.Mat
+import org.opencv.core.{Scalar, Mat}
 
 /**
  * Created by alvaro on 2/11/15.
@@ -21,7 +21,10 @@ object GUI extends App{
 
   var currentProcessingStep : Option[ProcessingStep] = null
 
-  def imageRead(m : Mat) = currentProcessingStep.map(_.processMat(m))
+  def imageRead(m : Mat) = {
+    println("imageRead")
+    currentProcessingStep.map(_.processMat(m))
+  }
 
 
   def createStepsComponent( steps: ProcessingStep* ) : JComponent = {
@@ -47,7 +50,9 @@ object GUI extends App{
 
     ret.addChangeListener( new ChangeListener(){
       override def stateChanged(e: ChangeEvent) = {
+        println( "stateChanged")
         currentProcessingStep = Some(ret.getSelectedComponent.asInstanceOf[ProcessingStep])
+        println( s"currentStep:$currentProcessingStep")
       }
     })
 
@@ -58,13 +63,35 @@ object GUI extends App{
   }
 
 
+  nu.pattern.OpenCV.loadLibrary()
+
+  import ImageProcessing._
+
+  def detectContours(filterQuadrilaterals:Boolean)(m: Mat): Mat = {
+    val cleaned = clean()()(threshold()(m))
+    val contours = findContours(cleaned)
+    if(!filterQuadrilaterals)
+      drawContours(m,contours,new Scalar(0,255,0))
+    else
+      drawContours(m, approximateContoursToQuadrilaterals()(contours), new Scalar(255, 0, 255), 3)
+    m
+  }
+
+
   val frame = new JFrame("Corrección de exámenes")
+
   frame.add( createStepsComponent(
     Step( "Video original", m => m ),
-    Step( "Umbral adaptativo", ImageProcessing.threshold() )
+    Step( "Umbral adaptativo", threshold() ),
+    Step( "Eliminación de ruido (open-close)", threshold()_ andThen clean()() ),
+    Step( "Búsqueda de contornos", detectContours(false) ),
+    Step( "Filtro de contronos no cuadriláteros", detectContours(true) )
   ))
 
   frame.setSize(640,480)
+  frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
   frame.setVisible(true)
+
+  videoSource.execute
 
 }

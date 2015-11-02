@@ -21,6 +21,7 @@ class SwingVideoSource(source: VideoSource)( imageCaptured: (Mat) => Unit ) {
     override def doInBackground(): Unit = {
       while (!terminateASAP) {
         publish(source.read)
+        println( "source.read" )
       }
 
     }
@@ -37,7 +38,7 @@ class SwingVideoSource(source: VideoSource)( imageCaptured: (Mat) => Unit ) {
 
   }
 
-  worker.execute()
+  def execute = worker.execute()
 
   def stop = terminateASAP = true
 }

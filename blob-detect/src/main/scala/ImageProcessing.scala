@@ -52,7 +52,7 @@ object ImageProcessing {
     contours.map { c => Core.multiply(c, scale, c); c}
   }
 
-  def approximateContoursToQuadrilaterals(epsilon: Double = 2)(contours: Seq[MatOfPoint]): Seq[MatOfPoint] = {
+  def approximateContoursToQuadrilaterals(epsilon: Double = 10)(contours: Seq[MatOfPoint]): Seq[MatOfPoint] = {
     contours.map(convertToQuadrilateral(epsilon)).filter(_.isDefined).map(_.get)
   }
 
