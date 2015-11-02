@@ -11,33 +11,16 @@ import org.opencv.imgproc.Imgproc
 /**
  * Created by alvaro on 19/10/15.
  */
-object VideoCanvas {
-  val defaultImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB)
-  val g = defaultImage.getGraphics
-
-  g.setColor(Color.blue)
-  g.drawLine(0, 0, 10, 10)
-  g.dispose()
-}
 
 
-class VideoCanvas(camera: Int, proc: Option[(Mat) => Mat] = None) extends ImageCanvas(VideoCanvas.defaultImage) {
-  val source = VideoSource(camera)
+class SwingVideoSource(source: VideoSource)( imageCaptured: (Mat) => Unit ) {
 
   var terminateASAP = false
-
-  import Implicits._
-
 
   val worker = new SwingWorker[Unit, Mat] {
     override def doInBackground(): Unit = {
       while (!terminateASAP) {
-        val mat = source.read
-        val processed = proc match {
-          case Some(p) => p(mat)
-          case None => mat
-        }
-        publish(processed)
+        publish(source.read)
       }
 
     }
@@ -48,13 +31,32 @@ class VideoCanvas(camera: Int, proc: Option[(Mat) => Mat] = None) extends ImageC
 
     override def process(chunks: util.List[Mat]): Unit = {
       val lastMat = chunks.get(chunks.size() - 1)
-      image = lastMat
+      imageCaptured(lastMat)
     }
+
+
   }
 
   worker.execute()
 
   def stop = terminateASAP = true
+}
+
+class VideoCanvas(camera: Int, proc: Option[(Mat) => Mat] = None) extends ImageCanvas {
+  val source = VideoSource(camera)
+  val swingSource = new SwingVideoSource(source)({ m : Mat =>
+    import Implicits._
+    val processed : Mat = proc match{
+      case Some(p) => p(m)
+      case None => m
+    }
+    image = processed
+  })
+
+
+
+
+  def stop = swingSource.stop
 }
 
 object VideoCanvasApp extends App {
@@ -65,23 +67,21 @@ object VideoCanvasApp extends App {
   var sizeClose = 7
 
 
-
   nu.pattern.OpenCV.loadLibrary()
 
   val f = new JFrame("Video")
   f.setLayout(new BorderLayout())
 
 
+  def thresholdAndClean(m: Mat): Mat = clean(sizeOpen, sizeClose)()(threshold()(m))
 
-  def thresholdAndClean(m: Mat) : Mat = clean(sizeOpen,sizeClose)()( threshold()(m) )
-
-  def detectContours(m:Mat) : Mat = {
-    val cleaned = clean(sizeOpen,sizeClose)()( threshold()(m) ) //thresholdAndClean(m)
+  def detectContours(m: Mat): Mat = {
+    val cleaned = clean(sizeOpen, sizeClose)()(threshold()(m)) //thresholdAndClean(m)
     val contours = findContours(cleaned)
 
 
     //drawContours(m,contours,new Scalar(0,255,0))
-    drawContours(m,approximateContoursToQuadrilaterals(10)(contours),new Scalar(255,0,255),3)
+    drawContours(m, approximateContoursToQuadrilaterals(10)(contours), new Scalar(255, 0, 255), 3)
     m
   }
 

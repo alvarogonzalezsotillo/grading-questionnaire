@@ -1,12 +1,28 @@
 import java.awt.event.{MouseEvent, MouseAdapter}
 import java.awt._
+import java.awt.image.BufferedImage
 import java.util
-import javax.swing.JPanel
+import javax.swing.{JPanel}
 
 /**
  * Created by alvaro on 18/10/15.
  */
-class ImageCanvas( img: Image ) extends JPanel{
+object ImageCanvas{
+  lazy val defaultImage = {
+    val w = 320
+    val h = 200
+    val image = new BufferedImage(w,h,BufferedImage.TYPE_INT_RGB)
+    val g = image.getGraphics
+    g.setColor(Color.black)
+    g.drawRect(0,0,w,h)
+    g.setColor(Color.blue)
+    g.drawString("No image",0,h/2)
+    g.dispose()
+    image
+  }
+}
+
+class ImageCanvas( img: Image = ImageCanvas.defaultImage ) extends JPanel{
 
   def imageWidth = image.getWidth(null)
   def imageHeight = image.getHeight(null)
