@@ -8,7 +8,7 @@ dependencies {
 }
 
 task run(type: JavaExec, dependsOn: classes) {
-    main = 'BlobDetect'
+    main = 'GUI'
     classpath sourceSets.main.runtimeClasspath
     classpath configurations.runtime
 }
