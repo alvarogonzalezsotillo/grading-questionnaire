@@ -59,28 +59,23 @@ object Implicits {
       image
     }
   }
+
   def BufferedImage2Mat( src: BufferedImage, dst: Mat ){
     val image = toBufferedImageOfType(src,BufferedImage.TYPE_3BYTE_BGR)
     try {
-      //println(Thread.currentThread().getName)
-      //println("a")
       assert(image.getType == BufferedImage.TYPE_3BYTE_BGR)
-      //println("b")
       assert(dst.`type` == CvType.CV_8UC3)
-      //println(dst.width() + " " + image.getWidth )
       assert(dst.width == image.getWidth)
-      //println("d")
       assert(dst.height == image.getHeight)
-      //println("e")
       val pixels = (image.getRaster().getDataBuffer()).asInstanceOf[DataBufferByte].getData()
-      //println("f")
       dst.put(0, 0, pixels)
-      //println("g")
     }
     catch{
       case t : Throwable => t.printStackTrace()
     }
   }
+
+
 
 
 }

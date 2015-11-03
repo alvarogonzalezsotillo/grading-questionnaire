@@ -81,8 +81,38 @@ object ImageProcessing {
 
   def drawContours(dst: Mat, contours: Seq[MatOfPoint], color: Scalar, thickness: Int = 1): Mat = {
     import scala.collection.JavaConversions._
-    Imgproc.drawContours(dst, contours, -1, color,thickness)
+    Imgproc.drawContours(dst, contours, -1, color, thickness)
     dst
+  }
+
+  def findBiggestAlignedQuadrilaterals(number: Int = 5)(contours: Seq[MatOfPoint]) = {
+
+    import scala.collection.JavaConversions._
+
+    case class Shape(area: Double, contour: MatOfPoint){
+      lazy val center = {
+        val points = contour.toArray
+        val c = points.foldLeft( new Point(0,0) ) { (p, center) =>
+          center.x += p.x
+          center.y += p.y
+          center
+        }
+        c.x /= points.size
+        c.y /= points.size
+        c
+      }
+    }
+
+
+    val allShapes = contours.map(c => Shape(Imgproc.contourArea(c), c)).
+      sortBy(_.area).
+      reverse
+
+    def criteria(shapes:Seq[Shape]) = {
+      true
+    }
+
+    allShapes.grouped(number).find(criteria)
   }
 
   //def groupContoursByArea
