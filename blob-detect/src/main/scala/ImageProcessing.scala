@@ -79,32 +79,42 @@ object ImageProcessing {
     }
   }
 
-  def drawContours(dst: Mat, contours: Seq[MatOfPoint], color: Scalar, thickness: Int = 1): Mat = {
+
+  implicit class Shape(contour: MatOfPoint){
+    lazy val center = {
+      val points = contour.toArray
+      val c = points.foldLeft( new Point(0,0) ) { (p, center) =>
+        center.x += p.x
+        center.y += p.y
+        center
+      }
+      c.x /= points.size
+      c.y /= points.size
+      c
+    }
+
+    lazy val area = Imgproc.contourArea(contour)
+  }
+
+  implicit class Ruby( proc: => Unit ){
+    def If( b: Boolean) = if(b) proc
+    def Unless(b: Boolean ) = if(!b) proc
+  }
+
+
+  def drawContours(dst: Mat, contours: Seq[MatOfPoint], color: Scalar, thickness: Int = 1, drawCenters:Boolean = true ): Mat = {
     import scala.collection.JavaConversions._
     Imgproc.drawContours(dst, contours, -1, color, thickness)
+    Imgproc.drawContours(dst, contours.map(c=>new MatOfPoint(c.center)), -1, color, thickness) If drawCenters
     dst
   }
 
   def findBiggestAlignedQuadrilaterals(number: Int = 5)(contours: Seq[MatOfPoint]) = {
 
-    import scala.collection.JavaConversions._
-
-    case class Shape(area: Double, contour: MatOfPoint){
-      lazy val center = {
-        val points = contour.toArray
-        val c = points.foldLeft( new Point(0,0) ) { (p, center) =>
-          center.x += p.x
-          center.y += p.y
-          center
-        }
-        c.x /= points.size
-        c.y /= points.size
-        c
-      }
-    }
 
 
-    val allShapes = contours.map(c => Shape(Imgproc.contourArea(c), c)).
+
+    val allShapes = contours.map(c => Shape(c)).
       sortBy(_.area).
       reverse
 
