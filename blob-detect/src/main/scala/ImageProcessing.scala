@@ -6,6 +6,8 @@ import org.opencv.imgproc.Imgproc
  */
 object ImageProcessing {
 
+  import Implicits._
+
   def threshold(blockSize: Int = 101, C: Double = 3)(src: Mat): Mat = {
     val dst = new Mat(src.height(), src.width(), CvType.CV_8UC1)
     Imgproc.cvtColor(src, dst, Imgproc.COLOR_RGB2GRAY)
@@ -80,52 +82,24 @@ object ImageProcessing {
   }
 
 
-  implicit class Shape(contour: MatOfPoint){
-    lazy val center = {
-      val points = contour.toArray
-      val c = points.foldLeft( new Point(0,0) ) { (p, center) =>
-        center.x += p.x
-        center.y += p.y
-        center
-      }
-      c.x /= points.size
-      c.y /= points.size
-      c
-    }
-
-    lazy val area = Imgproc.contourArea(contour)
-  }
-
-  implicit class Ruby( proc: => Unit ){
-    def If( b: Boolean) = if(b) proc
-    def Unless(b: Boolean ) = if(!b) proc
-  }
-
-
-  def drawContours(dst: Mat, contours: Seq[MatOfPoint], color: Scalar, thickness: Int = 1, drawCenters:Boolean = true ): Mat = {
+  def drawContours(dst: Mat, contours: Seq[MatOfPoint], color: Scalar, thickness: Int = 1, drawCenters: Boolean = true): Mat = {
     import scala.collection.JavaConversions._
     Imgproc.drawContours(dst, contours, -1, color, thickness)
-    Imgproc.drawContours(dst, contours.map(c=>new MatOfPoint(c.center)), -1, color, thickness) If drawCenters
+    Imgproc.drawContours(dst, contours.map(c => new MatOfPoint(c.center)), -1, color, thickness) If drawCenters
+    Imgproc.drawContours(dst, Seq(locateAnswerMatrix()(contours).get), -1, color, thickness) If drawCenters
     dst
   }
 
-  def findBiggestAlignedQuadrilaterals(number: Int = 5)(contours: Seq[MatOfPoint]) = {
-
-
-
-
-    val allShapes = contours.map(c => Shape(c)).
-      sortBy(_.area).
-      reverse
-
-    def criteria(shapes:Seq[Shape]) = {
-      true
-    }
-
-    allShapes.grouped(number).find(criteria)
+  def findBiggestAlignedQuadrilaterals(number: Int = 5)(contours: Seq[MatOfPoint]) : Seq[MatOfPoint] = {
+    contours.sortBy(_.area).reverse.take(number)
   }
 
-  //def groupContoursByArea
-
+  def locateAnswerMatrix(number: Int = 5)(contours: Seq[MatOfPoint]) : Option[MatOfPoint] = {
+    //assert(contours.size == number)
+    val shapes = contours.map(c => new Shape(c))
+    val leftmostCenter = shapes.map(_.center).minBy(_.x)
+    val rightmostCenter = shapes.map(_.center).maxBy(_.x)
+    Some(new MatOfPoint(leftmostCenter, rightmostCenter))
+  }
 
 }

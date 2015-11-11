@@ -1,7 +1,8 @@
 import java.awt.AlphaComposite
 import java.awt.image.{DataBufferByte, BufferedImage}
 
-import org.opencv.core.{CvType, Mat}
+import org.opencv.core.{Point, MatOfPoint, CvType, Mat}
+import org.opencv.imgproc.Imgproc
 
 /**
  * Created by alvaro on 19/10/15.
@@ -75,7 +76,36 @@ object Implicits {
     }
   }
 
+  implicit class Shape(contour: MatOfPoint){
+    lazy val center = {
+      val points = contour.toArray
+      val c = points.foldLeft( new Point(0,0) ) { (p, center) =>
+        center.x += p.x
+        center.y += p.y
+        center
+      }
+      c.x /= points.size
+      c.y /= points.size
+      c
+    }
+
+    lazy val area = Imgproc.contourArea(contour)
+  }
+
+  implicit class RubyPostfixConditionals[T]( proc: => T ){
+    def If( b: Boolean) = if(b) proc
+    def Unless(b: Boolean ) = if(!b) proc
+  }
 
 
+  implicit class MyPoint(val point:Point){
+    def dotProduct(p:MyPoint) : Double = point.x*p.x + point.y+p.y
+    def *(p:MyPoint) : Double = dotProduct(p)
+    def crossProductZ(p:MyPoint) : Double = point.x*p.y - point.y*p.x
+    def minus(p:MyPoint) = new MyPoint( new Point(point.x-p.x,point.y-p.y))
+    def -(p:MyPoint) = minus(p)
+  }
+
+  implicit def toOpenCVPoint(p:MyPoint) : Point = p.point
 
 }
