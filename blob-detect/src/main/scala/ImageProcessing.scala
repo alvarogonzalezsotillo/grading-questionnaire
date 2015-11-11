@@ -27,14 +27,15 @@ object ImageProcessing {
     val open = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(sizeOpen, sizeOpen))
     val close = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(sizeClose, sizeClose))
     try {
+      // TODO: HOW TO USE ITERATIONS AND ANCHOR TO NOT DISPLACE RESULTS? MEANWHILE, EXTERNAL LOOP
       var currentMat = src
-      val anchorClose = new Point(1.0 * sizeClose / 2, 1.0 * sizeClose / 2)
+      //val anchorClose = new Point(1.0 * sizeClose / 2, 1.0 * sizeClose / 2)
 
       for (i <- 1 to iterations) {
         Imgproc.morphologyEx(currentMat, ret, Imgproc.MORPH_CLOSE, close)
         currentMat = ret
       }
-      val anchorOpen = new Point(1.0 * sizeOpen / 2, 1.0 * sizeOpen / 2)
+      //val anchorOpen = new Point(1.0 * sizeOpen / 2, 1.0 * sizeOpen / 2)
       for (i <- 1 to iterations) {
         Imgproc.morphologyEx(ret, ret, Imgproc.MORPH_OPEN, open)
       }
