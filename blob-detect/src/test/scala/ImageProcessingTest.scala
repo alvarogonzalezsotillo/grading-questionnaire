@@ -12,7 +12,7 @@ import org.scalatest.junit.JUnitRunner
 
 
 @RunWith(classOf[JUnitRunner])
-class ImageProcessing extends FlatSpec {
+class ImageProcessingTest extends FlatSpec {
 
   "Images" should "be converted to grayscale" in {
       

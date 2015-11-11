@@ -99,15 +99,15 @@ object Implicits {
 
 
   implicit class MyPoint(val point:Point){
-    def dotProduct(p:Point) : Double = point.x*p.x + point.y+p.y
+    def dotProduct(p:Point) : Double = point.x*p.x + point.y*p.y
 
     def product(d:Double) = new Point(point.x*d,point.y*d)
 
     def crossProductZ(p:Point) : Double = point.x*p.y - point.y*p.x
 
-    def module = Math.sqrt( dotProduct(this) )
+    def modulus = Math.sqrt( dotProduct(this) )
 
-    def normalize = this * (1/module)
+    def normalize = this * (1/modulus)
 
     def minus(p:Point) = new Point(point.x-p.x,point.y-p.y)
     def plus(p:Point) = new Point(point.x+p.x,point.y+p.y)
