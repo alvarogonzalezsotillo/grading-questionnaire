@@ -20,8 +20,8 @@ class SwingVideoSource(source: VideoSource)( imageCaptured: (Mat) => Unit ) {
   val worker = new SwingWorker[Unit, Mat] {
     override def doInBackground(): Unit = {
       while (!terminateASAP) {
+        Thread.sleep(100)
         publish(source.read)
-        println( "source.read" )
       }
 
     }
@@ -55,7 +55,7 @@ class VideoCanvas(camera: Int, proc: Option[(Mat) => Mat] = None) extends ImageC
   })
 
 
-
+  swingSource.execute
 
   def stop = swingSource.stop
 }
@@ -66,6 +66,8 @@ object VideoCanvasApp extends App {
 
   var sizeOpen = 18
   var sizeClose = 7
+  var iterations = 1
+
 
 
   nu.pattern.OpenCV.loadLibrary()
@@ -74,10 +76,10 @@ object VideoCanvasApp extends App {
   f.setLayout(new BorderLayout())
 
 
-  def thresholdAndClean(m: Mat): Mat = clean(sizeOpen, sizeClose)()(threshold()(m))
+  def thresholdAndClean(m: Mat): Mat = clean(iterations,sizeOpen, sizeClose)()(threshold()(m))
 
   def detectContours(m: Mat): Mat = {
-    val cleaned = clean(sizeOpen, sizeClose)()(threshold()(m)) //thresholdAndClean(m)
+    val cleaned = clean(iterations,sizeOpen, sizeClose)()(threshold()(m)) //thresholdAndClean(m)
     val contours = findContours(cleaned)
 
 
@@ -86,7 +88,7 @@ object VideoCanvasApp extends App {
     m
   }
 
-  f.add(new VideoCanvas(0, Some(detectContours)), BorderLayout.CENTER)
+  f.add(new VideoCanvas(0, Some(thresholdAndClean)), BorderLayout.CENTER)
 
 
   val openSlider = new JSlider(1, 30)
@@ -94,7 +96,7 @@ object VideoCanvasApp extends App {
   openSlider.getModel.addChangeListener(new ChangeListener {
     override def stateChanged(e: ChangeEvent): Unit = {
       sizeOpen = openSlider.getValue
-      println(s"sizeOpen:$sizeOpen")
+      println( s"iterations:$iterations sizeOpen:$sizeOpen sizeClose:$sizeClose ")
     }
   })
   val closeSlider = new JSlider(1, 30)
@@ -102,13 +104,23 @@ object VideoCanvasApp extends App {
   closeSlider.getModel.addChangeListener(new ChangeListener {
     override def stateChanged(e: ChangeEvent): Unit = {
       sizeClose = closeSlider.getValue
-      println(s"sizeClose:$sizeClose")
+      println( s"iterations:$iterations sizeOpen:$sizeOpen sizeClose:$sizeClose ")
+    }
+  })
+  val iterationsSlider = new JSlider(1,20)
+  iterationsSlider.setValue(1)
+  iterationsSlider.getModel.addChangeListener( new ChangeListener {
+
+    override def stateChanged(e: ChangeEvent): Unit = {
+      iterations = iterationsSlider.getValue
+      println( s"iterations:$iterations sizeOpen:$sizeOpen sizeClose:$sizeClose ")
     }
   })
 
-  val sliders = new JPanel(new GridLayout(2, 1))
+  val sliders = new JPanel(new GridLayout(3, 1))
   sliders.add(openSlider)
   sliders.add(closeSlider)
+  sliders.add(iterationsSlider)
   f.add(sliders, BorderLayout.NORTH)
 
 

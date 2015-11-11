@@ -21,10 +21,8 @@ object GUI extends App {
 
   var currentProcessingStep: Option[ProcessingStep] = null
 
-  def imageRead(m: Mat) = {
-    println("imageRead")
-    currentProcessingStep.map(_.processMat(m))
-  }
+  def imageRead(m: Mat) = currentProcessingStep.map(_.processMat(m))
+
 
 
   def createStepsComponent(steps: ProcessingStep*): JComponent = {

@@ -11,11 +11,12 @@ object ImageProcessing {
   def threshold(blockSize: Int = 101, C: Double = 3)(src: Mat): Mat = {
     val dst = new Mat(src.height(), src.width(), CvType.CV_8UC1)
     Imgproc.cvtColor(src, dst, Imgproc.COLOR_RGB2GRAY)
-    Imgproc.adaptiveThreshold(dst, dst, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, blockSize, C)
+    Imgproc.adaptiveThreshold(dst, dst, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY_INV, blockSize, C)
     dst
   }
 
-  def clean(sizeOpen: Int = 18, sizeClose: Int = 7)(dst: Mat = null)(src: Mat): Mat = {
+
+  def clean(iterations: Int = 3, sizeOpen: Int = 7, sizeClose: Int = 7)(dst: Mat = null)(src: Mat): Mat = {
 
     val ret = if (dst == null) {
       new Mat
@@ -26,8 +27,17 @@ object ImageProcessing {
     val open = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(sizeOpen, sizeOpen))
     val close = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(sizeClose, sizeClose))
     try {
-      Imgproc.morphologyEx(src, ret, Imgproc.MORPH_CLOSE, close)
-      Imgproc.morphologyEx(ret, ret, Imgproc.MORPH_OPEN, open)
+      var currentMat = src
+      val anchorClose = new Point(1.0 * sizeClose / 2, 1.0 * sizeClose / 2)
+
+      for (i <- 1 to iterations) {
+        Imgproc.morphologyEx(currentMat, ret, Imgproc.MORPH_CLOSE, close)
+        currentMat = ret
+      }
+      val anchorOpen = new Point(1.0 * sizeOpen / 2, 1.0 * sizeOpen / 2)
+      for (i <- 1 to iterations) {
+        Imgproc.morphologyEx(ret, ret, Imgproc.MORPH_OPEN, open)
+      }
     }
     catch {
       case t: Throwable => t.printStackTrace()
