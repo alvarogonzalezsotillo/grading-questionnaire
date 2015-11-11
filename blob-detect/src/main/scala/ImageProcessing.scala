@@ -106,11 +106,35 @@ object ImageProcessing {
   }
 
   def locateAnswerMatrix(number: Int = 5)(contours: Seq[MatOfPoint]) : Option[MatOfPoint] = {
+    import scala.collection.JavaConverters._
     //assert(contours.size == number)
-    val shapes = contours.map(c => new Shape(c))
-    val leftmostCenter = shapes.map(_.center).minBy(_.x)
-    val rightmostCenter = shapes.map(_.center).maxBy(_.x)
-    Some(new MatOfPoint(leftmostCenter, rightmostCenter))
+
+    val (center,orientation) = {
+      val shapes = contours.map(c => new Shape(c))
+      val leftmostCenter = shapes.map(_.center).minBy(_.x)
+      val rightmostCenter = shapes.map(_.center).maxBy(_.x)
+
+      ( (leftmostCenter + rightmostCenter) * 0.5, (rightmostCenter - leftmostCenter) )
+    }
+
+    val difs = {
+      val allPoints = contours.map( c => c.toList.asScala ).flatten
+      allPoints.map( _ - center ).toSeq
+    }
+
+    val unit = orientation.normalize
+
+    val (upperLeft,upperRight) = {
+      val upperPoints = difs.filter(_.crossProductZ(unit) > 0)
+      (upperPoints.minBy(_.normalize * unit), upperPoints.maxBy(_.normalize * unit))
+    }
+
+    val (lowerLeft,lowerRight) = {
+      val lowerPoints = difs.filter( _.crossProductZ(unit) < 0)
+      (lowerPoints.minBy(_.normalize * unit), lowerPoints.maxBy(_.normalize * unit))
+    }
+
+    Some(new MatOfPoint(upperLeft+center, upperRight+center,lowerRight+center,lowerLeft+center))
   }
 
 }

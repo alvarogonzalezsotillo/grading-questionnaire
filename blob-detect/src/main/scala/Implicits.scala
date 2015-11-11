@@ -99,11 +99,24 @@ object Implicits {
 
 
   implicit class MyPoint(val point:Point){
-    def dotProduct(p:MyPoint) : Double = point.x*p.x + point.y+p.y
-    def *(p:MyPoint) : Double = dotProduct(p)
-    def crossProductZ(p:MyPoint) : Double = point.x*p.y - point.y*p.x
-    def minus(p:MyPoint) = new MyPoint( new Point(point.x-p.x,point.y-p.y))
-    def -(p:MyPoint) = minus(p)
+    def dotProduct(p:Point) : Double = point.x*p.x + point.y+p.y
+
+    def product(d:Double) = new Point(point.x*d,point.y*d)
+
+    def crossProductZ(p:Point) : Double = point.x*p.y - point.y*p.x
+
+    def module = Math.sqrt( dotProduct(this) )
+
+    def normalize = this * (1/module)
+
+    def minus(p:Point) = new Point(point.x-p.x,point.y-p.y)
+    def plus(p:Point) = new Point(point.x+p.x,point.y+p.y)
+
+    def *(p:Point) : Double = dotProduct(p)
+    def *(d:Double) = product(d)
+    def -(p:Point) = minus( p )
+    def +(p:Point) = plus( p )
+
   }
 
   implicit def toOpenCVPoint(p:MyPoint) : Point = p.point
