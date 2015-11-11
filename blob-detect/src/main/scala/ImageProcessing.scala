@@ -106,36 +106,41 @@ object ImageProcessing {
 
   def locateAnswerMatrix(number: Int = 5)(contours: Seq[MatOfPoint]) : Option[MatOfPoint] = {
     import scala.collection.JavaConverters._
-    //assert(contours.size == number)
 
-    val (center,orientation) = {
-      val shapes = contours.map(c => new Shape(c))
-      val leftmostCenter = shapes.map(_.center).minBy(_.x)
-      val rightmostCenter = shapes.map(_.center).maxBy(_.x)
 
-      ( (leftmostCenter + rightmostCenter) * 0.5, (rightmostCenter - leftmostCenter) )
+    def doIt() = {
+      val (center, orientation) = {
+        val shapes = contours.map(c => new Shape(c))
+        val leftmostCenter = shapes.map(_.center).minBy(_.x)
+        val rightmostCenter = shapes.map(_.center).maxBy(_.x)
+
+        ((leftmostCenter + rightmostCenter) * 0.5, (rightmostCenter - leftmostCenter))
+      }
+
+      val difs = {
+        val allPoints = contours.map(_.toList.asScala).flatten
+        allPoints.map(_ - center)
+      }
+
+      val unit = orientation.normalize
+
+      val (upperLeft, upperRight) = {
+        val upperPoints = difs.filter(_.crossProductZ(unit) > 0)
+        (upperPoints.minBy(_.normalize * unit), upperPoints.maxBy(_.normalize * unit))
+      }
+
+      val (lowerLeft, lowerRight) = {
+        val lowerPoints = difs.filter(_.crossProductZ(unit) < 0)
+        (lowerPoints.minBy(_.normalize * unit), lowerPoints.maxBy(_.normalize * unit))
+      }
+
+      // TODO: EXTRACT THIS FACTOR FROM LATEX TEMPLATE (CURRENTLY, MEASURED WITH A RULER)
+      val extension = orientation * (1.6 / 12.6)
+
+      Some(new MatOfPoint(upperLeft + center, upperRight + center + extension, lowerRight + center + extension, lowerLeft + center))
     }
 
-    val difs = {
-      val allPoints = contours.map( c => c.toList.asScala ).flatten
-      allPoints.map( _ - center ).toSeq
-    }
-
-    val unit = orientation.normalize
-
-    val (upperLeft,upperRight) = {
-      val upperPoints = difs.filter(_.crossProductZ(unit) > 0)
-      (upperPoints.minBy(_.normalize * unit), upperPoints.maxBy(_.normalize * unit))
-    }
-
-    val (lowerLeft,lowerRight) = {
-      val lowerPoints = difs.filter( _.crossProductZ(unit) < 0)
-      (lowerPoints.minBy(_.normalize * unit), lowerPoints.maxBy(_.normalize * unit))
-    }
-
-    val extension = orientation * (1.6/12.6)
-
-    Some(new MatOfPoint(upperLeft+center, upperRight+center + extension ,lowerRight+center+extension,lowerLeft+center))
+    if( contours.size == number ) doIt else None
   }
 
 }

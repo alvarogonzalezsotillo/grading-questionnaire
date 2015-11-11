@@ -1,5 +1,5 @@
 import javax.swing.event.{ChangeEvent, ChangeListener}
-import javax.swing.{SwingConstants, JTabbedPane, JComponent, JFrame}
+import javax.swing._
 
 import org.opencv.core.{MatOfPoint, Scalar, Mat}
 import org.opencv.imgproc.Imgproc
@@ -75,6 +75,8 @@ object GUI extends App {
 
   def locateAnswerMatrixAsSeq( contours: Seq[MatOfPoint] ) = Seq( locateAnswerMatrix()(contours).get )
 
+
+  UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
 
 
   val frame = new JFrame("Corrección de exámenes")
