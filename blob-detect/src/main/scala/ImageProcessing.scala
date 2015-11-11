@@ -97,7 +97,6 @@ object ImageProcessing {
     import scala.collection.JavaConversions._
     Imgproc.drawContours(dst, contours, -1, color, thickness)
     Imgproc.drawContours(dst, contours.map(c => new MatOfPoint(c.center)), -1, color, thickness) If drawCenters
-    Imgproc.drawContours(dst, Seq(locateAnswerMatrix()(contours).get), -1, color, thickness) If drawCenters
     dst
   }
 
@@ -134,7 +133,9 @@ object ImageProcessing {
       (lowerPoints.minBy(_.normalize * unit), lowerPoints.maxBy(_.normalize * unit))
     }
 
-    Some(new MatOfPoint(upperLeft+center, upperRight+center,lowerRight+center,lowerLeft+center))
+    val extension = orientation * (1.6/12.6)
+
+    Some(new MatOfPoint(upperLeft+center, upperRight+center + extension ,lowerRight+center+extension,lowerLeft+center))
   }
 
 }

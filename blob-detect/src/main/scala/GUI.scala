@@ -2,6 +2,7 @@ import javax.swing.event.{ChangeEvent, ChangeListener}
 import javax.swing.{SwingConstants, JTabbedPane, JComponent, JFrame}
 
 import org.opencv.core.{MatOfPoint, Scalar, Mat}
+import org.opencv.imgproc.Imgproc
 
 /**
  * Created by alvaro on 2/11/15.
@@ -72,6 +73,9 @@ object GUI extends App {
     m
   }
 
+  def locateAnswerMatrixAsSeq( contours: Seq[MatOfPoint] ) = Seq( locateAnswerMatrix()(contours).get )
+
+
 
   val frame = new JFrame("Corrección de exámenes")
 
@@ -81,7 +85,8 @@ object GUI extends App {
     Step("Eliminación de ruido (open-close)", threshold() _ andThen clean()()),
     Step("Búsqueda de contornos", detectContours()),
     Step("Filtro de contronos no cuadriláteros", detectContours(approximateContoursToQuadrilaterals()) ),
-    Step("Los mayores cinco cuadriláteros", detectContours( approximateContoursToQuadrilaterals() _ andThen findBiggestAlignedQuadrilaterals() ) )
+    Step("Los mayores cinco cuadriláteros", detectContours( approximateContoursToQuadrilaterals() _ andThen findBiggestAlignedQuadrilaterals() ) ),
+    Step("Tabla de respuestas", detectContours( approximateContoursToQuadrilaterals() _ andThen findBiggestAlignedQuadrilaterals() andThen locateAnswerMatrixAsSeq ) )
   ))
 
   frame.setSize(640, 480)
