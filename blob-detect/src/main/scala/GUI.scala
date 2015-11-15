@@ -69,6 +69,7 @@ object GUI extends App {
   def detectContours(contoursFilter: Seq[MatOfPoint] => Seq[MatOfPoint] = identity)(m: Mat): Mat = {
     val cleaned = clean()()(threshold()(m))
     val contours = findContours(cleaned)
+
     drawContours(m, contoursFilter(contours), new Scalar(255, 0, 255), 3)
     m
   }
