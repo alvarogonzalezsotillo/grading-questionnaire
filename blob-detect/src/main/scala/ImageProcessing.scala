@@ -100,12 +100,14 @@ object ImageProcessing {
     dst
   }
 
-  def findBiggestAlignedQuadrilaterals(number: Int = 5)(contours: Seq[MatOfPoint]) : Seq[MatOfPoint] = {
+  def findBiggestAlignedQuadrilaterals(number: Int = 5)(contours: Seq[MatOfPoint]): Seq[MatOfPoint] = {
     contours.sortBy(_.area).reverse.take(number)
   }
 
-  def locateAnswerMatrix(number: Int = 5)(contours: Seq[MatOfPoint]) : Option[MatOfPoint] = {
+  def locateAnswerMatrix(number: Int = 5)(contours: Seq[MatOfPoint]): Option[MatOfPoint] = {
     import scala.collection.JavaConverters._
+
+    val allPoints = contours.map(_.toList.asScala).flatten
 
 
     def doIt() = {
@@ -117,10 +119,7 @@ object ImageProcessing {
         ((leftmostCenter + rightmostCenter) * 0.5, (rightmostCenter - leftmostCenter))
       }
 
-      val difs = {
-        val allPoints = contours.map(_.toList.asScala).flatten
-        allPoints.map(_ - center)
-      }
+      val difs = allPoints.map(_ - center)
 
       val unit = orientation.normalize
 
@@ -137,10 +136,20 @@ object ImageProcessing {
       // TODO: EXTRACT THIS FACTOR FROM LATEX TEMPLATE (CURRENTLY, MEASURED WITH A RULER)
       val extension = orientation * (1.6 / 12.6)
 
-      Some(new MatOfPoint(upperLeft + center, upperRight + center + extension, lowerRight + center + extension, lowerLeft + center))
+      new MatOfPoint(upperLeft + center, upperRight + center + extension, lowerRight + center + extension, lowerLeft + center)
     }
 
-    if( contours.size == number ) doIt else None
+    def checkIt(contour: MatOfPoint) = {
+      val limit = -4
+      contours.size == number &&
+        allPoints.forall { p =>
+          val contour2f = new MatOfPoint2f()
+          contour.convertTo(contour2f, CvType.CV_32FC2)
+          Imgproc.pointPolygonTest(contour2f, p, true) > limit
+        }
+    }
+
+    doIt If checkIt _
   }
 
 }

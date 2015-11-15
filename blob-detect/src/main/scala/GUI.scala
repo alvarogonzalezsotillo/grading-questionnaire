@@ -2,7 +2,7 @@ import java.awt.{Image, Graphics, BorderLayout}
 import javax.swing.event.{ChangeEvent, ChangeListener}
 import javax.swing._
 
-import org.opencv.core.{Rect, MatOfPoint, Scalar, Mat}
+import org.opencv.core._
 import org.opencv.imgproc.Imgproc
 
 /**
@@ -94,7 +94,10 @@ object GUI extends App {
     m
   }
 
-  def locateAnswerMatrixAsSeq( contours: Seq[MatOfPoint] ) = Seq( locateAnswerMatrix()(contours).get )
+  def locateAnswerMatrixAsSeq( contours: Seq[MatOfPoint] ) = locateAnswerMatrix()(contours) match{
+    case Some(contour) => Seq(contour)
+    case None => Seq(new MatOfPoint(new Point(0,0) ) )
+  }
 
 
   UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())

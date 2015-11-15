@@ -93,9 +93,15 @@ object Implicits {
   }
 
   implicit class RubyPostfixConditionals[T]( proc: => T ){
-    def If( b: Boolean) = if(b) proc
-    def Unless(b: Boolean ) = if(!b) proc
+    def If( b: Boolean) = if(b) Some(proc) else None
+    def If( condition: T => Boolean) = {
+      val ret = proc
+      if( condition(ret) ) Some(ret) else None
+    }
+
+    def Unless(b: Boolean ) = If(!b)
   }
+
 
 
   implicit class MyPoint(val point:Point){
