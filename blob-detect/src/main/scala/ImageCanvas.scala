@@ -43,9 +43,34 @@ class ImageCanvas( img: Image = ImageCanvas.defaultImage ) extends JPanel{
 
   setDoubleBuffered(true)
 
+  def computeBestFit = {
+    val imgW = _image.getWidth(null)
+    val imgH = _image.getHeight(null)
+    val w = getWidth
+    val h = getHeight
+
+    val imgRatio = 1.0*imgW/imgH
+    val ratio = 1.0*w/h
+    val imageIsWider = imgRatio > ratio
+
+    if( imageIsWider ){
+      val scale = 1.0*w/imgW
+      val dstH = imgH*scale
+      val y = (h - dstH)/2
+      new Rectangle( 0, y.toInt, w, dstH.toInt)
+    }
+    else{
+      val scale = 1.0*h/imgH
+      val dstW = imgW*scale
+      val x = (w - dstW)/2
+      new Rectangle(x.toInt,0,dstW.toInt,h)
+    }
+  }
+
   override def paintComponent(g: Graphics) = {
     import scala.collection.JavaConversions._
-    g.drawImage(_image,0,0,getWidth,getHeight,null)
+    val r = computeBestFit
+    g.drawImage(_image,r.x,r.y,r.width,r.height,null)
     for( p <- puntosDeCirculos ) drawCircles(p,g)
   }
 
