@@ -1,7 +1,8 @@
+import java.awt.{Image, Graphics, BorderLayout}
 import javax.swing.event.{ChangeEvent, ChangeListener}
 import javax.swing._
 
-import org.opencv.core.{MatOfPoint, Scalar, Mat}
+import org.opencv.core.{Rect, MatOfPoint, Scalar, Mat}
 import org.opencv.imgproc.Imgproc
 
 /**
@@ -30,12 +31,31 @@ object GUI extends App {
 
     class CanvasProcessingStep(s: ProcessingStep) extends ImageCanvas with ProcessingStep {
       val stepName = s.stepName
+
+      private var overlay : Image = null
+
+
       val processMat = { (m: Mat) =>
         import Implicits._
+        setOverlayImage(m)
         val ret = s.processMat(m)
         image = ret
         ret
       }
+
+      private def setOverlayImage( m : Mat ) = {
+        import Implicits._
+        val mat  = new Mat
+        Imgproc.pyrDown(m,mat)
+        Imgproc.pyrDown(mat,mat)
+        overlay = mat
+      }
+
+      override def paint( g: Graphics ) = {
+        super.paint(g)
+        g.drawImage(overlay,30,30,null)
+      }
+
     }
 
 
