@@ -1,9 +1,10 @@
+package imgproc
+
 /**
  * Created by alvaro on 8/07/15.
  */
 
 import org.junit.runner.RunWith
-import org.junit.Assert._
 import org.opencv.core.Point
 import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner
@@ -12,7 +13,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class MyPointTest extends FlatSpec {
 
-  import Implicits._
+  import imgproc.Implicits._
 
   case class Epsilon(epsilon:Double)
 

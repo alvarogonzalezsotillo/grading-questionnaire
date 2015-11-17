@@ -1,6 +1,8 @@
-import java.awt.{Image, Graphics, BorderLayout}
-import javax.swing.event.{ChangeEvent, ChangeListener}
+package imgproc
+
+import java.awt.{Graphics, Image}
 import javax.swing._
+import javax.swing.event.{ChangeEvent, ChangeListener}
 
 import org.opencv.core._
 import org.opencv.imgproc.Imgproc
@@ -36,7 +38,7 @@ object GUI extends App {
 
 
       val processMat = { (m: Mat) =>
-        import Implicits._
+        import imgproc.Implicits._
         setOverlayImage(m)
         val ret = s.processMat(m)
         image = ret
@@ -44,7 +46,7 @@ object GUI extends App {
       }
 
       private def setOverlayImage( m : Mat ) = {
-        import Implicits._
+        import imgproc.Implicits._
         val mat  = new Mat
         Imgproc.pyrDown(m,mat)
         Imgproc.pyrDown(mat,mat)
@@ -84,7 +86,7 @@ object GUI extends App {
 
   nu.pattern.OpenCV.loadLibrary()
 
-  import ImageProcessing._
+  import imgproc.ImageProcessing._
 
   def detectContours(contoursFilter: Seq[MatOfPoint] => Seq[MatOfPoint] = identity)(m: Mat): Mat = {
     val cleaned = clean()()(threshold()(m))

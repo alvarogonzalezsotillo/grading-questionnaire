@@ -1,12 +1,11 @@
-import java.awt.{GridLayout, Color, BorderLayout}
-import java.awt.image.{DataBufferByte, BufferedImage}
-import java.beans.{PropertyChangeEvent, PropertyChangeListener}
+package imgproc
+
+import java.awt.{BorderLayout, GridLayout}
 import java.util
 import javax.swing.event.{ChangeEvent, ChangeListener}
-import javax.swing.{JPanel, JSlider, JFrame, SwingWorker}
+import javax.swing.{JFrame, JPanel, JSlider, SwingWorker}
 
-import org.opencv.core.{Scalar, Size, CvType, Mat}
-import org.opencv.imgproc.Imgproc
+import org.opencv.core.{Mat, Scalar}
 
 /**
  * Created by alvaro on 19/10/15.
@@ -46,7 +45,7 @@ class SwingVideoSource(source: VideoSource)( imageCaptured: (Mat) => Unit ) {
 class VideoCanvas(camera: Int, proc: Option[(Mat) => Mat] = None) extends ImageCanvas {
   val source = VideoSource(camera)
   val swingSource = new SwingVideoSource(source)({ m : Mat =>
-    import Implicits._
+    import imgproc.Implicits._
     val processed : Mat = proc match{
       case Some(p) => p(m)
       case None => m
@@ -62,7 +61,7 @@ class VideoCanvas(camera: Int, proc: Option[(Mat) => Mat] = None) extends ImageC
 
 object VideoCanvasApp extends App {
 
-  import ImageProcessing._
+  import imgproc.ImageProcessing._
 
   var sizeOpen = 18
   var sizeClose = 7

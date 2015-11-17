@@ -1,5 +1,6 @@
+package imgproc
+
 import java.awt.Dimension
-import java.util.Arrays
 
 import com.github.sarxos.webcam.Webcam
 import org.opencv.core.Mat
@@ -63,7 +64,7 @@ object VideoSource {
     override def lastRead: Mat = _lastRead
 
     override def read: Mat = {
-      import Implicits._
+      import imgproc.Implicits._
       val image = webcam.getImage
       //System.out.println( image )
       //System.out.printf( s"${image.getWidth}x${image.getHeight}\n" )

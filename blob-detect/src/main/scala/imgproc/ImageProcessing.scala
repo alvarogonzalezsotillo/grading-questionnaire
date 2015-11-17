@@ -1,3 +1,6 @@
+package imgproc
+
+import org.opencv.calib3d.Calib3d
 import org.opencv.core._
 import org.opencv.imgproc.Imgproc
 
@@ -6,12 +9,18 @@ import org.opencv.imgproc.Imgproc
  */
 object ImageProcessing {
 
-  import Implicits._
+  import imgproc.Implicits._
 
   def threshold(blockSize: Int = 101, C: Double = 3)(src: Mat): Mat = {
     val dst = new Mat(src.height(), src.width(), CvType.CV_8UC1)
     Imgproc.cvtColor(src, dst, Imgproc.COLOR_RGB2GRAY)
     Imgproc.adaptiveThreshold(dst, dst, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY_INV, blockSize, C)
+    dst
+  }
+
+  def toColorImage( src: Mat ) = {
+    val dst = new Mat
+    Imgproc.cvtColor(src, dst, Imgproc.COLOR_GRAY2RGB)
     dst
   }
 
@@ -48,7 +57,8 @@ object ImageProcessing {
 
   def findContours(m: Mat): Seq[MatOfPoint] = {
     import java.util.ArrayList
-    import scala.collection.JavaConversions._
+
+import scala.collection.JavaConversions._
 
     /*
     val mPyrDownMat = new Mat
@@ -104,7 +114,7 @@ object ImageProcessing {
     contours.sortBy(_.area).reverse.take(number)
   }
 
-  def locateAnswerMatrix(number: Int = 5)(contours: Seq[MatOfPoint]): Option[MatOfPoint] = {
+  def locateAnswerMatrix(number: Int = 5, insideLimit:Int = -8)(contours: Seq[MatOfPoint]): Option[MatOfPoint] = {
     import scala.collection.JavaConverters._
 
     val allPoints = contours.map(_.toList.asScala).flatten
@@ -134,22 +144,62 @@ object ImageProcessing {
       }
 
       // TODO: EXTRACT THIS FACTOR FROM LATEX TEMPLATE (CURRENTLY, MEASURED WITH A RULER)
-      val extension = orientation * (1.6 / 12.6)
+      val extensionFactor = 1.6 / 12.6
+      val lowerExtension = (lowerRight - lowerLeft) * extensionFactor
+      val upperExtension = (upperRight - upperLeft) * extensionFactor
 
-      new MatOfPoint(upperLeft + center, upperRight + center + extension, lowerRight + center + extension, lowerLeft + center)
+      new MatOfPoint(
+        upperLeft + center,
+        upperRight + center + upperExtension,
+        lowerRight + center + lowerExtension,
+        lowerLeft + center
+      )
     }
 
     def checkIt(contour: MatOfPoint) = {
-      val limit = -4
       contours.size == number &&
         allPoints.forall { p =>
           val contour2f = new MatOfPoint2f()
           contour.convertTo(contour2f, CvType.CV_32FC2)
-          Imgproc.pointPolygonTest(contour2f, p, true) > limit
+          val inside = Imgproc.pointPolygonTest(contour2f, p, true)
+          inside > insideLimit
         }
     }
 
     doIt If checkIt _
+  }
+
+
+
+  def findHomography(questions: Int)( srcPoints: MatOfPoint ) = {
+    val w = 800.0
+
+    val columns = 5
+    val answerHeightRatio = 7.0
+
+    val rows = (1.0*questions/columns).ceil.toInt
+
+    val h = w*rows/answerHeightRatio
+
+    val dstPoints = new MatOfPoint2f( (0.0,0.0), (w,0.0), (w,h), (0.0,h) )
+
+    val srcPoints2f = new MatOfPoint2f()
+    srcPoints.convertTo(srcPoints2f, CvType.CV_32FC2)
+
+    println( s"srcPoints2f:$srcPoints2f  dstPoints:$dstPoints")
+
+    Calib3d.findHomography(srcPoints2f,dstPoints)
+  }
+
+  def warpImage(dst: Mat = null)( m: Mat, H: Mat ) = {
+    val ret = if (dst == null) {
+      new Mat
+    }
+    else {
+      dst
+    }
+    Imgproc.warpPerspective(m,ret,H,m.size())
+    ret
   }
 
 }

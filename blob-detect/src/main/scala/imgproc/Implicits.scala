@@ -1,7 +1,9 @@
-import java.awt.AlphaComposite
-import java.awt.image.{DataBufferByte, BufferedImage}
+package imgproc
 
-import org.opencv.core.{Point, MatOfPoint, CvType, Mat}
+import java.awt.AlphaComposite
+import java.awt.image.{BufferedImage, DataBufferByte}
+
+import org.opencv.core.{CvType, Mat, MatOfPoint, Point}
 import org.opencv.imgproc.Imgproc
 
 /**
@@ -127,4 +129,5 @@ object Implicits {
 
   implicit def toOpenCVPoint(p:MyPoint) : Point = p.point
 
+  implicit def toOpenCVPoint( p:(Double,Double) ) : Point = new Point(p._1,p._2)
 }

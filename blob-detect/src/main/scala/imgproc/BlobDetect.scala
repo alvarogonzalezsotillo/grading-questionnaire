@@ -1,11 +1,10 @@
+package imgproc
+
 import java.awt.BorderLayout
-import java.awt.image.{DataBufferByte, BufferedImage}
-import java.util
-import javax.swing.{ImageIcon, JLabel, JFrame}
-import org.opencv.highgui.Highgui
+import javax.swing.JFrame
 
 import org.opencv.core._
-import org.opencv.imgproc.Imgproc
+import org.opencv.highgui.Highgui
 
 object BlobDetect extends App{
 
@@ -19,7 +18,7 @@ object BlobDetect extends App{
 
 
 
-  import Implicits._
+  import imgproc.Implicits._
 
   def show( title: String, m : Mat ) = {
     val f = new JFrame(title)
@@ -37,7 +36,7 @@ object BlobDetect extends App{
 
 
 
-  readAndShow( getClass().getResource("2015-10-09-093027.jpg").getPath )
+  readAndShow( getClass().getResource("imgproc/2015-10-09-093027.jpg").getPath )
   show( "Hola" , VideoSource().read )
 
   def simpleTest() = {

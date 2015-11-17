@@ -1,8 +1,10 @@
-import java.awt.event.{MouseEvent, MouseAdapter}
+package imgproc
+
 import java.awt._
+import java.awt.event.{MouseAdapter, MouseEvent}
 import java.awt.image.BufferedImage
 import java.util
-import javax.swing.{JPanel}
+import javax.swing.JPanel
 
 /**
  * Created by alvaro on 18/10/15.
