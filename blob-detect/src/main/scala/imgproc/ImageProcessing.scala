@@ -175,7 +175,6 @@ object ImageProcessing {
     val destinationWidth = 800.0
     def rows( questions: Int) = (1.0*questions/columns).ceil.toInt
     def destinationHeight( questions: Int) = {
-      println( s"destinationHeight: $destinationWidth ${rows(questions)} $answerHeightRatio")
       destinationWidth*rows(questions)/answerHeightRatio
     }
 
@@ -188,9 +187,6 @@ object ImageProcessing {
     def destinationContour( questions: Int ) = {
       val w = AnswerMatrixMeasures.destinationWidth
       val h = AnswerMatrixMeasures.destinationHeight(questions)
-
-      println( s"destinationContour: $w $h")
-
       new MatOfPoint2f( (0.0,0.0), (w,0.0), (w,h), (0.0,h) )
     }
 
@@ -206,12 +202,8 @@ object ImageProcessing {
 
   def findHomography(questions: Int)( srcPoints: MatOfPoint ) = {
     val dstPoints = AnswerMatrixMeasures.destinationContour(questions)
-
     val srcPoints2f = new MatOfPoint2f()
     srcPoints.convertTo(srcPoints2f, CvType.CV_32FC2)
-
-    //println( s"srcPoints2f:$srcPoints2f  dstPoints:$dstPoints")
-
     Calib3d.findHomography(srcPoints2f,dstPoints)
   }
 
@@ -223,7 +215,6 @@ object ImageProcessing {
       dst
     }
     val s = if( size == null ) m.size() else size
-    println( s"warpImage: $s")
     Imgproc.warpPerspective(m,ret,H, s)
     ret
   }

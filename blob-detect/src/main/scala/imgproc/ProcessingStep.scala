@@ -84,6 +84,7 @@ object ProcessingStep{
   val noiseReductionStep = thresholdStep.extend("Eliminación de ruido (open-close)")( matrixOnlyProcess(clean()() _ ) )
 
   val contourStep = noiseReductionStep.extend("Búsqueda de contornos")( (psi : ProcessingStepInfo[Unit]) => ProcessingStepInfo( psi.mat, findContours(psi.mat) ) )
+
   val quadrilateralStep = contourStep.extend("Filtro de contronos no cuadriláteros")( contoursOnlyProcess( approximateContoursToQuadrilaterals() _ ) )
 
   val biggestQuadrilateralsStep = quadrilateralStep.extend("Los mayores cinco cuadriláteros")( contoursOnlyProcess(findBiggestAlignedQuadrilaterals()  _ ) )

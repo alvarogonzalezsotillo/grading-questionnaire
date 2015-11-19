@@ -13,66 +13,56 @@ import org.opencv.imgproc.Imgproc
 object GUI extends App {
 
 
-  trait ProcessingStep {
-    val processMat: (Mat) => Mat
-    val stepName: String
-  }
-
-  case class Step(override val stepName: String, override val processMat: (Mat) => Mat) extends ProcessingStep
-
-
   lazy val videoSource = new SwingVideoSource(VideoSource())(imageRead)
 
-  var currentProcessingStep: Option[ProcessingStep] = null
+  var currentProcessingStep: Option[CanvasProcessingStep[_]] = null
 
   def imageRead(m: Mat) = currentProcessingStep.map(_.processMat(m))
 
 
 
-  def createStepsComponent(steps: ProcessingStep*): JComponent = {
+  class CanvasProcessingStep[T](val step: ProcessingStep[Unit,T]) extends ImageCanvas{
 
-    class CanvasProcessingStep(s: ProcessingStep) extends ImageCanvas with ProcessingStep {
-      val stepName = s.stepName
-
-      private var overlay : Image = null
+    private var overlay : Image = null
 
 
-      val processMat = { (m: Mat) =>
-        import imgproc.Implicits._
-        setOverlayImage(m)
-        val ret = s.processMat(m)
-        image = ret
-        ret
-      }
-
-      private def setOverlayImage( m : Mat ) = {
-        import imgproc.Implicits._
-        val mat  = new Mat
-        Imgproc.pyrDown(m,mat)
-        Imgproc.pyrDown(mat,mat)
-        overlay = mat
-      }
-
-      override def paint( g: Graphics ) = {
-        super.paint(g)
-        g.drawImage(overlay,30,30,null)
-      }
-
+    val processMat = { (m: Mat) =>
+      import imgproc.Implicits._
+      setOverlayImage(m)
+      val ret = step.processMat(m)
+      image = ret.mat
+      ret
     }
 
+    private def setOverlayImage( m : Mat ) = {
+      import imgproc.Implicits._
+      val mat  = new Mat
+      Imgproc.pyrDown(m,mat)
+      Imgproc.pyrDown(mat,mat)
+      overlay = mat
+    }
+
+    override def paint( g: Graphics ) = {
+      super.paint(g)
+      g.drawImage(overlay,30,30,null)
+    }
+
+  }
+
+  def createStepsComponent(steps: ProcessingStep[Unit,_]*): JComponent = {
 
     val ret = new JTabbedPane()
     ret.setTabPlacement(SwingConstants.RIGHT)
 
-    def stepComponent(step: ProcessingStep) = {
+    def stepComponent(step: ProcessingStep[Unit,_]) = {
       val ps = new CanvasProcessingStep(step)
-      ret.addTab(ps.stepName, ps)
+      ret.addTab(ps.step.stepName, ps)
     }
 
     ret.addChangeListener(new ChangeListener() {
       override def stateChanged(e: ChangeEvent) = {
         println("stateChanged")
-        currentProcessingStep = Some(ret.getSelectedComponent.asInstanceOf[ProcessingStep])
+        currentProcessingStep = Some(ret.getSelectedComponent.asInstanceOf[CanvasProcessingStep[_]])
         println(s"currentStep:$currentProcessingStep")
       }
     })
@@ -86,21 +76,7 @@ object GUI extends App {
 
   nu.pattern.OpenCV.loadLibrary()
 
-  import imgproc.ImageProcessing._
-
-  def detectContours(contoursFilter: Seq[MatOfPoint] => Seq[MatOfPoint] = identity)(m: Mat): Mat = {
-    val cleaned = clean()()(threshold()(m))
-    val contours = findContours(cleaned)
-
-    drawContours(m, contoursFilter(contours), new Scalar(255, 0, 255), 3)
-    m
-  }
-
-  def locateAnswerMatrixAsSeq( contours: Seq[MatOfPoint] ) = locateAnswerMatrix()(contours) match{
-    case Some(contour) => Seq(contour)
-    case None => Seq(new MatOfPoint(new Point(0,0) ) )
-  }
-
+  import imgproc.ProcessingStep._
 
   UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
 
@@ -108,13 +84,14 @@ object GUI extends App {
   val frame = new JFrame("Corrección de exámenes")
 
   frame.add(createStepsComponent(
-    Step("Video original", m => m),
-    Step("Umbral adaptativo", threshold()),
-    Step("Eliminación de ruido (open-close)", threshold() _ andThen clean()()),
-    Step("Búsqueda de contornos", detectContours()),
-    Step("Filtro de contronos no cuadriláteros", detectContours(approximateContoursToQuadrilaterals()) ),
-    Step("Los mayores cinco cuadriláteros", detectContours( approximateContoursToQuadrilaterals() _ andThen findBiggestAlignedQuadrilaterals() ) ),
-    Step("Tabla de respuestas", detectContours( approximateContoursToQuadrilaterals() _ andThen findBiggestAlignedQuadrilaterals() andThen locateAnswerMatrixAsSeq ) )
+    initialStep,
+    thresholdStep,
+    noiseReductionStep,
+    contourStep,
+    quadrilateralStep,
+    biggestQuadrilateralsStep,
+    answerMatrixLocationStep,
+    answerMatrixLocationStep.extend("Extracción de la tabla de respuestas")(answerMatrixStep().process)
   ))
 
   frame.setSize(640, 480)
