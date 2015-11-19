@@ -2,6 +2,9 @@
 dependencies {
     // SEE https://github.com/PatternConsulting/opencv
     compile 'nu.pattern:opencv:2.4.9-6'
+	
+	// ON WINDOWS, OPENCV SHOULD BE INSTALLED SEPARATELY
+	// http://sourceforge.net/projects/opencvlibrary/files/opencv-win/2.4.9/opencv-2.4.9.exe/download
 
     // Webcam interface (migth be replaced by openimaj)
     compile group: 'com.github.sarxos', name: 'webcam-capture', version: '0.3.11'
@@ -11,4 +14,8 @@ task run(type: JavaExec, dependsOn: classes) {
     main = 'GUI'
     classpath sourceSets.main.runtimeClasspath
     classpath configurations.runtime
+}
+
+tasks.withType(Test) {
+    systemProperty "java.library.path", "./lib"
 }
