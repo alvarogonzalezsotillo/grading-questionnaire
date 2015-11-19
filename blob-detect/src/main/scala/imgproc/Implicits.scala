@@ -125,9 +125,18 @@ object Implicits {
     def -(p:Point) = minus( p )
     def +(p:Point) = plus( p )
 
+    def ~=(p:Point)(implicit e: Epsilon) = (point.x ~= p.x) && (point.y ~= p.y)
+
   }
 
   implicit def toOpenCVPoint(p:MyPoint) : Point = p.point
 
   implicit def toOpenCVPoint( p:(Double,Double) ) : Point = new Point(p._1,p._2)
+
+  case class Epsilon(epsilon:Double)
+
+  implicit class DoubleComparator(val value:Double){
+    def ~=(d:Double)(implicit epsilon: Epsilon) = Math.abs(this.value - d) < epsilon.epsilon
+  }
+
 }

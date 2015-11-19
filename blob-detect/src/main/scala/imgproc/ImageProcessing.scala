@@ -58,7 +58,7 @@ object ImageProcessing {
   def findContours(m: Mat): Seq[MatOfPoint] = {
     import java.util.ArrayList
 
-import scala.collection.JavaConversions._
+  import scala.collection.JavaConversions._
 
     /*
     val mPyrDownMat = new Mat
@@ -174,39 +174,57 @@ import scala.collection.JavaConversions._
 
     val destinationWidth = 800.0
     def rows( questions: Int) = (1.0*questions/columns).ceil.toInt
-    def destinationHeight( questions: Int) = destinationWidth*rows(questions)/answerHeightRatio
+    def destinationHeight( questions: Int) = {
+      println( s"destinationHeight: $destinationWidth ${rows(questions)} $answerHeightRatio")
+      destinationWidth*rows(questions)/answerHeightRatio
+    }
 
     // TODO: EXTRACT THIS FACTOR FROM LATEX TEMPLATE (CURRENTLY, MEASURED WITH A RULER)
     val extensionFactor = 1.6 / 12.6
 
     // TODO: EXTRACT THIS FACTOR FROM LATEX TEMPLATE (CURRENTLY, MEASURED WITH A RULER)
-    val answerHeightRatio = 7.0
+    val answerHeightRatio = 5.5 * columns
+
+    def destinationContour( questions: Int ) = {
+      val w = AnswerMatrixMeasures.destinationWidth
+      val h = AnswerMatrixMeasures.destinationHeight(questions)
+
+      println( s"destinationContour: $w $h")
+
+      new MatOfPoint2f( (0.0,0.0), (w,0.0), (w,h), (0.0,h) )
+    }
+
+    def destinationSize( questions: Int ) = {
+      val contour = destinationContour(questions)
+      val thirdCorner = contour.toArray()(2)
+      new Size( thirdCorner.x, thirdCorner.y )
+    }
+
+
 
   }
 
   def findHomography(questions: Int)( srcPoints: MatOfPoint ) = {
-
-    val w = AnswerMatrixMeasures.destinationWidth
-    val h = AnswerMatrixMeasures.destinationHeight(questions)
-
-    val dstPoints = new MatOfPoint2f( (0.0,0.0), (w,0.0), (w,h), (0.0,h) )
+    val dstPoints = AnswerMatrixMeasures.destinationContour(questions)
 
     val srcPoints2f = new MatOfPoint2f()
     srcPoints.convertTo(srcPoints2f, CvType.CV_32FC2)
 
-    println( s"srcPoints2f:$srcPoints2f  dstPoints:$dstPoints")
+    //println( s"srcPoints2f:$srcPoints2f  dstPoints:$dstPoints")
 
     Calib3d.findHomography(srcPoints2f,dstPoints)
   }
 
-  def warpImage(dst: Mat = null)( m: Mat, H: Mat ) = {
+  def warpImage(dst: Mat = null)( m: Mat, H: Mat, size: Size = null ) = {
     val ret = if (dst == null) {
       new Mat
     }
     else {
       dst
     }
-    Imgproc.warpPerspective(m,ret,H,m.size())
+    val s = if( size == null ) m.size() else size
+    println( s"warpImage: $s")
+    Imgproc.warpPerspective(m,ret,H, s)
     ret
   }
 

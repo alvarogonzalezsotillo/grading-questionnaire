@@ -92,11 +92,12 @@ object ProcessingStep{
     ProcessingStepInfo( psi.mat, locateAnswerMatrix()(psi.info) )
   }
 
-  val answerMatrixStep = Step( "Extracción de la tabla de respuestas"){ psi: ProcessingStepInfo[Option[MatOfPoint]] =>
+  def answerMatrixStep( questions: Int = 30 ) = Step( "Extracción de la tabla de respuestas"){ psi: ProcessingStepInfo[Option[MatOfPoint]] =>
     psi.info match{
       case Some(rect) =>
-        val h = findHomography(30)(rect)
-        ProcessingStepInfo( warpImage()(psi.mat,h), Unit )
+
+        val h = findHomography(questions)(rect)
+        ProcessingStepInfo( warpImage()(psi.mat,h,AnswerMatrixMeasures.destinationSize(questions)), Unit )
 
       case None =>
         ProcessingStepInfo(null,Unit )

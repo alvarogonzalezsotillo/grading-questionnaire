@@ -38,27 +38,27 @@ class ProcessingStepTest extends FlatSpec {
   "Initial step " should "do nothing" in {
     val m = readImageFromResources(imageLocation)
     val m2 = ProcessingStep.initialStep.processMat(m).mat
-
+    Highgui.imwrite(testImgPath("1-original-" + imageLocation).toString, m2)
     assert( m eq m2)
   }
 
   "threshold step" should "convert to grayscale" in {
     val m = readImageFromResources(imageLocation)
     val m2 = ProcessingStep.thresholdStep.processMat(m).mat
-    Highgui.imwrite(testImgPath("threshold-" + imageLocation).toString, m2)
+    Highgui.imwrite(testImgPath("2-threshold-" + imageLocation).toString, m2)
   }
 
 
   "noise reduction step" should "reduce noise" in {
     val m = readImageFromResources(imageLocation)
     val m2 = ProcessingStep.noiseReductionStep.processMat(m).mat
-    Highgui.imwrite(testImgPath("noisereduction-"+imageLocation).toString, m2)
+    Highgui.imwrite(testImgPath("3-noisereduction-"+imageLocation).toString, m2)
   }
 
   "biggest quadrilaterals step" should "find quadrilaterals" in {
     val m = readImageFromResources(imageLocation)
     val m2 = ProcessingStep.biggestQuadrilateralsStep.withDrawContours.processMat(m).mat
-    Highgui.imwrite(testImgPath("bigquad-"+imageLocation).toString, m2)
+    Highgui.imwrite(testImgPath("4-bigquad-"+imageLocation).toString, m2)
   }
 
 
@@ -71,14 +71,14 @@ class ProcessingStepTest extends FlatSpec {
   "Answer location step" should "find a location and save image" in {
     val m = readImageFromResources(imageLocation)
     val m2 = ProcessingStep.answerMatrixLocationStep.withDrawContour.processMat(m).mat
-    Highgui.imwrite(testImgPath("answerlocation-"+imageLocation).toString, m2)
+    Highgui.imwrite(testImgPath("5-answerlocation-"+imageLocation).toString, m2)
   }
 
   "Answer matrix extraction step" should "extract matrix" in {
     val m = readImageFromResources(imageLocation)
     val location = ProcessingStep.answerMatrixLocationStep.processMat(m).info
-    val extracted = ProcessingStep.answerMatrixStep.process( new ProcessingStepInfo(m,location) ).mat
-    Highgui.imwrite(testImgPath("extracted-"+imageLocation).toString, extracted)
+    val extracted = ProcessingStep.answerMatrixStep().process( new ProcessingStepInfo(m,location) ).mat
+    Highgui.imwrite(testImgPath("6-extracted-"+imageLocation).toString, extracted)
   }
 
 
