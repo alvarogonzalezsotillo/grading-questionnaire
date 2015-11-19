@@ -1,7 +1,7 @@
 
 dependencies {
     // SEE https://github.com/PatternConsulting/opencv
-    compile 'nu.pattern:opencv:2.4.9-4'
+    compile 'nu.pattern:opencv:2.4.9-6'
 
     // Webcam interface (migth be replaced by openimaj)
     compile group: 'com.github.sarxos', name: 'webcam-capture', version: '0.3.11'
