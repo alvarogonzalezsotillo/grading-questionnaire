@@ -143,10 +143,8 @@ import scala.collection.JavaConversions._
         (lowerPoints.minBy(_.normalize * unit), lowerPoints.maxBy(_.normalize * unit))
       }
 
-      // TODO: EXTRACT THIS FACTOR FROM LATEX TEMPLATE (CURRENTLY, MEASURED WITH A RULER)
-      val extensionFactor = 1.6 / 12.6
-      val lowerExtension = (lowerRight - lowerLeft) * extensionFactor
-      val upperExtension = (upperRight - upperLeft) * extensionFactor
+      val lowerExtension = (lowerRight - lowerLeft) * AnswerMatrixMeasures.extensionFactor
+      val upperExtension = (upperRight - upperLeft) * AnswerMatrixMeasures.extensionFactor
 
       new MatOfPoint(
         upperLeft + center,
@@ -170,16 +168,26 @@ import scala.collection.JavaConversions._
   }
 
 
-
-  def findHomography(questions: Int)( srcPoints: MatOfPoint ) = {
-    val w = 800.0
-
+  object AnswerMatrixMeasures{
     val columns = 5
+
+
+    val destinationWidth = 800.0
+    def rows( questions: Int) = (1.0*questions/columns).ceil.toInt
+    def destinationHeight( questions: Int) = destinationWidth*rows(questions)/answerHeightRatio
+
+    // TODO: EXTRACT THIS FACTOR FROM LATEX TEMPLATE (CURRENTLY, MEASURED WITH A RULER)
+    val extensionFactor = 1.6 / 12.6
+
+    // TODO: EXTRACT THIS FACTOR FROM LATEX TEMPLATE (CURRENTLY, MEASURED WITH A RULER)
     val answerHeightRatio = 7.0
 
-    val rows = (1.0*questions/columns).ceil.toInt
+  }
 
-    val h = w*rows/answerHeightRatio
+  def findHomography(questions: Int)( srcPoints: MatOfPoint ) = {
+
+    val w = AnswerMatrixMeasures.destinationWidth
+    val h = AnswerMatrixMeasures.destinationHeight(questions)
 
     val dstPoints = new MatOfPoint2f( (0.0,0.0), (w,0.0), (w,h), (0.0,h) )
 

@@ -15,15 +15,6 @@ class MyPointTest extends FlatSpec {
 
   import imgproc.Implicits._
 
-  case class Epsilon(epsilon:Double)
-
-  implicit class DoubleComparator(val value:Double){
-    def ~=(d:Double)(implicit epsilon: Epsilon) = Math.abs(this.value - d) < epsilon.epsilon
-
-  }
-
-  implicit val epsilon = Epsilon(0.01)
-
   "Dot product" should "be zero if perpendicular" in {
 
     val p1 = new Point(1,1)

@@ -33,7 +33,7 @@ class ProcessingStepTest extends FlatSpec {
 
   def testImgPath( file: String ) : File = new File( testImgPath, file )
 
-  val imageLocation = "2015-10-09-093120.jpg" // "2015-10-09-093035.jpg"
+  val imageLocation =   "2015-10-09-093035.jpg" //"2015-10-09-093120.jpg"
 
   "Initial step " should "do nothing" in {
     val m = readImageFromResources(imageLocation)
