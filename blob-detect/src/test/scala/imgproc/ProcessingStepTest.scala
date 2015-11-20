@@ -26,7 +26,17 @@ class ProcessingStepTest extends FlatSpec {
   }
 
   val testImgPath = {
+
+    def remove( f: File ) : Unit = if( f.isFile ){
+      f.delete()
+
+    }
+    else{
+      f.listFiles().foreach( remove )
+    }
+
     val p = new File("./test-img")
+    remove(p)
     p.mkdir()
     p
   }
@@ -65,10 +75,22 @@ class ProcessingStepTest extends FlatSpec {
     Highgui.imwrite(testImgPath("3-noisereduction-" + imageLocation).toString, m2)
   }
 
-  "biggest quadrilaterals step" should "find quadrilaterals" in {
+  "Contour extraction step" should "extract contours" in {
+    val m = readImageFromResources(imageLocation)
+    val m2 = ProcessingStep.contourStep.withDrawContours.processMat(m).mat
+    Highgui.imwrite(testImgPath("4-contours-" + imageLocation).toString, m2)
+  }
+
+  "Quadrilateral filter step" should "extract quadrilaterals" in {
+    val m = readImageFromResources(imageLocation)
+    val m2 = ProcessingStep.quadrilateralStep.withDrawContours.processMat(m).mat
+    Highgui.imwrite(testImgPath("5-quads-" + imageLocation).toString, m2)
+  }
+
+  "Biggest quadrilaterals step" should "find quadrilaterals" in {
     val m = readImageFromResources(imageLocation)
     val m2 = ProcessingStep.biggestQuadrilateralsStep.withDrawContours.processMat(m).mat
-    Highgui.imwrite(testImgPath("4-bigquad-" + imageLocation).toString, m2)
+    Highgui.imwrite(testImgPath("6-bigquads-" + imageLocation).toString, m2)
   }
 
 
@@ -81,16 +103,15 @@ class ProcessingStepTest extends FlatSpec {
   "Answer location step" should "find a location and save image" in {
     val m = readImageFromResources(imageLocation)
     val m2 = ProcessingStep.answerMatrixLocationStep.withDrawContour.processMat(m).mat
-    Highgui.imwrite(testImgPath("5-answerlocation-" + imageLocation).toString, m2)
+    Highgui.imwrite(testImgPath("7-answerlocation-" + imageLocation).toString, m2)
   }
 
   "Answer matrix extraction step" should "extract matrix" in {
     for (imageLocation <- positiveMatchImages) {
       println( s"imageLocation:$imageLocation")
       val m = readImageFromResources(imageLocation)
-      val location = ProcessingStep.answerMatrixLocationStep.processMat(m).info
-      val extracted = ProcessingStep.answerMatrixStep().process(new ProcessingStepInfo(m, location)).mat
-      Highgui.imwrite(testImgPath("6-extracted-" + imageLocation).toString, extracted)
+      val extracted = ProcessingStep.answerMatrixStep().processMat(m).mat
+      Highgui.imwrite(testImgPath("8-extracted-" + imageLocation).toString, extracted)
     }
   }
 

@@ -16,6 +16,10 @@ object Implicits {
     // Fastest code
     // The output can be assigned either to a BufferedImage or to an Image
 
+    if( m == null ){
+      return ImageCanvas.defaultImage
+    }
+
     val imageType = if ( m.channels() > 1 )
       BufferedImage.TYPE_3BYTE_BGR
     else

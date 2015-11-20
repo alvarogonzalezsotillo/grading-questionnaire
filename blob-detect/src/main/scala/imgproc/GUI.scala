@@ -52,7 +52,7 @@ object GUI extends App {
   def createStepsComponent(steps: ProcessingStep[Unit,_]*): JComponent = {
 
     val ret = new JTabbedPane()
-    ret.setTabPlacement(SwingConstants.RIGHT)
+    ret.setTabPlacement(SwingConstants.LEFT)
 
     def stepComponent(step: ProcessingStep[Unit,_]) = {
       val ps = new CanvasProcessingStep(step)
@@ -87,11 +87,12 @@ object GUI extends App {
     initialStep,
     thresholdStep,
     noiseReductionStep,
-    contourStep,
-    quadrilateralStep,
-    biggestQuadrilateralsStep,
-    answerMatrixLocationStep,
-    answerMatrixLocationStep.extend("Extracción de la tabla de respuestas")(answerMatrixStep().process)
+    contourStep.withDrawContours,
+    quadrilateralStep.withDrawContours,
+    biggestQuadrilateralsStep.withDrawContours,
+    answerMatrixLocationStep.withDrawContour,
+    answerMatrixStep(),
+    cellsOfAnswerMatrix().withDrawContours
   ))
 
   frame.setSize(640, 480)

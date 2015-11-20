@@ -3,6 +3,8 @@ package imgproc
 
 import org.opencv.core.{Mat, MatOfPoint, Scalar}
 
+import scala.collection.immutable.IndexedSeq
+
 /**
  * Created by alvaro on 13/11/15.
  */
@@ -17,24 +19,28 @@ trait ProcessingStep[SRC,DST] {
   def extend[T](name: String)(p: Process[DST,T]) : ProcessingStep[SRC,T] = ExtendedStep(this,name,p)
 }
 
-case class Step[SRC,DST]( override val stepName: String)( override val process: Process[SRC,DST] ) extends ProcessingStep[SRC,DST]
-
-case class ExtendedStep[SRC,DST,T]( previous: ProcessingStep[SRC,DST], override val stepName: String, extendedProcess: Process[DST,T] ) extends ProcessingStep[SRC,T]{
-  override val process = (psi:ProcessingStepInfo[SRC]) => extendedProcess( previous.process(psi) )
-}
-
-case class InitialStep(override val stepName: String) extends ProcessingStep[Unit,Unit]{
-  override val process = matrixOnlyProcess(m=>m)
-}
 
 
 object ProcessingStep{
+
+
 
   import imgproc.ImageProcessing._
 
   case class ProcessingStepInfo[T]( mat : Mat, info : T )
 
   type Process[SRC,DST] = (ProcessingStepInfo[SRC]) => ProcessingStepInfo[DST]
+
+  private case class Step[SRC,DST]( override val stepName: String)( override val process: Process[SRC,DST] ) extends ProcessingStep[SRC,DST]
+
+  private case class ExtendedStep[SRC,DST,T]( previous: ProcessingStep[SRC,DST], override val stepName: String, extendedProcess: Process[DST,T] ) extends ProcessingStep[SRC,T]{
+    override val process = (psi:ProcessingStepInfo[SRC]) => extendedProcess( previous.process(psi) )
+  }
+
+  private case class InitialStep(override val stepName: String) extends ProcessingStep[Unit,Unit]{
+    override val process = matrixOnlyProcess(m=>m)
+  }
+
 
   implicit class UnitStep[T]( step: ProcessingStep[Unit,T] ){
     def processMat( m: Mat ) = step.process( ProcessingStepInfo(m,Unit) )
@@ -43,9 +49,14 @@ object ProcessingStep{
   implicit class ContourStep[T]( step: ProcessingStep[T,Seq[MatOfPoint]] ) {
     def withDrawContours = {
       step.extend(step.stepName) { psi =>
-        val ret = toColorImage( psi.mat )
-        drawContours(ret, psi.info, new Scalar(255, 0, 255), 3)
-        ProcessingStepInfo(ret, psi.info)
+        if( psi.mat != null ) {
+          val ret = toColorImage(psi.mat)
+          drawContours(ret, psi.info, new Scalar(255, 0, 255), 3)
+          ProcessingStepInfo(ret, psi.info)
+        }
+        else{
+          psi
+        }
       }
     }
   }
@@ -66,24 +77,27 @@ object ProcessingStep{
   }
 
 
-  def matrixOnlyProcess( proc: (Mat)=>Mat ): Process[Unit,Unit] = {
+  private def matrixOnlyProcess( proc: (Mat)=>Mat ): Process[Unit,Unit] = {
     ( psi : ProcessingStepInfo[Unit] ) => ProcessingStepInfo( proc(psi.mat), Unit )
   }
 
-  def contoursOnlyProcess( proc: Seq[MatOfPoint] => Seq[MatOfPoint] ) : Process[Seq[MatOfPoint],Seq[MatOfPoint]] = {
+  private def contoursOnlyProcess( proc: Seq[MatOfPoint] => Seq[MatOfPoint] ) : Process[Seq[MatOfPoint],Seq[MatOfPoint]] = {
     ( psi : ProcessingStepInfo[Seq[MatOfPoint]] ) => ProcessingStepInfo( psi.mat, proc(psi.info) )
+  }
+
+  def recoverOriginalMatrixStep[SRC,DST]( step : ProcessingStep[SRC,DST] ) : ProcessingStep[SRC,DST] = Step( step.stepName ){ psi: ProcessingStepInfo[SRC] =>
+    ProcessingStepInfo(psi.mat, step.process(psi).info )
   }
 
 
 
-
-  val initialStep = InitialStep( "Imagen original")
+  val initialStep : ProcessingStep[Unit,Unit] = InitialStep( "Imagen original")
 
   val thresholdStep = initialStep.extend( "Umbral adaptativo")( matrixOnlyProcess( threshold() _ ) )
 
   val noiseReductionStep = thresholdStep.extend("Eliminación de ruido (open-close)")( matrixOnlyProcess(clean()() _ ) )
 
-  val contourStep = noiseReductionStep.extend("Búsqueda de contornos")( (psi : ProcessingStepInfo[Unit]) => ProcessingStepInfo( psi.mat, findContours(psi.mat) ) )
+  val contourStep = recoverOriginalMatrixStep( noiseReductionStep.extend("Búsqueda de contornos")( (psi : ProcessingStepInfo[Unit]) => ProcessingStepInfo( psi.mat, findContours(psi.mat) ) ) )
 
   val quadrilateralStep = contourStep.extend("Filtro de contronos no cuadriláteros")( contoursOnlyProcess( approximateContoursToQuadrilaterals() _ ) )
 
@@ -93,15 +107,25 @@ object ProcessingStep{
     ProcessingStepInfo( psi.mat, locateAnswerMatrix()(psi.info) )
   }
 
-  def answerMatrixStep( questions: Int = 30 ) = Step( "Extracción de la tabla de respuestas"){ psi: ProcessingStepInfo[Option[MatOfPoint]] =>
-    psi.info match{
-      case Some(rect) =>
+  val defaultQuestions = 50
 
-        val h = findHomography(questions)(rect)
-        ProcessingStepInfo( warpImage()(psi.mat,h,AnswerMatrixMeasures.destinationSize(questions)), Unit )
+  def answerMatrixStep( questions: Int = defaultQuestions ): ProcessingStep[Unit, Unit] = {
+    answerMatrixLocationStep.extend( "Extracción de la tabla de respuestas"){ psi: ProcessingStepInfo[Option[MatOfPoint]] =>
+      psi.info match{
+        case Some(rect) =>
 
-      case None =>
-        ProcessingStepInfo(null,Unit )
+          val h = findHomography(questions)(rect)
+          ProcessingStepInfo( warpImage()(psi.mat,h,AnswerMatrixMeasures.destinationSize(questions)), Unit)
+
+        case None =>
+          ProcessingStepInfo(null,Unit)
+      }
+    }
+  }
+
+  def cellsOfAnswerMatrix( questions: Int = defaultQuestions ) = {
+    answerMatrixStep(questions).extend( "Localización de celdas"){ psi: ProcessingStepInfo[Unit] =>
+      ProcessingStepInfo(psi.mat,AnswerMatrixMeasures.cells(questions))
     }
   }
 
