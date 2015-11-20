@@ -51,7 +51,7 @@ object ProcessingStep{
       step.extend(step.stepName) { psi =>
         if( psi.mat != null ) {
           val ret = toColorImage(psi.mat)
-          drawContours(ret, psi.info, new Scalar(255, 0, 255), 3)
+          drawContours(ret, psi.info, new Scalar(255, 0, 255) )
           ProcessingStepInfo(ret, psi.info)
         }
         else{
@@ -67,7 +67,7 @@ object ProcessingStep{
         psi.info match {
           case Some(points) =>
             val ret = toColorImage(psi.mat)
-            drawContours(ret, Seq(points), new Scalar(255, 0, 255), 3)
+            drawContours(ret, Seq(points), new Scalar(255, 0, 255) )
             ProcessingStepInfo(ret, psi.info)
           case None =>
             psi
