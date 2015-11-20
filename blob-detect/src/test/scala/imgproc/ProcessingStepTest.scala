@@ -115,6 +115,14 @@ class ProcessingStepTest extends FlatSpec {
     }
   }
 
+  "Cells extraction step" should "extract cells" in {
+    for (imageLocation <- positiveMatchImages) {
+      println( s"imageLocation:$imageLocation")
+      val m = readImageFromResources(imageLocation)
+      val extracted = ProcessingStep.cellsOfAnswerMatrix(40).withDrawContours.processMat(m).mat
+      Highgui.imwrite(testImgPath("9-cells-" + imageLocation).toString, extracted)
+    }
+  }
 
 }
 

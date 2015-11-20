@@ -108,7 +108,7 @@ object ImageProcessing {
   }
 
 
-  def drawContours(dst: Mat, contours: Seq[MatOfPoint], color: Scalar, thickness: Int = 1, drawCenters: Boolean = true): Mat = {
+  def drawContours(dst: Mat, contours: Seq[MatOfPoint], color: Scalar, thickness: Int = 1, drawCenters: Boolean = false): Mat = {
     import scala.collection.JavaConversions._
     Imgproc.drawContours(dst, contours, -1, color, thickness)
     Imgproc.drawContours(dst, contours.map(c => new MatOfPoint(c.center)), -1, color, thickness) If drawCenters
