@@ -32,7 +32,10 @@ class ProcessingStepTest extends FlatSpec {
 
     }
     else{
-      f.listFiles().foreach( remove )
+      val files = f.listFiles
+      if( files != null ){
+        files.foreach( remove )
+      }
     }
 
     val p = new File("./test-img")
