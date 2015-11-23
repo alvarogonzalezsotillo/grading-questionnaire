@@ -12,6 +12,8 @@ object ImageProcessing {
   import imgproc.Implicits._
 
   def threshold(blockSize: Int = 101, C: Double = 3)(src: Mat): Mat = {
+    println( "threshold src:" + src )
+    println( "threshold type:" + src.`type`() )
     val dst = new Mat(src.height(), src.width(), CvType.CV_8UC1)
     Imgproc.cvtColor(src, dst, Imgproc.COLOR_RGB2GRAY)
     Imgproc.adaptiveThreshold(dst, dst, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY_INV, blockSize, C)
