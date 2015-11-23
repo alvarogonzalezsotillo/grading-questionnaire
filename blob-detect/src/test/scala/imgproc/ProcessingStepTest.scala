@@ -9,6 +9,8 @@ import java.io.File
 import imgproc.ProcessingStep.ProcessingStepInfo
 import org.junit.runner.RunWith
 import org.opencv.highgui.Highgui
+
+import org.opencv.core.Mat
 import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner
 
@@ -18,11 +20,22 @@ class ProcessingStepTest extends FlatSpec {
 
   nu.pattern.OpenCV.loadLibrary()
 
-  def readImageFromResources(f: String) = {
-    val url = getClass().
-      getResource(f).
-      getPath
-    Highgui.imread(url)
+  import imgproc.Implicits._
+
+  def readImageFromResources(f: String) : Mat = {
+    def mat() = {
+      val url = getClass().
+    	getResource(f).
+	getPath
+      println( "readImageFromResources:" + f + " --> " + url )
+      Highgui.imread(url)
+    }
+
+    def imageio() = {
+      javax.imageio.ImageIO.read( getClass().getResource(f) )
+    }
+    
+    imageio
   }
 
   val testImgPath = {
@@ -32,7 +45,10 @@ class ProcessingStepTest extends FlatSpec {
 
     }
     else{
-      f.listFiles().foreach( remove )
+      val files = f.listFiles
+      if( files != null ){
+        files.foreach( remove )
+      }
     }
 
     val p = new File("./test-img")
