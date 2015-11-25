@@ -132,4 +132,23 @@ class GiftParserTest extends FlatSpec {
     }
   }
 
+
+  "A multiline question" should "parse" in{
+    val s = """Una pregunta
+               multilínea
+               que debería funcionar{
+            }"""
+
+    val ret = GiftParser.parse(s)
+    ret match {
+      case GiftError(msg, line, column, lineContents) =>
+        fail(msg + "-" + line + "-" + column + "-" + lineContents)
+      case GiftFile(questions) =>
+        assert(questions.size==1)
+        assert(questions(0).text contains "Una pregunta" )
+        assert(questions(0).text contains "multilínea" )
+        assert(questions(0).text contains "que debería funcionar" )
+    }
+  }
+
 }

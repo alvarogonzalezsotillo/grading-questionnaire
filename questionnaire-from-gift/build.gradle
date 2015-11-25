@@ -37,3 +37,25 @@ task fatjar(type: Jar, dependsOn: 'assemble') {
                 'Main-Class': mainClass
     }
 }
+
+task install(dependsOn: fatjar) << {
+    def stub = "MYSELF=`which \"\$0\" 2>/dev/null`\n" +
+        "[ \$? -gt 0 -a -f \"\$0\" ] && MYSELF=\"./\$0\"\n" +
+        "exec java -jar \$MYSELF \"\$@\"\n" +
+        "exit \$?"
+
+    def file = new File("questionnaire-from-gift/build/libs/gifttolatex.jar")
+    def executable = new File("gifttolatex")
+    def os = new java.io.FileOutputStream( executable )
+    def is =new java.io.FileInputStream(file)
+    os.write(stub.getBytes())
+    def buffer = new byte[1024]
+    def b = is.read(buffer)
+    while( b > 0){
+        os.write(buffer,0,b)
+        b = is.read(buffer)
+    }
+    os.close()
+    is.close()
+    executable.setExecutable(true,false)
+}

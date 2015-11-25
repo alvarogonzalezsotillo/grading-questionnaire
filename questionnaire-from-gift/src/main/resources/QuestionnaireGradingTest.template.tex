@@ -7,7 +7,7 @@
 \usepackage{enumitem}
 \usepackage{multicol}
 \usepackage{setspace}
-\usepackage[top=2.0cm,left=2.2cm,right=2.2cm,bottom=2.2cm,a4paper]{geometry}
+\usepackage[top=2.0cm,left=1.2cm,right=1.2cm,bottom=2.0cm,a4paper]{geometry}
 \usepackage{longtable}
 \usepackage[spanish]{babel}
 \usepackage{forloop}
@@ -263,8 +263,10 @@
 }
 
 \newcommand{\AnswerTable}[1]{
-  %\VerticalAnswerTable{#1}
-  \HorizontalAnswerTable{#1}
+\begin{center}%
+%\VerticalAnswerTable{#1}%
+\HorizontalAnswerTable{#1}%
+\end{center}%
 }
 
 \begin{document}

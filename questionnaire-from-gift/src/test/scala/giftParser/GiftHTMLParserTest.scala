@@ -57,4 +57,11 @@ class GiftHTMLParserTest extends FlatSpec {
     assert(ret.get.size == 5)
   }
 
+  "A list" should "parse to a list" in {
+    val html = "<ul>\n<li>\nhola\n</li>\n</ul>"
+    val ret = parseAll(chunks,html)
+    assert(!ret.isEmpty)
+    println(ret)
+  }
+
 }

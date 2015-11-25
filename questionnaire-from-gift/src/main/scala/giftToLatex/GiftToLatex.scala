@@ -82,10 +82,19 @@ object GiftToLatex extends LazyLogging{
 
   object htmlToLatex {
     private val htmlImgRexs = Seq( """(?i)<img src="(.*?)">""", """(?i)<img src=(.*?)>""")
+    private val tagsRexs = Map(
+      "<ul>" -> """\\begin{itemize} """,
+      "</ul>" -> """\\end{itemize} """,
+      "<li>" -> """\\item """,
+      "</li>" -> ""
+    )
 
     def hasHtmlImages(s: String) = htmlImgRexs.contains(s.matches(_))
 
-    def translateImagesToLatex(s: String) = htmlImgRexs.fold(s)((ret, rex) => ret.replaceAll(rex, """\\\\ \\includegraphics{$1}"""))
+    def translateImagesToLatex(s: String) = {
+      val ret = htmlImgRexs.fold(s)((ret, rex) => ret.replaceAll(rex, """\\\\ \\includegraphics{$1}"""))
+      tagsRexs.foldLeft(ret)( (accum:String,regex:(String,String)) => accum.replaceAll(regex._1,regex._2 ) )
+    }
     def apply(s:String) = translateImagesToLatex(s)
   }
 
