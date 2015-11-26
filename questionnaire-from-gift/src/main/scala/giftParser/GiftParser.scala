@@ -67,7 +67,8 @@ object GiftParser {
 
     trait Question {
       val text: String
-      val hasImages = GiftToLatex.htmlToLatex.hasHtmlImages(text)
+
+      def fullPageQuestion = false
 
       def shuffle = this
     }

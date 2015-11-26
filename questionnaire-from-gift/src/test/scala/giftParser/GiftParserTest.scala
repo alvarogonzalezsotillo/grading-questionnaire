@@ -151,4 +151,24 @@ class GiftParserTest extends FlatSpec {
     }
   }
 
+  "= and ~" should "parse if escaped" in{
+    val s =
+      """Una pregunta{
+        |  = La respuesta \=
+        |  ~ La respuesta \~
+        |  }
+      """.stripMargin
+
+    val ret = GiftParser.parse(s)
+    ret match {
+      case GiftError(msg, line, column, lineContents) =>
+        fail(msg + "-" + line + "-" + column + "-" + lineContents)
+      case GiftFile(questions) =>
+        assert(questions.size==1)
+        val question = questions(0).asInstanceOf[QuestionnaireQuestion]
+        assert(question.answers.size == 2)
+    }
+
+  }
+
 }

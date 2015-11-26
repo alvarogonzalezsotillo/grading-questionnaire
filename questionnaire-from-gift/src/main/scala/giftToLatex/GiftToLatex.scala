@@ -81,21 +81,20 @@ object GiftToLatex extends LazyLogging{
   }
 
   object htmlToLatex {
-    private val htmlImgRexs = Seq( """(?i)<img src="(.*?)">""", """(?i)<img src=(.*?)>""")
     private val tagsRexs = Map(
+      """(?i)<img src="(.*?)">""" -> """\\\\ \\includegraphics{$1}""",
+      """(?i)<img src=(.*?)>""" -> """\\\\ \\includegraphics{$1}""",
       "<ul>" -> """\\begin{itemize} """,
       "</ul>" -> """\\end{itemize} """,
       "<li>" -> """\\item """,
       "</li>" -> ""
     )
 
-    def hasHtmlImages(s: String) = htmlImgRexs.contains(s.matches(_))
 
-    def translateImagesToLatex(s: String) = {
-      val ret = htmlImgRexs.fold(s)((ret, rex) => ret.replaceAll(rex, """\\\\ \\includegraphics{$1}"""))
-      tagsRexs.foldLeft(ret)( (accum:String,regex:(String,String)) => accum.replaceAll(regex._1,regex._2 ) )
+    def translateHTMLTagsToLatex(s: String) = {
+      tagsRexs.foldLeft(s)( (accum:String,regex:(String,String)) => accum.replaceAll(regex._1,regex._2 ) )
     }
-    def apply(s:String) = translateImagesToLatex(s)
+    def apply(s:String) = translateHTMLTagsToLatex(s)
   }
 
   private def translateHtmlToTex(s: String) = {
@@ -108,7 +107,7 @@ object GiftToLatex extends LazyLogging{
 
   private def generateQuestionLatex(q: Question): String = q match {
     case OpenQuestion(text) =>
-      val typeOfQuestion = if (q.hasImages) "FullPageOpenQuestion" else "HalfPageOpenQuestion"
+      val typeOfQuestion = if (q.fullPageQuestion) "FullPageOpenQuestion" else "HalfPageOpenQuestion"
       s"\\begin{${
         typeOfQuestion
       }}\n  ${
