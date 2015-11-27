@@ -73,21 +73,34 @@ object GiftToLatex extends LazyLogging{
         ret
 
       case c => charsToLatexMap(c)
-
     }
 
     def escapeLatex(s: String) = s.map(charToLatex).mkString
-
   }
 
   object htmlToLatex {
     private val tagsRexs = Map(
+      // IMAGES
       """(?i)<img src="(.*?)">""" -> """\\\\ \\includegraphics{$1}""",
       """(?i)<img src=(.*?)>""" -> """\\\\ \\includegraphics{$1}""",
+
+      // LISTS
       "<ul>" -> """\\begin{itemize} """,
       "</ul>" -> """\\end{itemize} """,
       "<li>" -> """\\item """,
-      "</li>" -> ""
+      "</li>" -> "",
+
+      // TABLES
+      """<table columns="(.*?)">""" ->  """\\begin{center} \\begin{tabular}{| *{$1}{c|} }
+        """,
+      "<tr>" ->  """\\hline
+        """,
+      "</tr>" ->  """\\\\
+        """,
+      "<td>" -> "",
+      "</td>" -> " & ",
+      "</table>" ->  """\\hline
+           \\end{tabular}  \\end{center}"""
     )
 
 
@@ -106,12 +119,12 @@ object GiftToLatex extends LazyLogging{
   }
 
   private def generateQuestionLatex(q: Question): String = q match {
-    case OpenQuestion(text) =>
-      val typeOfQuestion = if (q.fullPageQuestion) "FullPageOpenQuestion" else "HalfPageOpenQuestion"
+    case question:OpenQuestion =>
+      val typeOfQuestion = if (question.fullPageQuestion) "FullPageOpenQuestion" else "HalfPageOpenQuestion"
       s"\\begin{${
         typeOfQuestion
       }}\n  ${
-        translateHtmlToTex(text)
+        translateHtmlToTex(question.text)
       }\n\\end{${
         typeOfQuestion
       }}"

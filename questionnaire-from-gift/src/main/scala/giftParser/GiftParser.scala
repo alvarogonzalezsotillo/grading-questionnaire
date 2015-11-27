@@ -68,12 +68,13 @@ object GiftParser {
     trait Question {
       val text: String
 
-      def fullPageQuestion = false
-
       def shuffle = this
     }
 
-    case class OpenQuestion(text: String) extends Question
+    case class OpenQuestion(text: String) extends Question{
+      private val fullPageHTMLTags = Seq( "table", "li" ).map( "<" + _ + ">")
+      def fullPageQuestion = fullPageHTMLTags.exists( text.contains )
+    }
 
     case class QuestionnaireQuestion(text: String, answers: List[Answer]) extends Question {
       override def shuffle = QuestionnaireQuestion(text, Random.shuffle(answers))
