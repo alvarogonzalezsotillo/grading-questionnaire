@@ -14,6 +14,7 @@ object Main extends App with LazyLogging {
 
   case class Config(giftFile: File = invalidFile,
                     keepTexFile: Boolean = false,
+                    help :Boolean = false,
                     headerText: String = "",
                     numberOfVersions: Int = 2,
                     questionnaireQuestionsWeight: Int = 60)
@@ -23,7 +24,7 @@ object Main extends App with LazyLogging {
     val parser = new scopt.OptionParser[Config]("gifttolatex") {
       head("gifttolatex", "0.1")
 
-      arg[File]("<gift file>") text ("The input GIFT file (https://docs.moodle.org/23/en/GIFT_format).") required() action { (gf, c) =>
+      arg[File]("<gift file>") text ("The input GIFT file (https://docs.moodle.org/23/en/GIFT_format). If omitted, standard input is used.") action { (gf, c) =>
         c.copy(giftFile = gf)
       }
 
@@ -40,8 +41,12 @@ object Main extends App with LazyLogging {
         c.copy(numberOfVersions = v)
       }
 
-      opt[String]('h',"header-text") text ("Header text") action{ (t,c) =>
+      opt[String]('t',"header-text") text ("Header text") action{ (t,c) =>
         c.copy(headerText = t)
+      }
+
+      opt[Unit]('h',"help") text("Shows this help") action { (_,c) =>
+        c.copy(help = true)
       }
 
     }
@@ -49,9 +54,14 @@ object Main extends App with LazyLogging {
     def generateQuestionnarieVersion(c: Config, version: Option[String]) = {
       val latex = GiftToLatex(c.giftFile, c.headerText, c.questionnaireQuestionsWeight)
       def computeOutFile: File = {
-        val gift = c.giftFile.toString
-        val i = gift.lastIndexOf('.')
-        val name = if (i > 0) gift.take(i) else gift
+        val name = if( c.giftFile == invalidFile ){
+          "stdin"
+        }
+        else {
+          val gift = c.giftFile.toString
+          val i = gift.lastIndexOf('.')
+          if (i > 0) gift.take(i) else gift
+        }
         val f = name + version.map("-"+_).getOrElse("") + ".pdf"
         new File(f)
       }
@@ -60,6 +70,9 @@ object Main extends App with LazyLogging {
     }
 
     parser.parse(args, Config()) match {
+      case Some(c) if c.help =>
+        parser.showUsage
+
       case Some(c) =>
 
         logger.error(c.toString)

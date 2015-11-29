@@ -93,14 +93,15 @@ object GiftToLatex extends LazyLogging{
       // TABLES
       """<table columns="(.*?)">""" ->  """\\begin{center} \\begin{tabular}{| *{$1}{c|} }
         """,
-      "<tr>" ->  """\\hline
-        """,
-      "</tr>" ->  """\\\\
-        """,
+      "<tr>" ->  "\\\\hline \n",
+      "</tr>" ->  "\\\\\\\\",
       "<td>" -> "",
       "</td>" -> " & ",
-      "</table>" ->  """\\hline
-           \\end{tabular}  \\end{center}"""
+      "</table>" ->  "\\\\hline\n \\\\end{tabular} \\\\end{center}",
+
+      // SIZES
+      """<font size="\+1">""" -> "\\\\begin{large}\n",
+      """</font>""" -> "\\\\end{large}\n"
     )
 
 

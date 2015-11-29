@@ -4,7 +4,7 @@ package giftParser
  * Created by alvaro on 16/06/15.
  */
 
-import java.io.{FileReader, File, Reader}
+import java.io._
 
 import giftToLatex.GiftToLatex
 
@@ -147,7 +147,7 @@ object GiftParser {
 
   def parse(f: File) = {
     val parser = new GiftParser
-    val reader = new FileReader(f)
+    val reader = if( f == new File(".") ) new InputStreamReader(System.in) else new FileReader(f)
     val ret = parser.parseAll(parser.questionnaire, reader)
     reader.close()
     processResult(parser, ret, Some(f))
