@@ -17,12 +17,6 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class GiftToLatexTest extends FlatSpec {
 
-  val bigGiftFile = new File("/home/alvaro/SincronizadoCloud/copy/2014-2015-Alonso de Avellaneda/seguridad-informatica/examenes/SI-Extraordinaria-Junio.gift")
-
-  "latex compile" should "work with an example file" in {
-    val latex = GiftToLatex(bigGiftFile)
-    LatexCompiler.compile( latex, new File( "example.pdf") )
-  }
 
   "latex compile" should "work with a generated file" in {
 
@@ -32,30 +26,6 @@ class GiftToLatexTest extends FlatSpec {
     val latex = GiftToLatex(f, imagePath = Seq("src/test/resources/giftParser/") )
     LatexCompiler.compile( latex, new File( "generated.pdf") )
 
-  }
-
-  "A big file" should "generate latex" in {
-    val ret = GiftParser.parse(bigGiftFile)
-
-    ret match {
-      case GiftError(msg, line, column, lineContents) =>
-        fail(msg)
-
-      case g: GiftFile =>
-        val latex = GiftToLatex.generateLatex(g)
-    }
-  }
-
-
-  "A big file" should "parse" in {
-    val ret = GiftParser.parse(bigGiftFile)
-
-    ret match {
-      case GiftError(msg, line, column, lineContents) =>
-        fail(msg)
-
-      case g: GiftFile =>
-    }
   }
 
   "An image in html" should "translate to latex" in {

@@ -188,12 +188,11 @@ object GiftToLatex extends LazyLogging{
   def generateLatex(f: GiftFile, headerText: String = "", questionnaireQuestionsWeight: Int = 60, imagePath: Seq[String] = Seq() ): String = {
 
     val openQuestionsWeight = 100 - questionnaireQuestionsWeight
-    val instructions = s"\\Instructions{$questionnaireQuestionsWeight}{$openQuestionsWeight}"
-    val answerTable = s"\\AnswerTable{${f.questionnaireQuestions.size}}"
+    val firstPage = s"\\FirstPage{$questionnaireQuestionsWeight}{$openQuestionsWeight}{${f.questionnaireQuestions.size}}"
     val questions = generateLatexForQuestions(f)
     val solutions = generateLatexSolutionForSolution(f)
-    val generatedContent = List(instructions, answerTable, questions, solutions).mkString("\n")
-
+    val generatedContent = List( firstPage, questions, solutions).mkString("\n")
+    
     def toImagePath(s: String ) = {
       s"{${if( s.last == '/' ) s else s + '/'}}"
     }
