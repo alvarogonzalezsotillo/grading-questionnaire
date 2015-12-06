@@ -1,8 +1,11 @@
 package giftToLatex
 
-import java.io.File
+import java.io.{InputStream, FileOutputStream, File}
+import java.nio.channels.Channels
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
+
+import scala.util.Random
 
 
 /**
@@ -24,7 +27,7 @@ object Main extends App with LazyLogging {
     val parser = new scopt.OptionParser[Config]("gifttolatex") {
       head("gifttolatex", "0.1")
 
-      arg[File]("<gift file>") text ("The input GIFT file (https://docs.moodle.org/23/en/GIFT_format). If omitted, standard input is used.") action { (gf, c) =>
+      arg[File]("<gift file>") minOccurs(0) maxOccurs(1) text ("The input GIFT file (https://docs.moodle.org/23/en/GIFT_format). If omitted, standard input is used.") action { (gf, c) =>
         c.copy(giftFile = gf)
       }
 
@@ -49,6 +52,14 @@ object Main extends App with LazyLogging {
         c.copy(help = true)
       }
 
+    }
+
+    def createTempFileFrom( in: InputStream ) = {
+      val file = File.createTempFile("","gitftolatex", new File("."))
+      file.deleteOnExit()
+      val out = new FileOutputStream(file)
+      out.getChannel().transferFrom(Channels.newChannel(in), 0, Long.MaxValue )
+      out.close()
     }
 
     def generateQuestionnarieVersion(c: Config, version: Option[String]) = {

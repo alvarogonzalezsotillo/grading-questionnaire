@@ -1,6 +1,6 @@
 package giftToLatex
 
-import java.io.File
+import java.io.{InputStream, File}
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
@@ -14,12 +14,19 @@ object LatexCompiler extends LazyLogging{
   import giftParser.Util._
 
 
+  private def consumeInputStream(in:InputStream){
+    new Thread{
+      while( in.read != -1 ){
+      }
+    }.run()
+  }
+
 
   private def compile(f: File): Process = {
     val fileName = f.getName
     val quotes = '\"'
     val cmd = s"pdflatex  --shell-escape -synctex=1 -interaction=nonstopmode $quotes$fileName$quotes"
-    val io = new ProcessIO( _ => (), _ => (), _ => () )
+    val io = new ProcessIO( _ => (), consumeInputStream, _ => () )
     Process( cmd, f.getParentFile).run(io)
   }
 
@@ -34,12 +41,21 @@ object LatexCompiler extends LazyLogging{
     compile(latex, outputFile, keepTexFile, times )
   }
 
+  def extractResourcesToDir(dir: File) = {
+    val resources = Map("giftToLatex/qrcode.sty" -> "qrcode.sty")
+    for( r <- resources ){
+      resourceToFile( r._1, new File(dir,r._2) )
+    }
+  }
+
   def compile( latex: String, outputFile : File, keepTexFile : Boolean = true, times: Int = 2 ) : IndexedSeq[Process] = {
     val dir = createTempDirectory
 
     val fileName = outputFile.getName.take( outputFile.getName.lastIndexOf('.') )
     val texFileName = fileName + ".tex"
     val texFile = new File(dir, texFileName)
+
+    extractResourcesToDir(dir)
 
     logger.error( s"outputFile:$outputFile fileName:$fileName texFileName:$texFileName ")
 

@@ -20,7 +20,7 @@ class GiftToLatexTest extends FlatSpec {
 
   "latex compile" should "work with a generated file" in {
 
-    val s = generateGift(38,5)
+    val s = generateGift(40,5)
     val f = Util.createFile(renderGift(s), new File("generated.gift"))
 
     val latex = GiftToLatex(f, imagePath = Seq("src/test/resources/giftParser/") )
@@ -66,6 +66,36 @@ class GiftToLatexTest extends FlatSpec {
     assert( tex ==expected)
   }
 
+  "A list of solutions" should "convert to binary" in {
+    val solutions = Seq(0,1,2,3)
+    val expected = Array[Byte]( 4.toByte, ((((0)<<2 | 1)<<2 | 2)<<2 | 3 ).toByte )
+    val bin = GiftToLatex.BinaryConverter.toBinarySolutions(solutions)
+    assert( expected.toSeq == bin.toSeq )
+  }
+
+  "A binary solution" should "convert to indexes" in {
+    val solutions = Array[Byte]( 4.toByte, ((((0)<<2 | 1)<<2 | 2)<<2 | 3 ).toByte )
+    val expected = Seq(0,1,2,3)
+    val sol = GiftToLatex.BinaryConverter.fromBinarySolutions(solutions)
+    assert( expected.toSeq == sol.toSeq )
+  }
+
+
+  "Another list of solutions" should "convert to binary" in {
+    val solutions = Seq(0,1,2,3,3,2,1,0)
+    val expected = Array[Byte]( 8.toByte, ((((0)<<2 | 1)<<2 | 2)<<2 | 3).toByte, ((((3)<<2 | 2)<<2 | 1)<<2 | 0).toByte )
+    val bin = GiftToLatex.BinaryConverter.toBinarySolutions(solutions)
+    assert( expected.toSeq == bin.toSeq )
+  }
+
+
+
+  "A list of solutions" should "convert to binary and convert again to indexes" in {
+    val solutions = Seq(0,1,2,3,3,2,1,0,3,2,1,0,0,1,2,3)
+    val bin = GiftToLatex.BinaryConverter.toBinarySolutions(solutions)
+    val sol = GiftToLatex.BinaryConverter.fromBinarySolutions(bin)
+    assert( solutions.toSeq == sol.toSeq )
+  }
 
 }
 

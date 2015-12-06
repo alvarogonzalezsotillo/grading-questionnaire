@@ -1,11 +1,12 @@
 package giftToLatex
 
-import java.io.{ByteArrayOutputStream, File, InputStream}
+import java.io.{OutputStream, ByteArrayOutputStream, File, InputStream}
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import giftParser.GiftParser
 import giftParser.GiftParser.GiftFile._
 import giftParser.GiftParser._
+import giftParser.Util._
 
 import scala.util.parsing.combinator.RegexParsers
 
@@ -152,36 +153,40 @@ object GiftToLatex extends LazyLogging{
     s"\\begin{QuestionnaireQuestions}\n$qq\n\\end{QuestionnaireQuestions}\n$oq"
   }
 
-  private def generateLatexSolutionForSolution(g: GiftFile) = {
-    val indexes = g.questions.filter(_.isInstanceOf[QuestionnaireQuestion]).map {
+  private def generateSolutionIndexes(g: GiftFile) = {
+    g.questions.filter(_.isInstanceOf[QuestionnaireQuestion]).map {
       case QuestionnaireQuestion(_, answers) =>
         answers.indexWhere(_.correct)
     }
 
-    val options = indexes.map(i => (i.toChar + 'a').toChar)
-
-    "\\Solution{" + options.mkString(",") + "}"
   }
 
-  private lazy val latexTemplate = {
-    def streamToString(in: InputStream) = {
-      val bos = new ByteArrayOutputStream()
-      val buffer = new Array[Byte](1024)
-      var bytesRead = in.read(buffer)
-      while (bytesRead > 0) {
-        bos.write(buffer, 0, bytesRead)
-        bytesRead = in.read(buffer)
+  private val latexTemplate = resourceToString("giftToLatex/QuestionnaireGradingTest.template.tex")
+
+
+  object BinaryConverter {
+
+    val valuesPerInt = 4
+    def toBinarySolutions(solutionIndexes: Seq[Int]): Array[Byte] = {
+      assert(solutionIndexes.forall(_ < 4))
+      val solutions = new Array[Byte]((solutionIndexes.size.toDouble / valuesPerInt).ceil.toInt)
+      for (i <- 0 until solutionIndexes.size) {
+        solutions(i / valuesPerInt) = ((solutions(i / valuesPerInt) << 2) | solutionIndexes(i)).toByte
       }
-      bos.close()
-      bos.toString
+      (Seq(solutionIndexes.size.toByte) ++ solutions).toArray
     }
 
-    val in = getClass.getResourceAsStream("/QuestionnaireGradingTest.template.tex")
-    try {
-      streamToString(in)
-    }
-    finally {
-      in.close()
+    def fromBinarySolutions(solutions: Array[Byte]) = {
+      val n = solutions(0)
+      val solutionIndexes = new Array[Int](n)
+      for (i <- 0 until n) {
+        val indexInByte = valuesPerInt - 1 - (i % valuesPerInt)
+        val mask = 3 << (2 * indexInByte)
+        val sol = (solutions(1+i/valuesPerInt) & mask)
+        solutionIndexes(i) = sol >> (2 * indexInByte)
+        println( s"i:$i indexInByte:$indexInByte mask:$mask solutions():${solutions(1+i/valuesPerInt)} sol:$sol solutionIndexes:${solutionIndexes(i)}" )
+      }
+      solutionIndexes
     }
   }
 
@@ -190,18 +195,22 @@ object GiftToLatex extends LazyLogging{
     val openQuestionsWeight = 100 - questionnaireQuestionsWeight
     val firstPage = s"\\FirstPage{$questionnaireQuestionsWeight}{$openQuestionsWeight}{${f.questionnaireQuestions.size}}"
     val questions = generateLatexForQuestions(f)
-    val solutions = generateLatexSolutionForSolution(f)
-    val generatedContent = List( firstPage, questions, solutions).mkString("\n")
+    val solutionIndexes = generateSolutionIndexes(f)
+    val solutions = solutionIndexes.map(i => (i.toChar + 'a').toChar).mkString(",")
+    val qrCodeData = toBase64( BinaryConverter.toBinarySolutions(solutionIndexes) )
+    val generatedContent = List( firstPage, questions ).mkString("\n")
     
     def toImagePath(s: String ) = {
       s"{${if( s.last == '/' ) s else s + '/'}}"
     }
 
     latexTemplate
-      .replace("${GeneratedContent}", generatedContent)
-      .replace("${ImagePath}", imagePath.map(toImagePath).mkString(","))
-      .replace("${HeaderText}", headerText )
-      .replace("${GiftFile}", f.file.map(_.getAbsolutePath).getOrElse(""))
+      .replace("$GeneratedContent$", generatedContent)
+      .replace("$ImagePath$", imagePath.map(toImagePath).mkString(","))
+      .replace("$HeaderText$", headerText )
+      .replace("$Solutions$", solutions )
+      .replace("$QRCodeData$", qrCodeData )
+      .replace("$GiftFile$", f.file.map(_.getAbsolutePath).getOrElse(""))
 
   }
 

@@ -16,13 +16,15 @@
 \usepackage{color}
 \usepackage{colortbl}
 \usepackage{graphicx}
+\usepackage{qrcode}
 \usepackage{fancyhdr} % Required for custom headers
 \usepackage{lastpage} % Required to determine the last page for the footer
 \usepackage{extramarks} % Required for headers and footers
 
+
 % Set up the header and footer
 \pagestyle{fancy}
-\lhead{\scriptsize{${HeaderText}}} % Top left header
+\lhead{\scriptsize{$HeaderText$}} % Top left header
 \rhead{\scriptsize{Impreso el \today}} % Top right header
 \chead{} % Top center head
 \lfoot{\scriptsize{\currfilename}} % Bottom left footer
@@ -31,7 +33,7 @@
 \renewcommand\headrulewidth{0pt} % Size of the header rule
 \renewcommand\footrulewidth{0.4pt} % Size of the footer rule
 
-\graphicspath{${ImagePath}}
+\graphicspath{$ImagePath$}
 
 \hypersetup{
   colorlinks,
@@ -175,7 +177,7 @@
 
 \newcommand{\StudentData}
 {
-  \begin{ShadowBox}{0.98\Width}
+  \begin{ShadowBox}{0.84\Width}
     \vspace{0.3cm}
     \large{
       \textbf{Apellidos:} \hrulefill \\
@@ -183,8 +185,10 @@
       \textbf{Fecha:} \hrulefill \hspace{1cm} \textbf{Grupo:} \hrulefill \\
     }
     %\vspace{0.2cm}
-  \end{ShadowBox}
+  \end{ShadowBox}\qrcode[height=2.3cm]{$QRCodeData$}
+
   \\
+
 }
 
 
@@ -236,10 +240,10 @@
 
   \forloop[5]{DummyAnswerCounter}{1}{\value{DummyAnswerCounter}<#1 \OR \value{AnswerTableC}=#1}
   {
-    \AnswerCell
-    \AnswerCell
-    \AnswerCell
-    \AnswerCell
+    \AnswerCell \hfill
+    \AnswerCell \hfill
+    \AnswerCell \hfill
+    \AnswerCell \hfill
     \AnswerCell
 
   }
@@ -249,32 +253,31 @@
 {
   \vspace{0.5cm}
   \newcounter{AnswerTableC}
-  \begin{multicols}{5}
-    \forloop{AnswerTableC}{1}{\value{AnswerTableC}<#1 \OR \value{AnswerTableC}=#1}
-    {
-      \AnswerCellTemplate{\arabic{AnswerTableC}}
-    }
-  \end{multicols}
+  \begin{multicols}{5}%
+    \forloop{AnswerTableC}{1}{\value{AnswerTableC}<#1 \OR \value{AnswerTableC}=#1}%
+    {      \AnswerCellTemplate{\arabic{AnswerTableC}}    }%
+  \end{multicols}%
 }
 
 \newcommand{\AnswerTable}[1]{
-\begin{center}%
-%\VerticalAnswerTable{#1}%
-\HorizontalAnswerTable{#1}%
-\end{center}%
+  \begin{center}%
+    %\VerticalAnswerTable{#1}%
+    \HorizontalAnswerTable{#1}%
+  \end{center}%
 }
+
+\newcommand{\Solutions}{$Solutions$}
 
 \newcommand{\FirstPage}[3]{
 
-\StudentData
+  \FileAutoref \OriginalGiftFile{$GiftFile$}
 
-\FileAutoref \OriginalGiftFile{${GiftFile}}
+  \StudentData
+  \AnswerTable{#3}
+  \vfill
 
-\Instructions{#1}{#2}
-\vfill
-\AnswerTable{#3}
-\vfill
-\newpage
+  \Instructions{#1}{#2}
+  \newpage
 }
 
 \begin{document}
@@ -282,13 +285,15 @@
 
 \IndentOff
 
+\Solution{\ Solutions}
 
 
 
 
-${GeneratedContent}
 
-%\FirstPage{30}{70}{100}
+$GeneratedContent$
+
+%\FirstPage{30}{70}{51}
 
 
 
