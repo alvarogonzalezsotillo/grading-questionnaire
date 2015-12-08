@@ -177,7 +177,8 @@
 
 \newcommand{\StudentData}
 {
-  \begin{ShadowBox}{0.84\Width}
+  \qrcode[height=2.3cm]{$QRCodeData$}
+  \begin{ShadowBox}{0.85\Width}
     \vspace{0.3cm}
     \large{
       \textbf{Apellidos:} \hrulefill \\
@@ -185,10 +186,7 @@
       \textbf{Fecha:} \hrulefill \hspace{1cm} \textbf{Grupo:} \hrulefill \\
     }
     %\vspace{0.2cm}
-  \end{ShadowBox}\qrcode[height=2.3cm]{$QRCodeData$}
-
-  \\
-
+  \end{ShadowBox}
 }
 
 
@@ -260,10 +258,10 @@
 }
 
 \newcommand{\AnswerTable}[1]{
-  \begin{center}%
+  %\begin{center}%
     %\VerticalAnswerTable{#1}%
     \HorizontalAnswerTable{#1}%
-  \end{center}%
+  %\end{center}%
 }
 
 \newcommand{\Solutions}{$Solutions$}
