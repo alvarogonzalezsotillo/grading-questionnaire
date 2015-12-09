@@ -8,7 +8,6 @@
 \usepackage{multicol}
 \usepackage{setspace}
 \usepackage[top=2.0cm,left=1.2cm,right=1.2cm,bottom=2.0cm,a4paper]{geometry}
-\usepackage{longtable}
 \usepackage[spanish]{babel}
 \usepackage{forloop}
 \usepackage{attachfile}
@@ -20,6 +19,7 @@
 \usepackage{fancyhdr} % Required for custom headers
 \usepackage{lastpage} % Required to determine the last page for the footer
 \usepackage{extramarks} % Required for headers and footers
+\usepackage{ctable} % for \specialrule command
 
 
 % Set up the header and footer
@@ -137,25 +137,28 @@
 \newcommand{\Instructions}[2]
 {
   \begin{small}
-    Instrucciones generales para las preguntas cerradas:
+    \begin{multicols}{2}
+    \textbf{Instrucciones generales para las preguntas cerradas:}
     \begin{itemize}
-      \item No se tendrán en cuenta anotaciones fuera de la tabla de respuestas.
+      \item No se tendrán en cuenta anotaciones fuera de la tabla de respuestas. Utiliza MAYÚSCULAS.
       \item Todas las preguntas tienen el mismo valor.
       \item Hay una, y sólo una, respuesta correcta en cada pregunta.
-      \item Responde solamente las preguntas en las que estés seguro. Una respuesta incorrecta resta un tercio del valor de una respuesta acertada. Una pregunta sin responder no resta puntos.
+      \item Responde solo a aquellas preguntas de las que estés seguro. Una respuesta incorrecta resta un tercio del valor de una respuesta acertada, pero una pregunta sin responder no resta puntos.
     \end{itemize}
+    \vfill\columnbreak
 
-    Instrucciones generales para las preguntas abiertas:
+    \textbf{Instrucciones generales para las preguntas abiertas:}
     \begin{itemize}
       \item Es necesario responder a la pregunta y justificar dicha respuesta.
       \item Todas las preguntas tienen el mismo valor.
     \end{itemize}
-    Puntuación:
+    \textbf{Puntuación:}
     \begin{itemize}
       \item La parte tipo test es un  #1\% de la nota.
       \item La parte de preguntas abiertas es un #2\% de la nota.
       \item Se necesita un mínimo de 3,5 en cada parte del examen para que hagan media.
     \end{itemize}
+    \end{multicols}
   \end{small}
 }
 
@@ -201,18 +204,21 @@
 }%
 
 \newcommand{\OriginalGiftFile}[1]{
-  \attachfile[print=false,
+  \IfFileExists{#1}
+  {\attachfile[print=false,
             appearance=false,
             zoom=false,
             description={El fichero GIFT original para crear este documento},
             subject={El fichero GIFT original para crear este documento}]
-    {#1}%
+    {#1}}%
+  {}%
 }%
 
 
-\definecolor{light-gray}{gray}{0.50}
+\definecolor{light-gray}{gray}{0.60}
 \newcommand{\AnswerCellTemplate}[1]
 {%
+  \setlength{\arrayrulewidth}{.02em}%
   \begin{tabular}{|p{0.7cm}|p{1.3cm}!{\color{light-gray}\vrule}}%
     \arrayrulecolor{light-gray}\hline%
     \cellcolor{black}\textcolor{white}{\hfill #1 \hfill} &  \\[2pt]%
@@ -283,7 +289,7 @@
 
 \IndentOff
 
-\Solution{\ Solutions}
+\Solution{\Solutions}
 
 
 
@@ -291,7 +297,7 @@
 
 $GeneratedContent$
 
-%\FirstPage{30}{70}{51}
+\FirstPage{30}{70}{51}
 
 
 
