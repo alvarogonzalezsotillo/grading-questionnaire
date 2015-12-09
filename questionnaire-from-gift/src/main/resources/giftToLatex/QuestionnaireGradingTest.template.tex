@@ -8,7 +8,6 @@
 \usepackage{multicol}
 \usepackage{setspace}
 \usepackage[top=2.0cm,left=1.2cm,right=1.2cm,bottom=2.0cm,a4paper]{geometry}
-\usepackage{longtable}
 \usepackage[spanish]{babel}
 \usepackage{forloop}
 \usepackage{attachfile}
@@ -20,6 +19,7 @@
 \usepackage{fancyhdr} % Required for custom headers
 \usepackage{lastpage} % Required to determine the last page for the footer
 \usepackage{extramarks} % Required for headers and footers
+\usepackage{ctable} % for \specialrule command
 
 
 % Set up the header and footer
@@ -201,16 +201,18 @@
 }%
 
 \newcommand{\OriginalGiftFile}[1]{
-  \attachfile[print=false,
+  \IfFileExists{#1}
+  {\attachfile[print=false,
             appearance=false,
             zoom=false,
             description={El fichero GIFT original para crear este documento},
             subject={El fichero GIFT original para crear este documento}]
-    {#1}%
+    {#1}}%
+  {}%
 }%
 
 
-\definecolor{light-gray}{gray}{0.50}
+\definecolor{light-gray}{gray}{0.60}
 \newcommand{\AnswerCellTemplate}[1]
 {%
   \begin{tabular}{|p{0.7cm}|p{1.3cm}!{\color{light-gray}\vrule}}%
@@ -291,7 +293,7 @@
 
 $GeneratedContent$
 
-%\FirstPage{30}{70}{51}
+\FirstPage{30}{70}{51}
 
 
 
