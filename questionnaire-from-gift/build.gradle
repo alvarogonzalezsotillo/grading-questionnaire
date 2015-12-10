@@ -11,6 +11,12 @@ run {
     }
 }
 
+clean.doFirst {
+    delete "gifttolatex.jar"
+    delete "generated.tex"
+    delete "generated.pdf"
+    delete "generated.gift"
+}
 
 
 task fatjar(type: Jar, dependsOn: 'assemble') {
