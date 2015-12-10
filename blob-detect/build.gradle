@@ -18,6 +18,7 @@ task run(type: JavaExec, dependsOn: classes) {
     main = 'imgproc.GUI'
     classpath sourceSets.main.runtimeClasspath
     classpath configurations.runtime
+    systemProperty "java.library.path", "./lib"
 }
 
 tasks.withType(Test) {
