@@ -78,10 +78,25 @@ object ProcessingStep{
     }
   }
     
-  private def defaultAccept[T]( psi: ProcessingStepInfo[T]) = psi.mat != null
-
-  def saveMatrixStep[SRC,DST]( step: ProcessingStep[SRC,DST], accept: ProcessingStepInfo[DST] => Boolean = defaultAccept[DST] _ ) = {
+  implicit class MatrixStep[SRC,DST]( step: ProcessingStep[SRC,DST] ){
       
+      private def defaultAccept( psi: ProcessingStepInfo[DST]) = psi.mat != null
+
+      def withSaveMatrix( accept: ProcessingStepInfo[DST] => Boolean = defaultAccept _ ) = {
+          
+         step.extend( "Guardar imagen de: " + step.stepName ){ psi: ProcessingStepInfo[DST] =>
+        
+           if( accept(psi) ){
+               java.awt.Toolkit.getDefaultToolkit().beep()
+               save(psi.mat)
+               Thread.sleep(1500)
+           }                                                        
+           psi
+        }
+      }
+      
+  
+    
     def save( m: Mat ){
         val shortDateFormat = new java.text.SimpleDateFormat("yyyyMMdd")
         val longDateFormat = new java.text.SimpleDateFormat("yyyyMMdd-HHmmss")
@@ -91,18 +106,10 @@ object ProcessingStep{
         new java.io.File(sdate).mkdirs
         val file = s"$sdate/$ldate.png"
         org.opencv.highgui.Highgui.imwrite(file,m)
-    }  
-      
-    step.extend( "Guardar imagen de " + step.stepName ){ psi: ProcessingStepInfo[DST] =>
-        
-       if( accept(psi) ){
-           java.awt.Toolkit.getDefaultToolkit().beep()
-           save(psi.mat)
-           Thread.sleep(1500)
-       }                                                        
-       psi
-    }
+    } 
   }
+      
+  
 
   private def matrixOnlyProcess( proc: (Mat)=>Mat ): Process[Unit,Unit] = {
     ( psi : ProcessingStepInfo[Unit] ) => ProcessingStepInfo( proc(psi.mat), Unit )

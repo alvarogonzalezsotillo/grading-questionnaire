@@ -93,7 +93,7 @@ object GUI extends App {
     answerMatrixLocationStep.withDrawContour,
     answerMatrixStep(),
     cellsOfAnswerMatrix().withDrawContours,
-    saveMatrixStep( cellsOfAnswerMatrix().withDrawContours )  
+    cellsOfAnswerMatrix().withDrawContours.withSaveMatrix()
   ))
 
   frame.setSize(640, 480)
