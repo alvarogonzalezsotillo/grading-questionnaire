@@ -1,7 +1,9 @@
 package imgproc
 
 
-import org.opencv.core.{Mat, MatOfPoint, Scalar}
+import org.opencv.core._
+
+import org.opencv.imgproc.Imgproc
 
 import scala.collection.immutable.IndexedSeq
 
@@ -23,7 +25,7 @@ trait ProcessingStep[SRC,DST] {
 
 object ProcessingStep{
 
-
+  import imgproc.Implicits._
 
   import imgproc.ImageProcessing._
 
@@ -89,6 +91,58 @@ object ProcessingStep{
     ProcessingStepInfo(psi.mat, step.process(psi).info )
   }
 
+  def locateAnswerMatrix(number: Int = 5, insideLimit:Int = -8)(contours: Seq[MatOfPoint]): Option[MatOfPoint] = {
+    import scala.collection.JavaConverters._
+
+    val allPoints = contours.map(_.toList.asScala).flatten
+
+
+    def doIt() = {
+      val (center, orientation) = {
+        val shapes = contours.map(c => new Shape(c))
+        val leftmostCenter = shapes.map(_.center).minBy(_.x)
+        val rightmostCenter = shapes.map(_.center).maxBy(_.x)
+
+        ((leftmostCenter + rightmostCenter) * 0.5, (rightmostCenter - leftmostCenter))
+      }
+
+      val difs = allPoints.map(_ - center)
+
+      val unit = orientation.normalize
+
+      val (upperLeft, upperRight) = {
+        val upperPoints = difs.filter(_.crossProductZ(unit) > 0)
+        (upperPoints.minBy(_.normalize * unit), upperPoints.maxBy(_.normalize * unit))
+      }
+
+      val (lowerLeft, lowerRight) = {
+        val lowerPoints = difs.filter(_.crossProductZ(unit) < 0)
+        (lowerPoints.minBy(_.normalize * unit), lowerPoints.maxBy(_.normalize * unit))
+      }
+
+      val lowerExtension = (lowerRight - lowerLeft) * AnswerMatrixMeasures.extensionFactor
+      val upperExtension = (upperRight - upperLeft) * AnswerMatrixMeasures.extensionFactor
+
+      new MatOfPoint(
+        upperLeft + center,
+        upperRight + center + upperExtension,
+        lowerRight + center + lowerExtension,
+        lowerLeft + center
+      )
+    }
+
+    def checkIt(contour: MatOfPoint) = {
+      contours.size == number &&
+        allPoints.forall { p =>
+          val contour2f = new MatOfPoint2f()
+          contour.convertTo(contour2f, CvType.CV_32FC2)
+          val inside = Imgproc.pointPolygonTest(contour2f, p, true)
+          inside > insideLimit
+        }
+    }
+
+    doIt If checkIt _
+  }
 
 
   val initialStep : ProcessingStep[Unit,Unit] = InitialStep( "Imagen original")
