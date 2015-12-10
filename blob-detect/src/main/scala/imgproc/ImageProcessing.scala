@@ -121,14 +121,6 @@ object ImageProcessing {
     contours.sortBy(_.area).reverse.take(number)
   }
 
-  def locateQR(answerMatrixLocation: MatOfPoint): MatOfPoint = {
-    val points = answerMatrixLocation.toArray
-    val tl = points(0)
-    val tr = points(2)
-    val xaxis = (tr - tl)
-    val yaxis = new Point(-xaxis.y, xaxis.x)
-    ???
-  }
 
 
   def findHomography(questions: Int)(srcPoints: MatOfPoint) = {

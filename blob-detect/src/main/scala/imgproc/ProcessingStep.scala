@@ -85,16 +85,17 @@ object ProcessingStep{
       private val delay = 2500
 
       private def defaultAccept( psi: ProcessingStepInfo[DST]) = {
-        psi.mat != null && System.currentTimeMillis() > lastSave + delay
+        psi.mat != null
       }
 
-      var lastSave = System.currentTimeMillis()
+      private var lastSave = System.currentTimeMillis()
 
       def withSaveMatrix( accept: ProcessingStepInfo[DST] => Boolean = defaultAccept _ ) = {
           
          step.extend( "Guardar imagen de: " + step.stepName ){ psi: ProcessingStepInfo[DST] =>
         
-           if( accept(psi) ){
+           if( accept(psi) && System.currentTimeMillis() > lastSave + delay ){
+               lastSave = System.currentTimeMillis()
                save(psi.mat)
            }
            psi
@@ -112,7 +113,7 @@ object ProcessingStep{
         new java.io.File(sdate).mkdirs
         val file = s"$sdate/$ldate.png"
         org.opencv.highgui.Highgui.imwrite(file,m)
-        lastSave = System.currentTimeMillis()
+
     } 
   }
       
@@ -129,6 +130,23 @@ object ProcessingStep{
   def recoverOriginalMatrixStep[SRC,DST]( step : ProcessingStep[SRC,DST] ) : ProcessingStep[SRC,DST] = Step( step.stepName ){ psi: ProcessingStepInfo[SRC] =>
     ProcessingStepInfo(psi.mat, step.process(psi).info )
   }
+
+
+  def locateQR(answerMatrixLocation: MatOfPoint): MatOfPoint = {
+    val points = answerMatrixLocation.toArray
+    val tl = points(0)
+    val tr = points(2)
+    val xaxis = (tr - tl)
+    val yaxis = new Point(xaxis.y, -xaxis.x)
+
+    val topLeft = tl - (yaxis * AnswerMatrixMeasures.matrixWithToTopOfQRRatio)
+    val topRight = topLeft + (xaxis*AnswerMatrixMeasures.matrixWithToQRWidthRatio)
+    val bottomLeft = topLeft + (yaxis * AnswerMatrixMeasures.matrixWithToQRWidthRatio)
+    val bottomRight = topRight + (yaxis * AnswerMatrixMeasures.matrixWithToQRWidthRatio)
+
+    new MatOfPoint(topLeft,topRight,bottomRight,bottomLeft)
+  }
+
 
   def locateAnswerMatrix(number: Int = 5, insideLimit:Int = -8)(contours: Seq[MatOfPoint]): Option[MatOfPoint] = {
     import scala.collection.JavaConverters._
