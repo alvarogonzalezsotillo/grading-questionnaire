@@ -83,8 +83,13 @@ object ProcessingStep{
   def saveMatrixStep[SRC,DST]( step: ProcessingStep[SRC,DST], accept: ProcessingStepInfo[DST] => Boolean = defaultAccept[DST] _ ) = {
       
     def save( m: Mat ){
-        val dateFormat = new java.text.SimpleDateFormat("yyyyMMdd-HHmmss")
-        val file = dateFormat.format(new java.util.Date) + ".png"
+        val shortDateFormat = new java.text.SimpleDateFormat("yyyyMMdd")
+        val longDateFormat = new java.text.SimpleDateFormat("yyyyMMdd-HHmmss")
+        val date = new java.util.Date
+        val ldate = longDateFormat.format(date)
+        val sdate = shortDateFormat.format(date)
+        new java.io.File(sdate).mkdirs
+        val file = s"$sdate/$ldate.png"
         org.opencv.highgui.Highgui.imwrite(file,m)
     }  
       
