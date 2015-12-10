@@ -6,7 +6,6 @@ package imgproc
 
 import java.util
 
-import imgproc.ImageProcessing.AnswerMatrixMeasures
 import org.junit.runner.RunWith
 import org.opencv.core.{Mat, Core, MatOfPoint, Point}
 import org.opencv.imgproc.Imgproc

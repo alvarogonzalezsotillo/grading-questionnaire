@@ -14,10 +14,15 @@ dependencies {
     compile group: 'com.github.sarxos', name: 'webcam-capture', version: '0.3.11'
 }
 
+clean.doFirst {
+    delete "test-img"
+}
+
 task run(type: JavaExec, dependsOn: classes) {
     main = 'imgproc.GUI'
     classpath sourceSets.main.runtimeClasspath
     classpath configurations.runtime
+    systemProperty "java.library.path", "./lib"
 }
 
 tasks.withType(Test) {

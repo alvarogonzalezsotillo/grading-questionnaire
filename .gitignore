@@ -15,5 +15,14 @@ src_managed/
 project/boot/
 project/plugins/project/
 
-# Scala-IDE specific
+# Scala-IDE specifi
 .scala_dependencies
+
+# sagemath
+*.sage-chat
+*.sage-history
+
+# latex
+*.out
+*.aux
+

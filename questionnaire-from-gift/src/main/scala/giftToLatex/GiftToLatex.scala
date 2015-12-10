@@ -164,31 +164,7 @@ object GiftToLatex extends LazyLogging{
   private val latexTemplate = resourceToString("giftToLatex/QuestionnaireGradingTest.template.tex")
 
 
-  object BinaryConverter {
 
-    val valuesPerInt = 4
-    def toBinarySolutions(solutionIndexes: Seq[Int]): Array[Byte] = {
-      assert(solutionIndexes.forall(_ < 4))
-      val solutions = new Array[Byte]((solutionIndexes.size.toDouble / valuesPerInt).ceil.toInt)
-      for (i <- 0 until solutionIndexes.size) {
-        solutions(i / valuesPerInt) = ((solutions(i / valuesPerInt) << 2) | solutionIndexes(i)).toByte
-      }
-      (Seq(solutionIndexes.size.toByte) ++ solutions).toArray
-    }
-
-    def fromBinarySolutions(solutions: Array[Byte]) = {
-      val n = solutions(0)
-      val solutionIndexes = new Array[Int](n)
-      for (i <- 0 until n) {
-        val indexInByte = valuesPerInt - 1 - (i % valuesPerInt)
-        val mask = 3 << (2 * indexInByte)
-        val sol = (solutions(1+i/valuesPerInt) & mask)
-        solutionIndexes(i) = sol >> (2 * indexInByte)
-        println( s"i:$i indexInByte:$indexInByte mask:$mask solutions():${solutions(1+i/valuesPerInt)} sol:$sol solutionIndexes:${solutionIndexes(i)}" )
-      }
-      solutionIndexes
-    }
-  }
 
   def generateLatex(f: GiftFile, headerText: String = "", questionnaireQuestionsWeight: Int = 60, imagePath: Seq[String] = Seq() ): String = {
 
