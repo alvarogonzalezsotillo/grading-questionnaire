@@ -5,6 +5,7 @@ dependencies {
 
     // QR SCANNER
     compile 'com.google.zxing:core:3.2.1'
+    compile 'com.google.zxing:javase:3.2.1'
 	
     // ON WINDOWS, OPENCV SHOULD BE INSTALLED SEPARATELY
     // http://sourceforge.net/projects/opencvlibrary/files/opencv-win/2.4.9/opencv-2.4.9.exe/download

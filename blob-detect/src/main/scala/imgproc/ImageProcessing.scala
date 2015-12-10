@@ -121,7 +121,20 @@ object ImageProcessing {
     contours.sortBy(_.area).reverse.take(number)
   }
 
-  def locateAnswerMatrix(number: Int = 5, insideLimit:Int = -8)(contours: Seq[MatOfPoint]): Option[MatOfPoint] = {
+  def locateQR( answerMatrixLocation: Option[MatOfPoint] ) : Option[MatOfPoint] = {
+    def compute( l: MatOfPoint ) : MatOfPoint = {
+      val points = l.toArray
+      val tl = points(0)
+      val tr = points(2)
+      val xaxis = (tr - tl)
+      val yaxis = new Point(-xaxis.y,xaxis.x)
+
+
+    }
+    answerMatrixLocation.map(compute)
+  }
+  
+  def locateAnswerMatrix(columns: Int = 5, insideLimit:Int = -8)(contours: Seq[MatOfPoint]): Option[MatOfPoint] = {
     import scala.collection.JavaConverters._
 
     val allPoints = contours.map(_.toList.asScala).flatten
@@ -162,7 +175,7 @@ object ImageProcessing {
     }
 
     def checkIt(contour: MatOfPoint) = {
-      contours.size == number &&
+      contours.size == columns &&
         allPoints.forall { p =>
           val contour2f = new MatOfPoint2f()
           contour.convertTo(contour2f, CvType.CV_32FC2)

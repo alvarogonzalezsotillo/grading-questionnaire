@@ -107,6 +107,10 @@ object ProcessingStep{
     ProcessingStepInfo( psi.mat, locateAnswerMatrix()(psi.info) )
   }
 
+  val locateQRStep = answerMatrixLocationStep.extend( "Localización del código QR" ){ psi: ProcessingStepInfo[Option[MatOfPoint]]  =>
+    ProcessingStepInfo( psi.mat, locateQR(psi.info) )
+  }
+
   val defaultQuestions = 50
 
   def answerMatrixStep( questions: Int = defaultQuestions ): ProcessingStep[Unit, Unit] = {
