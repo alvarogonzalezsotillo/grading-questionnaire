@@ -97,7 +97,7 @@ object ProcessingStep{
       
   
     
-    def save( m: Mat ){
+    private def save( m: Mat ){
         val shortDateFormat = new java.text.SimpleDateFormat("yyyyMMdd")
         val longDateFormat = new java.text.SimpleDateFormat("yyyyMMdd-HHmmss")
         val date = new java.util.Date
@@ -193,7 +193,7 @@ object ProcessingStep{
     ProcessingStepInfo( psi.mat, locateAnswerMatrix()(psi.info) )
   }
 
-  val defaultQuestions = 50
+  private val defaultQuestions = 50
 
   def answerMatrixStep( questions: Int = defaultQuestions ): ProcessingStep[Unit, Unit] = {
     answerMatrixLocationStep.extend( "Extracción de la tabla de respuestas"){ psi: ProcessingStepInfo[Option[MatOfPoint]] =>

@@ -13,11 +13,12 @@ import org.opencv.imgproc.Imgproc
 object GUI extends App {
 
 
-  lazy val videoSource = new SwingVideoSource(VideoSource())(imageRead)
 
-  var currentProcessingStep: Option[CanvasProcessingStep[_]] = null
+  private var currentProcessingStep: Option[CanvasProcessingStep[_]] = null
 
-  def imageRead(m: Mat) = currentProcessingStep.map(_.processMat(m))
+  private def imageRead(m: Mat) = currentProcessingStep.map(_.processMat(m))
+
+  private lazy val videoSource = new SwingVideoSource(VideoSource())(imageRead)
 
 
 
@@ -26,7 +27,7 @@ object GUI extends App {
     private var overlay : Image = null
 
 
-    val processMat = { (m: Mat) =>
+    def processMat(m: Mat) = {
       import imgproc.Implicits._
       setOverlayImage(m)
       val ret = step.processMat(m)
@@ -49,7 +50,7 @@ object GUI extends App {
 
   }
 
-  def createStepsComponent(steps: ProcessingStep[Unit,_]*): JComponent = {
+  private def createStepsComponent(steps: ProcessingStep[Unit,_]*): JComponent = {
 
     val ret = new JTabbedPane()
     ret.setTabPlacement(SwingConstants.LEFT)
@@ -81,7 +82,7 @@ object GUI extends App {
   UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
 
 
-  val frame = new JFrame("Corrección de exámenes")
+  private val frame = new JFrame("Corrección de exámenes")
 
   frame.add(createStepsComponent(
     initialStep,
