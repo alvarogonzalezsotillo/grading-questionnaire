@@ -166,25 +166,39 @@ object GiftToLatex extends LazyLogging{
 
   object BinaryConverter {
 
-    val valuesPerInt = 4
+    val version : Byte = 0
+
+    private def log2(x:Double) = Math.log(x)/Math.log(2)
+
+    /**
+     * (version, bitsPerIndex, numberOfIndexes, byte0, byte1, ...)
+     */
     def toBinarySolutions(solutionIndexes: Seq[Int]): Array[Byte] = {
-      assert(solutionIndexes.forall(_ < 4))
-      val solutions = new Array[Byte]((solutionIndexes.size.toDouble / valuesPerInt).ceil.toInt)
+      val bitsPerIndex = log2( solutionIndexes.max ).ceil.toInt
+      assert( bitsPerIndex <= 8 )
+      val valuesPerByte = 8/bitsPerIndex
+      val solutions = new Array[Byte]((solutionIndexes.size.toDouble / valuesPerByte).ceil.toInt)
       for (i <- 0 until solutionIndexes.size) {
-        solutions(i / valuesPerInt) = ((solutions(i / valuesPerInt) << 2) | solutionIndexes(i)).toByte
+        solutions(i / valuesPerByte) = ((solutions(i / valuesPerByte) << bitsPerIndex) | solutionIndexes(i)).toByte
       }
-      (Seq(solutionIndexes.size.toByte) ++ solutions).toArray
+      (Seq(version, bitsPerIndex.toByte, solutionIndexes.size.toByte) ++ solutions).toArray
     }
 
     def fromBinarySolutions(solutions: Array[Byte]) = {
-      val n = solutions(0)
+      val readVersion = solutions(0)
+      assert( readVersion == version )
+      val bitsPerIndex = solutions(1)
+      val valuesPerByte = 8/bitsPerIndex
+      val n = solutions(2)
       val solutionIndexes = new Array[Int](n)
+      val data = solutions.drop(3)
       for (i <- 0 until n) {
-        val indexInByte = valuesPerInt - 1 - (i % valuesPerInt)
-        val mask = 3 << (2 * indexInByte)
-        val sol = (solutions(1+i/valuesPerInt) & mask)
-        solutionIndexes(i) = sol >> (2 * indexInByte)
-        println( s"i:$i indexInByte:$indexInByte mask:$mask solutions():${solutions(1+i/valuesPerInt)} sol:$sol solutionIndexes:${solutionIndexes(i)}" )
+        val indexInByte = valuesPerByte - 1 - (i % valuesPerByte)
+        val originalMask = (1 << bitsPerIndex) - 1
+        val mask = originalMask << (bitsPerIndex * indexInByte)
+        val sol = (data(i/valuesPerByte) & mask)
+        solutionIndexes(i) = sol >> (bitsPerIndex * indexInByte)
+        println( s"i:$i indexInByte:$indexInByte mask:$mask data():${data(i/valuesPerByte)} sol:$sol solutionIndexes:${solutionIndexes(i)}" )
       }
       solutionIndexes
     }
