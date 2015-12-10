@@ -135,9 +135,9 @@ object ProcessingStep{
   def locateQR(answerMatrixLocation: MatOfPoint): MatOfPoint = {
     val points = answerMatrixLocation.toArray
     val tl = points(0)
-    val tr = points(2)
+    val tr = points(1)
     val xaxis = (tr - tl)
-    val yaxis = new Point(xaxis.y, -xaxis.x)
+    val yaxis = new Point(-xaxis.y, xaxis.x)
 
     val topLeft = tl - (yaxis * AnswerMatrixMeasures.matrixWithToTopOfQRRatio)
     val topRight = topLeft + (xaxis*AnswerMatrixMeasures.matrixWithToQRWidthRatio)
