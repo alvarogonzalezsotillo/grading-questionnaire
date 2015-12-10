@@ -179,7 +179,8 @@ object GiftToLatex extends LazyLogging{
       val valuesPerByte = 8/bitsPerIndex
       val solutions = new Array[Byte]((solutionIndexes.size.toDouble / valuesPerByte).ceil.toInt)
       for (i <- 0 until solutionIndexes.size) {
-        solutions(i / valuesPerByte) = ((solutions(i / valuesPerByte) << bitsPerIndex) | solutionIndexes(i)).toByte
+        val indexInByte = valuesPerByte - 1 - (i % valuesPerByte)
+        solutions(i / valuesPerByte) = (solutions(i/valuesPerByte) | (solutionIndexes(i) << (bitsPerIndex*indexInByte))).toByte
       }
       (Seq(version, bitsPerIndex.toByte, solutionIndexes.size.toByte) ++ solutions).toArray
     }

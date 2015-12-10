@@ -72,6 +72,14 @@ class GiftToLatexTest extends FlatSpec {
     val bin = GiftToLatex.BinaryConverter.toBinarySolutions(solutions)
     assert( expected.toSeq == bin.toSeq )
   }
+    
+  "A list of odd solutions" should "convert to binary" in {
+    val solutions = Seq(0,1,2,3,3)
+    val expected = Array[Byte]( GiftToLatex.BinaryConverter.version, 2, solutions.size.toByte, ((((0)<<2 | 1)<<2 | 2)<<2 | 3 ).toByte, 3  << 6 )
+    val bin = GiftToLatex.BinaryConverter.toBinarySolutions(solutions)
+    assert( expected.toSeq == bin.toSeq )
+  }
+
 
   "A binary solution" should "convert to indexes" in {
     val solutions = Array[Byte]( GiftToLatex.BinaryConverter.version, 2, 4, ((((0)<<2 | 1)<<2 | 2)<<2 | 3 ).toByte )
@@ -79,6 +87,14 @@ class GiftToLatexTest extends FlatSpec {
     val sol = GiftToLatex.BinaryConverter.fromBinarySolutions(solutions)
     assert( expected.toSeq == sol.toSeq )
   }
+    
+  "A binary solution with odd number of indexes" should "convert to indexes" in {
+    val solutions = Array[Byte]( GiftToLatex.BinaryConverter.version, 2, 5, ((((0)<<2 | 1)<<2 | 2)<<2 | 3 ).toByte, 3 << 6 )
+    val expected = Seq(0,1,2,3,3)
+    val sol = GiftToLatex.BinaryConverter.fromBinarySolutions(solutions)
+    assert( expected.toSeq == sol.toSeq )
+  }
+
 
 
   "Another list of solutions" should "convert to binary" in {
@@ -96,6 +112,15 @@ class GiftToLatexTest extends FlatSpec {
     val sol = GiftToLatex.BinaryConverter.fromBinarySolutions(bin)
     assert( solutions.toSeq == sol.toSeq )
   }
+    
+  "A list of odd solutions" should "convert to binary and convert again to indexes" in {
+    val solutions = Seq(0,1,2,3,3,2,1,0,3,2,1,0,0,1,2,3,1)
+    assert( solutions.size % 2 == 1 )
+    val bin = GiftToLatex.BinaryConverter.toBinarySolutions(solutions)
+    val sol = GiftToLatex.BinaryConverter.fromBinarySolutions(bin)
+    assert( solutions.toSeq == sol.toSeq )
+  }
+
 
 }
 
