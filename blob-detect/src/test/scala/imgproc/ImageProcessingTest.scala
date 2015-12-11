@@ -61,7 +61,7 @@ class ImageProcessingTest extends FlatSpec {
 
   def testHomography(pointsInImage: MatOfPoint) {
     val questions = 35
-    val H = ImageProcessing.findHomography(questions)(pointsInImage)
+    val H = ImageProcessing.findHomography(pointsInImage,AnswerMatrixMeasures.destinationContour(questions))
 
     val pointsInImage_mat = Converters.vector_Point2f_to_Mat(pointsInImage.toList)
     val dstPoints_mat = new Mat

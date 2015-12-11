@@ -11,8 +11,9 @@ object AnswerMatrixMeasures {
   val destinationWidth = 800.0
   val cellHeaderToHeaderWidthRatio = 0.7 / (0.7 + 1.3)
   val columnSpaceToCellWidthRatio = 0.15
-  val matrixWithToTopOfQRRatio = 0.25
-  val matrixWithToQRWidthRatio = 0.20
+  val matrixWithToTopOfQRRatio = 0.20
+  val matrixWithToLeftOfQRRatio = 0.02
+  val matrixWithToQRWidthRatio = 0.18
 
 
   val answerHeightRatio = 5.5 * columns
@@ -34,7 +35,7 @@ object AnswerMatrixMeasures {
   def destinationContour(questions: Int) = {
     val w = AnswerMatrixMeasures.destinationWidth
     val h = AnswerMatrixMeasures.destinationHeight(questions)
-    new MatOfPoint2f((0.0, 0.0), (w, 0.0), (w, h), (0.0, h))
+    new MatOfPoint((0.0, 0.0), (w, 0.0), (w, h), (0.0, h))
   }
 
   def destinationSize(questions: Int) = {

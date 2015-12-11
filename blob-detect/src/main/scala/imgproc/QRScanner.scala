@@ -21,7 +21,7 @@ object QRScanner  extends LazyLogging{
     new BinaryBitmap(new HybridBinarizer(source))
   }
 
-  def decode( m: Mat ) = {
+  def decode( m: Mat ) : Option[String] = {
     val reader = new QRCodeReader()
 
     Try( reader.decode(m) ) match{

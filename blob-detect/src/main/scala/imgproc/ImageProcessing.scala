@@ -12,8 +12,6 @@ object ImageProcessing {
   import imgproc.Implicits._
 
   def threshold(blockSize: Int = 101, C: Double = 3)(src: Mat): Mat = {
-    println("threshold src:" + src)
-    println("threshold type:" + src.`type`())
     val dst = new Mat(src.height(), src.width(), CvType.CV_8UC1)
     Imgproc.cvtColor(src, dst, Imgproc.COLOR_RGB2GRAY)
     Imgproc.adaptiveThreshold(dst, dst, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY_INV, blockSize, C)
@@ -24,7 +22,6 @@ object ImageProcessing {
     if (src.channels() > 1)
       src
     else {
-      println("toColorImage: type:" + src.`type`() + "   " + CvType.CV_8UC3)
       val dst = new Mat
       Imgproc.cvtColor(src, dst, Imgproc.COLOR_GRAY2RGB)
       dst
@@ -117,17 +114,27 @@ object ImageProcessing {
     dst
   }
 
+
+
+  def drawString(dst: Mat, string: String, color: Scalar, point: Point): Mat = {
+    val fontFace = Core.FONT_HERSHEY_SIMPLEX
+    val fontScale = 0.6
+    Core.putText(dst,string,point,fontFace,fontScale,color)
+    dst
+  }
+
   def findBiggestAlignedQuadrilaterals(number: Int = 5)(contours: Seq[MatOfPoint]): Seq[MatOfPoint] = {
     contours.sortBy(_.area).reverse.take(number)
   }
 
 
 
-  def findHomography(questions: Int)(srcPoints: MatOfPoint) = {
-    val dstPoints = AnswerMatrixMeasures.destinationContour(questions)
+  def findHomography(srcPoints: MatOfPoint, dstPoints : MatOfPoint) = {
+    val dstPoints2f = new MatOfPoint2f()
     val srcPoints2f = new MatOfPoint2f()
     srcPoints.convertTo(srcPoints2f, CvType.CV_32FC2)
-    Calib3d.findHomography(srcPoints2f, dstPoints)
+    dstPoints.convertTo(dstPoints2f, CvType.CV_32FC2)
+    Calib3d.findHomography(srcPoints2f, dstPoints2f)
   }
 
   def warpImage(dst: Mat = null)(m: Mat, H: Mat, size: Size = null) = {

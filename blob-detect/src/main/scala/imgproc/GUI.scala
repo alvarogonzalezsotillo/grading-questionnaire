@@ -93,9 +93,10 @@ object GUI extends App {
     biggestQuadrilateralsStep.withDrawContours,
     answerMatrixLocationStep.withDrawContour,
     locateQRStep.withDrawContour,
+    extractQRStep.withDrawString,
     answerMatrixStep(),
     cellsOfAnswerMatrix().withDrawContours,
-    cellsOfAnswerMatrix().withDrawContours.withSaveMatrix()
+    cellsOfAnswerMatrix().withSaveMatrix()()
   ))
 
   frame.setSize(640, 480)
