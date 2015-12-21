@@ -20,14 +20,10 @@ trait ProcessingStep[SRC, DST] {
 
   import imgproc.ProcessingStep._
 
-  val process: Process[SRC, DST]
+  val process: SRC => DST
   val stepName: String
 
-  def extend[T](name: String)(p: Process[DST, T]): ProcessingStep[SRC, T] = ExtendedStep(this, name, p)
-
-  private def defaultAccept(psi: ProcessingStepInfo[DST]) = {
-    psi.mat != null
-  }
+  def extend[T](name: String)(p: DST => T): ProcessingStep[SRC, T] = ExtendedStep(this, name, p)
 
 }
 
@@ -38,64 +34,92 @@ object ProcessingStep {
 
   import imgproc.ImageProcessing._
 
-  case class ProcessingStepInfo[T](mat: Mat, info: T)
 
-  type Process[SRC, DST] = (ProcessingStepInfo[SRC]) => ProcessingStepInfo[DST]
 
-  type StepFilter[T] = (ProcessingStepInfo[T]) => Boolean
-
-  private case class Step[SRC, DST](override val stepName: String)(override val process: Process[SRC, DST]) extends ProcessingStep[SRC, DST]
-
-  private case class ExtendedStep[SRC, DST, T](previous: ProcessingStep[SRC, DST], override val stepName: String, extendedProcess: Process[DST, T]) extends ProcessingStep[SRC, T] {
-    override val process = (psi: ProcessingStepInfo[SRC]) => extendedProcess(previous.process(psi))
+  trait MatInfo{
+    val mat: Mat
   }
 
-  private case class InitialStep(override val stepName: String) extends ProcessingStep[Unit, Unit] {
-    override val process = matrixOnlyProcess(m => m)
+  trait OptionContourInfo{
+    val optionContour : Option[MatOfPoint]
+  }
+
+  trait ContoursInfo{
+    val contours : Seq[MatOfPoint]
+  }
+
+  trait StringInfo{
+    val msg : Option[String]
+  }
+
+  def matrixOnlyProcess[SRC <: MatInfo]( f: Mat => Mat ) = {
+    (info: SRC) => new MatInfo{
+      val mat = f(info.mat)
+    }
   }
 
 
-  implicit class UnitStep[T](step: ProcessingStep[Unit, T]) {
-    def processMat(m: Mat) = step.process(ProcessingStepInfo(m, Unit))
+
+  type StepFilter[T] = (T) => Boolean
+
+  private case class Step[SRC, DST](override val stepName: String)(override val process: SRC => DST) extends ProcessingStep[SRC, DST]
+
+  private case class ExtendedStep[SRC, DST, T](previous: ProcessingStep[SRC, DST], override val stepName: String, extendedProcess: DST => T) extends ProcessingStep[SRC, T] {
+    override val process = (src:SRC) => extendedProcess(previous.process(src))
   }
 
-  implicit class ContourStep[T](step: ProcessingStep[T, Seq[MatOfPoint]]) {
+  private case class InitialStep[T](override val stepName: String) extends ProcessingStep[Unit, T] {
+    override val process = (m:T) => m
+  }
+
+
+  implicit class ContourStep[T,DST<: MatInfo with ContoursInfo](step: ProcessingStep[T, DST]) {
     def withDrawContours = {
-      step.extend(step.stepName) { psi =>
-        if (psi.mat != null) {
-          val ret = toColorImage(psi.mat)
-          drawContours(ret, psi.info, new Scalar(255, 0, 255))
-          ProcessingStepInfo(ret, psi.info)
+      step.extend(step.stepName) { info =>
+        if (info.mat != null) {
+          val ret = toColorImage(info.mat)
+          drawContours(ret, info.contours, new Scalar(255, 0, 255))
+          new DST{
+            val mat = ret
+            val contours = info.contours
+          }
+
         }
         else {
-          psi
+          info
         }
       }
     }
   }
 
-  implicit class ContourOptionStep[T](step: ProcessingStep[T, Option[MatOfPoint]]) {
+  implicit class ContourOptionStep[T,DST<: MatInfo with OptionContourInfo](step: ProcessingStep[T, DST]) {
     def withDrawContour = {
-      step.extend(step.stepName) { psi =>
-        psi.info match {
+      step.extend(step.stepName) { info =>
+        info.optionContour match {
           case Some(points) =>
-            val ret = toColorImage(psi.mat)
+            val ret = toColorImage(info.mat)
             drawContours(ret, Seq(points), new Scalar(255, 0, 255))
-            ProcessingStepInfo(ret, psi.info)
+            new DST{
+              val mat = ret
+              val optionContour = info.optionContour
+            }
           case None =>
-            psi
+            info
         }
       }
     }
   }
 
-  implicit class StringOptionStep[T]( step: ProcessingStep[T,Option[String]]){
+  implicit class StringOptionStep[T,DST<: MatInfo with StringInfo]( step: ProcessingStep[T,DST]){
     def withDrawString = step.extend(step.stepName){ psi =>
-      psi.info match{
+      psi.msg match{
         case Some(s) =>
           val ret = psi.mat.clone
           drawString( ret, s, new Scalar(255, 0, 255), (1.0,5.0) )
-          ProcessingStepInfo(ret,psi.info)
+          new DST{
+            val mat = ret
+            val msg = psi.msg
+          }
         case None =>
           psi
       }
@@ -103,30 +127,33 @@ object ProcessingStep {
     }
   }
 
-  implicit class MatrixStep[SRC, DST](step: ProcessingStep[SRC, DST]) {
+  implicit class MatrixStep[SRC, DST <: MatInfo](step: ProcessingStep[SRC, DST]) {
 
     private val defaultDelay = 2500
 
-    private def defaultAccept(info: ProcessingStepInfo[DST]) = info.mat != null
+    private def defaultAccept(psi: DST) = psi.mat != null
 
-    private def withFilterAndAction(name: String, delay: Int = defaultDelay, accept: ProcessingStepInfo[DST] => Boolean, action: ProcessingStepInfo[DST] => Unit) = {
+    private def withFilterAndAction(name: String, delay: Int = defaultDelay, accept: DST => Boolean, action: DST => Unit) = {
       var lastAccept = System.currentTimeMillis()
-      var lastMat: Mat = null
-      step.extend(name) { psi: ProcessingStepInfo[DST] =>
+      var lastInfo: DST = null
+      step.extend(name) { psi =>
         if (accept(psi) && System.currentTimeMillis() > lastAccept + delay) {
           lastAccept = System.currentTimeMillis()
-          lastMat = psi.mat.clone
-          action(ProcessingStepInfo(lastMat, psi.info))
+          val m = action( psi.mat.clone )
+
+          new DST{
+            val mat : lastMat
+          }
         }
-        ProcessingStepInfo(lastMat, psi.info)
+        ProcessingInfo(lastMat, psi.info)
       }
     }
 
-    def withFilter(name: String = "Guardar imagen:" + step.stepName, delay: Int = defaultDelay)(accept: ProcessingStepInfo[DST] => Boolean = defaultAccept _) = {
+    def withFilter(name: String = "Guardar imagen:" + step.stepName, delay: Int = defaultDelay)(accept: ProcessingInfo[DST] => Boolean = defaultAccept _) = {
       withFilterAndAction(name, delay, accept, psi => ())
     }
 
-    def withSaveMatrix(name: String = "Guardar imagen:" + step.stepName, delay: Int = defaultDelay)(accept: ProcessingStepInfo[DST] => Boolean = defaultAccept _) = {
+    def withSaveMatrix(name: String = "Guardar imagen:" + step.stepName, delay: Int = defaultDelay)(accept: ProcessingInfo[DST] => Boolean = defaultAccept _) = {
 
       def save(m: Mat) {
         val shortDateFormat = new SimpleDateFormat("yyyyMMdd")
@@ -146,17 +173,6 @@ object ProcessingStep {
   }
 
 
-  private def matrixOnlyProcess(proc: (Mat) => Mat): Process[Unit, Unit] = {
-    (psi: ProcessingStepInfo[Unit]) => ProcessingStepInfo(proc(psi.mat), Unit)
-  }
-
-  private def contoursOnlyProcess(proc: Seq[MatOfPoint] => Seq[MatOfPoint]): Process[Seq[MatOfPoint], Seq[MatOfPoint]] = {
-    (psi: ProcessingStepInfo[Seq[MatOfPoint]]) => ProcessingStepInfo(psi.mat, proc(psi.info))
-  }
-
-  def recoverOriginalMatrixStep[SRC, DST](step: ProcessingStep[SRC, DST]): ProcessingStep[SRC, DST] = Step(step.stepName) { psi: ProcessingStepInfo[SRC] =>
-    ProcessingStepInfo(psi.mat, step.process(psi).info)
-  }
 
 
   def locateQR(answerMatrixLocation: MatOfPoint): MatOfPoint = {
@@ -192,17 +208,17 @@ object ProcessingStep {
         ((leftmostCenter + rightmostCenter) * 0.5, (rightmostCenter - leftmostCenter))
       }
 
-      val difs = allPoints.map(_ - center)
+      val diffs = allPoints.map(_ - center)
 
       val unit = orientation.normalize
 
       val (upperLeft, upperRight) = {
-        val upperPoints = difs.filter(_.crossProductZ(unit) > 0)
+        val upperPoints = diffs.filter(_.crossProductZ(unit) > 0)
         (upperPoints.minBy(_.normalize * unit), upperPoints.maxBy(_.normalize * unit))
       }
 
       val (lowerLeft, lowerRight) = {
-        val lowerPoints = difs.filter(_.crossProductZ(unit) < 0)
+        val lowerPoints = diffs.filter(_.crossProductZ(unit) < 0)
         (lowerPoints.minBy(_.normalize * unit), lowerPoints.maxBy(_.normalize * unit))
       }
 
@@ -231,28 +247,43 @@ object ProcessingStep {
   }
 
 
-  val initialStep: ProcessingStep[Unit, Unit] = InitialStep("Imagen original")
+  val initialStep: ProcessingStep[Unit, MatInfo] = InitialStep("Imagen original")
 
-  val thresholdStep = initialStep.extend("Umbral adaptativo")(matrixOnlyProcess(threshold() _))
+  val thresholdStep = initialStep.extend("Umbral adaptativo"){
+    matrixOnlyProcess(threshold()(_))
+  }
 
-  val noiseReductionStep = thresholdStep.extend("Eliminación de ruido (open-close)")(matrixOnlyProcess(clean()() _))
+  val noiseReductionStep = thresholdStep.extend("Eliminación de ruido (open-close)"){
+    matrixOnlyProcess(clean()() _)
+  }
 
-  val contourStep = recoverOriginalMatrixStep(noiseReductionStep.extend("Búsqueda de contornos")((psi: ProcessingStepInfo[Unit]) => ProcessingStepInfo(psi.mat, findContours(psi.mat))))
+  def recoverOriginalMatrixStep(step: ProcessingStep[Unit, MatInfo with ContoursInfo) = {
+    
+  }
+
+  val contourStep = recoverOriginalMatrixStep{
+    noiseReductionStep.extend("Búsqueda de contornos"){
+      (info: MatInfo) => new MatInfo with ContoursInfo{
+        val mat = info.mat
+        val contours = findContours(info.mat)
+      }
+    }
+  }
 
   val quadrilateralStep = contourStep.extend("Filtro de contronos no cuadriláteros")(contoursOnlyProcess(approximateContoursToQuadrilaterals() _))
 
   val biggestQuadrilateralsStep = quadrilateralStep.extend("Los mayores cinco cuadriláteros")(contoursOnlyProcess(findBiggestAlignedQuadrilaterals() _))
 
-  val answerMatrixLocationStep: ProcessingStep[Unit, Option[MatOfPoint]] = biggestQuadrilateralsStep.extend("Localización de la tabla de respuestas") { psi: ProcessingStepInfo[Seq[MatOfPoint]] =>
-    ProcessingStepInfo(psi.mat, locateAnswerMatrix()(psi.info))
+  val answerMatrixLocationStep: ProcessingStep[Unit, Option[MatOfPoint]] = biggestQuadrilateralsStep.extend("Localización de la tabla de respuestas") { psi: ProcessingInfo[Seq[MatOfPoint]] =>
+    ProcessingInfo(psi.mat, locateAnswerMatrix()(psi.info))
   }
 
 
-  val locateQRStep = answerMatrixLocationStep.extend("Localización del código QR") { psi: ProcessingStepInfo[Option[MatOfPoint]] =>
-    ProcessingStepInfo(psi.mat, psi.info.map(locateQR))
+  val locateQRStep = answerMatrixLocationStep.extend("Localización del código QR") { psi: ProcessingInfo[Option[MatOfPoint]] =>
+    ProcessingInfo(psi.mat, psi.info.map(locateQR))
   }
 
-  val extractQRStep: ProcessingStep[Unit,Option[String]] = locateQRStep.extend("Extracción del código QR") { psi: ProcessingStepInfo[Option[MatOfPoint]] =>
+  val extractQRStep: ProcessingStep[Unit,Option[String]] = locateQRStep.extend("Extracción del código QR") { psi: ProcessingInfo[Option[MatOfPoint]] =>
     psi.info match {
       case Some(rect) =>
         val dstPoints = new MatOfPoint( (0.0, 0.0), (150.0,0.0), (150.0,150.0), (0.0,150.0)  )
@@ -260,10 +291,10 @@ object ProcessingStep {
         val h = findHomography(rect,dstPoints)
         val qr = warpImage()(psi.mat, h, new Size(150, 150))
         val qrData = QRScanner.decode(qr)
-        ProcessingStepInfo(qr, qrData )
+        ProcessingInfo(qr, qrData )
 
       case None =>
-        ProcessingStepInfo(null, None)
+        ProcessingInfo(null, None)
     }
 
   }
@@ -274,24 +305,24 @@ object ProcessingStep {
 
   def answerMatrixStep(questions: Int = defaultQuestions): ProcessingStep[Unit, Unit] = {
     answerMatrixLocationStep.extend("Extracción de la tabla de respuestas") {
-      psi: ProcessingStepInfo[Option[MatOfPoint]] =>
+      psi: ProcessingInfo[Option[MatOfPoint]] =>
         psi.info match {
           case Some(rect) =>
             val dstPoints = AnswerMatrixMeasures.destinationContour(questions)
 
             val h = findHomography(rect,dstPoints)
-            ProcessingStepInfo(warpImage()(psi.mat, h, AnswerMatrixMeasures.destinationSize(questions)), Unit)
+            ProcessingInfo(warpImage()(psi.mat, h, AnswerMatrixMeasures.destinationSize(questions)), Unit)
 
           case None =>
-            ProcessingStepInfo(null, Unit)
+            ProcessingInfo(null, Unit)
         }
     }
   }
 
   def cellsOfAnswerMatrix(questions: Int = defaultQuestions) = {
     answerMatrixStep(questions).extend("Localización de celdas") {
-      psi: ProcessingStepInfo[Unit] =>
-        ProcessingStepInfo(psi.mat, AnswerMatrixMeasures.cells(questions))
+      psi: ProcessingInfo[Unit] =>
+        ProcessingInfo(psi.mat, AnswerMatrixMeasures.cells(questions))
     }
   }
 
