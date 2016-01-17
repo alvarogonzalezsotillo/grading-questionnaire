@@ -3,6 +3,7 @@ package giftToLatex
 import java.io.{OutputStream, ByteArrayOutputStream, File, InputStream}
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
+import common.BinaryConverter
 import giftParser.GiftParser
 import giftParser.GiftParser.GiftFile._
 import giftParser.GiftParser._
@@ -82,8 +83,9 @@ object GiftToLatex extends LazyLogging{
   object htmlToLatex {
     private val tagsRexs = Map(
       // IMAGES
-      """(?i)<img src="(.*?)">""" -> """\\\\ \\includegraphics{$1}""",
-      """(?i)<img src=(.*?)>""" -> """\\\\ \\includegraphics{$1}""",
+      """(?i)<img src="(.*?)">""" -> """\\\\ \\begin{center}\\includegraphics{$1}\\end{center}""",
+      """(?i)<img src=(.*?)>""" -> """\\\\ \\begin{center}\\includegraphics{$1}\\end{center}""",
+      """(?i)<img width="(.*?)" src="(.*?)">""" -> """\\\\ \\begin{center}\\includegraphics[width=$1]{$2}\\end{center}""",
 
       // LISTS
       "<ul>" -> """\\begin{itemize} """,
@@ -173,7 +175,7 @@ object GiftToLatex extends LazyLogging{
     val questions = generateLatexForQuestions(f)
     val solutionIndexes = generateSolutionIndexes(f)
     val solutions = solutionIndexes.map(i => (i.toChar + 'a').toChar).mkString(",")
-    val qrCodeData = toBase64( BinaryConverter.toBinarySolutions(solutionIndexes) )
+    val qrCodeData = BinaryConverter.toBase64( BinaryConverter.toBinarySolutions(solutionIndexes) )
     val generatedContent = List( firstPage, questions ).mkString("\n")
     
     def toImagePath(s: String ) = {
@@ -186,7 +188,7 @@ object GiftToLatex extends LazyLogging{
       .replace("$HeaderText$", headerText )
       .replace("$Solutions$", solutions )
       .replace("$QRCodeData$", qrCodeData )
-      .replace("$GiftFile$", f.file.map(_.getAbsolutePath).getOrElse(""))
+      .replace("$GiftFile$", "\"" + f.file.map(_.getAbsolutePath).getOrElse("") + "\"")
 
   }
 

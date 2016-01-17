@@ -1,6 +1,10 @@
 
 apply plugin: 'application'
 
+dependencies{
+    compile project(':common')
+}
+
 def mainClass = "giftToLatex.Main"
 
 mainClassName = mainClass

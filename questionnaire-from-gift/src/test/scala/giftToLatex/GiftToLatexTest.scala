@@ -6,6 +6,7 @@ package giftToLatex
 
 import java.io.File
 
+import common.BinaryConverter
 import giftParser.GiftParser.{GiftError, GiftFile}
 import giftParser.TestGiftGenerator._
 import giftParser.{GiftParser, Util}

@@ -14,7 +14,7 @@ object GUI extends App {
 
 
 
-  private var currentProcessingStep: Option[CanvasProcessingStep[_]] = null
+  private var currentProcessingStep: Option[CanvasProcessingStep] = null
 
   private def imageRead(m: Mat) = currentProcessingStep.map(_.processMat(m))
 
@@ -22,7 +22,7 @@ object GUI extends App {
 
 
 
-  class CanvasProcessingStep[T](val step: ProcessingStep[Unit,T]) extends ImageCanvas{
+  class CanvasProcessingStep(val step: ProcessingStep) extends ImageCanvas{
 
     private var overlay : Image = null
 
@@ -30,8 +30,8 @@ object GUI extends App {
     def processMat(m: Mat) = {
       import imgproc.Implicits._
       setOverlayImage(m)
-      val ret = step.processMat(m)
-      image = ret.mat
+      val ret = step.process(m)
+      image = ret.mat.get
       ret
     }
 
@@ -50,12 +50,12 @@ object GUI extends App {
 
   }
 
-  private def createStepsComponent(steps: ProcessingStep[Unit,_]*): JComponent = {
+  private def createStepsComponent(steps: ProcessingStep*): JComponent = {
 
     val ret = new JTabbedPane()
     ret.setTabPlacement(SwingConstants.LEFT)
 
-    def stepComponent(step: ProcessingStep[Unit,_]) = {
+    def stepComponent(step: ProcessingStep) = {
       val ps = new CanvasProcessingStep(step)
       ret.addTab(ps.step.stepName, ps)
     }
@@ -63,7 +63,7 @@ object GUI extends App {
     ret.addChangeListener(new ChangeListener() {
       override def stateChanged(e: ChangeEvent) = {
         println("stateChanged")
-        currentProcessingStep = Some(ret.getSelectedComponent.asInstanceOf[CanvasProcessingStep[_]])
+        currentProcessingStep = Some(ret.getSelectedComponent.asInstanceOf[CanvasProcessingStep])
         println(s"currentStep:$currentProcessingStep")
       }
     })
@@ -88,13 +88,14 @@ object GUI extends App {
     initialStep,
     thresholdStep,
     noiseReductionStep,
-    contourStep.withDrawContours,
-    quadrilateralStep.withDrawContours,
-    biggestQuadrilateralsStep.withDrawContours,
-    answerMatrixLocationStep.withDrawContour,
-    locateQRStep.withDrawContour,
-    extractQRStep.withDrawString,
-    answerMatrixStep(),
+    contourStep.withDrawContours(i=>Some(i.contours)),
+    quadrilateralStep.withDrawContours(i=>Some(i.quadrilaterals)),
+    biggestQuadrilateralsStep.withDrawContours(i=>Some(i.biggestQuadrilaterals)),
+    answerMatrixLocationStep.withDrawContours( i=> i.location.map( c => Seq(c) ) ),
+    locateQRStep.withDrawContours( i=> i.qrLocation.map( c => Seq(c) )),
+    extractQRStep,
+    decodeQRStep.withDrawString( _.qrText ),
+    answerMatrixStep,
     cellsOfAnswerMatrix().withDrawContours,
     cellsOfAnswerMatrix().withSaveMatrix()()
   ))

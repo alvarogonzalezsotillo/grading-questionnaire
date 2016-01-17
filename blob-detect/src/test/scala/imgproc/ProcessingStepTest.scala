@@ -6,7 +6,6 @@ package imgproc
 
 import java.io.File
 
-import imgproc.ProcessingStep.ProcessingInfo
 import org.junit.runner.RunWith
 import org.opencv.highgui.Highgui
 

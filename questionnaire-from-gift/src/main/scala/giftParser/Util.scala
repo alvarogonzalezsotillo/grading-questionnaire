@@ -82,10 +82,5 @@ object Util {
     }
   }
 
-  def toBase64(buffer: Array[Byte]) = {
-    val encoder = new sun.misc.BASE64Encoder()
-    encoder.encode(buffer)
-  }
-
 
 }

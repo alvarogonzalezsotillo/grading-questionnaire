@@ -1,5 +1,9 @@
 
 dependencies {
+
+
+    compile project(':common')
+
     // SEE https://github.com/PatternConsulting/opencv
     compile 'nu.pattern:opencv:2.4.9-6'
 

@@ -1,1 +1,1 @@
-include "questionnaire-from-gift", "blob-detect"
+include "questionnaire-from-gift", "blob-detect", "common"
