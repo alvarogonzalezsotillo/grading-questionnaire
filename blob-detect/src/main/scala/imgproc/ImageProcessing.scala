@@ -149,4 +149,8 @@ object ImageProcessing {
     ret
   }
 
+  def submatrix(m:Mat, rect: Rect) : Mat = {
+    new Mat(m,rect)
+  }
+
 }
