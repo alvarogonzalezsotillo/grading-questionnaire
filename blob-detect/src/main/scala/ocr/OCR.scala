@@ -1,6 +1,6 @@
 package ocr
 
-import imgproc.ImageProcessing
+import imgproc.ImageProcessing._
 import org.opencv.core.{Rect, Mat}
 
 /**
@@ -8,14 +8,21 @@ import org.opencv.core.{Rect, Mat}
  */
 object OCR {
 
-  type OCRResult = Seq[OneLetterOCR.LetterProb]
+  type OCRResult = Seq[OneLetterOCR.LetterResult]
 
-  def detectLetterShapes(mat: Mat) : Seq[Rect]= ???
-
-  def scan(m: Mat) : OCRResult = {
-    val rects = detectLetterShapes(m)
-    rects.map(r => OneLetterOCR(ImageProcessing.submatrix(m, r)))
+  def detectLetterShapes(mat: Mat): Seq[Rect] = {
+    import imgproc.Implicits._
+    val thresholded = threshold()(mat)
+    val contours = findContours(thresholded).map(Shape)
+    val minArea = mat.area / 4
+    val candidates = contours.filter(_.boundingBox.area() > minArea)
+    candidates.map(_.boundingBox)
   }
 
-  def apply(m:Mat) = scan(m)
+  def scan(m: Mat): OCRResult = {
+    val rects = detectLetterShapes(m)
+    rects.map(r => OneLetterOCR(submatrix(m, r)))
+  }
+
+  def apply(m: Mat) = scan(m)
 }

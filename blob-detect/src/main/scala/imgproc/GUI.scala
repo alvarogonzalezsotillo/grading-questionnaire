@@ -96,8 +96,8 @@ object GUI extends App {
     extractQRStep,
     decodeQRStep.withDrawString( _.qrText ),
     answerMatrixStep,
-    cellsOfAnswerMatrix().withDrawContours,
-    cellsOfAnswerMatrix().withSaveMatrix()()
+    cellsOfAnswerMatrix.withDrawContours( i => i.location.map( c => Seq(c)) ),
+    cellsOfAnswerMatrix.withFilter()(_.mat.isDefined).withSaveMatrix()
   ))
 
   frame.setSize(640, 480)

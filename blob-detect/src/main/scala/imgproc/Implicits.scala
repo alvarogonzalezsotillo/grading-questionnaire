@@ -3,7 +3,7 @@ package imgproc
 import java.awt.AlphaComposite
 import java.awt.image.{BufferedImage, DataBufferByte}
 
-import org.opencv.core.{CvType, Mat, MatOfPoint, Point}
+import org.opencv.core._
 import org.opencv.imgproc.Imgproc
 
 /**
@@ -82,9 +82,14 @@ object Implicits {
     }
   }
 
+  implicit class MyMat(m:Mat){
+    lazy val rect = new Rect(0,0,m.width(),m.height())
+    lazy val area = rect.area()
+  }
+
   implicit class Shape(contour: MatOfPoint){
+    lazy val points = contour.toArray
     lazy val center = {
-      val points = contour.toArray
       val c = points.foldLeft( new Point(0,0) ) { (p, center) =>
         center.x += p.x
         center.y += p.y
@@ -93,6 +98,14 @@ object Implicits {
       c.x /= points.size
       c.y /= points.size
       c
+    }
+
+    lazy val boundingBox = {
+      val minX = points.map(_.x).min.toInt
+      val minY = points.map(_.y).min.toInt
+      val maxX = points.map(_.x).max.toInt
+      val maxY = points.map(_.y).max.toInt
+      new Rect(minX,minY,maxX-minX,maxY-minY)
     }
 
     lazy val area = Imgproc.contourArea(contour)

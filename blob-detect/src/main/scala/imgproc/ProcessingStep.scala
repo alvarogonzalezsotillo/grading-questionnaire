@@ -24,16 +24,16 @@ trait ProcessingStep {
   val process: Info => Info
   val stepName: String
 
-  def extend[T](name: String)(p: Info => Info) = ExtendedStep(this, name, p)
+  def extend[T](name: String)(p: Info => Info) : ProcessingStep = ExtendedStep(this, name, p)
 
-  def withDrawContours( extractContours : Info => Option[Seq[MatOfPoint]] ) = extend(stepName){ p =>
-    val newM = p.mat.clone.asInstanceOf[Mat]
+  def withDrawContours( extractContours : Info => Option[Seq[MatOfPoint]] ) : ProcessingStep= extend(stepName){ p =>
+    val newM = p.mat.get.clone
     val m = extractContours(p).flatMap( c => p.mat.map( m => ImageProcessing.drawContours( newM, c, new Scalar(1,1,1))) )
     p.copy( mat = m )
   }
 
-  def withDrawString( extractString : Info => Option[String] ) = extend(stepName){ p =>
-    val newM = p.mat.clone.asInstanceOf[Mat]
+  def withDrawString( extractString : Info => Option[String] ) : ProcessingStep= extend(stepName){ p =>
+    val newM = p.mat.get.clone
     val m = extractString(p).flatMap( s => p.mat.map( m => ImageProcessing.drawString(newM,s,new Scalar(1,1,1), new Point(10,10) ) ) )
     p.copy( mat = m )
   }
@@ -62,11 +62,11 @@ object ProcessingStep {
 
     private val defaultDelay = 2500
 
-    private def withFilter(name: String, delay: Int, accept: Info => Boolean) = {
+    def withFilter(name: String = "Filtrado:" + step.stepName, delay: Int = defaultDelay)(accept: Info => Boolean) : ProcessingStep = {
       var lastAccept = System.currentTimeMillis()
-      var lastInfo: Info = null.asInstanceOf[Info]
+      var lastInfo: Info = null
       step.extend(name) { psi =>
-        if (accept(psi) && System.currentTimeMillis() > lastAccept + delay) {
+        if (System.currentTimeMillis() > lastAccept + delay && accept(psi) ) {
           lastAccept = System.currentTimeMillis()
           lastInfo = psi
         }
@@ -74,8 +74,15 @@ object ProcessingStep {
       }
     }
 
-    def withFilter(name: String = "Filtrado:" + step.stepName, delay: Int = defaultDelay)(accept: Info => Boolean) = {
-      withFilter(name, delay, accept)
+    def withSaveMatrix( name: String = "Grabando:" + step.stepName ) : ProcessingStep = {
+      var lastInfo : Info = null
+      step.extend(name){ psi =>
+        if( !(psi eq lastInfo) ){
+          lastInfo = psi
+          lastInfo.mat.map(saveMatrix)
+        }
+        psi
+      }
     }
 
   }
@@ -205,7 +212,7 @@ object ProcessingStep {
   implicit def infoFromMat(m: Mat) = Info(Some(m),m)
 
 
-  val initialStep = InitialStep("Imagen original")
+  val initialStep : ProcessingStep = InitialStep("Imagen original")
 
   val thresholdStep = initialStep.extend("Umbral adaptativo") { psi =>
     psi.copy(thresholdMat = threshold()(psi.originalMat))
