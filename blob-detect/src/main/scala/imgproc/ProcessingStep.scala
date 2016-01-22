@@ -215,16 +215,18 @@ object ProcessingStep {
   val initialStep : ProcessingStep = InitialStep("Imagen original")
 
   val thresholdStep = initialStep.extend("Umbral adaptativo") { psi =>
-    psi.copy(thresholdMat = threshold()(psi.originalMat))
+    val t = threshold()(psi.originalMat)
+    psi.copy(thresholdMat = t, mat = Some(t) )
   }
 
   val noiseReductionStep = thresholdStep.extend("Eliminación de ruido (open-close)") { psi =>
-    psi.copy(cleanedMat = clean()()(psi.thresholdMat))
+    val cleaned = clean()()(psi.thresholdMat)
+    psi.copy(cleanedMat = cleaned, mat = Some(cleaned))
   }
 
   val contourStep = noiseReductionStep.extend("Búsqueda de contornos") { psi: Info =>
     val contours = findContours(psi.cleanedMat)
-    psi.copy(contours = contours)
+    psi.copy(contours = contours, mat = Some(psi.originalMat))
   }
 
   val quadrilateralStep = contourStep.extend("Filtro de contronos no cuadriláteros") { csi =>

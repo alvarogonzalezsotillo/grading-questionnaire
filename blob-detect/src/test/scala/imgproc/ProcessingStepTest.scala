@@ -70,54 +70,57 @@ class ProcessingStepTest extends FlatSpec {
 
   val imageLocation = "2015-10-09-093035.jpg" //"2015-10-09-093120.jpg"
 
+  import ProcessingStep._
+  def processMat( step: ProcessingStep, m: Mat ) = step.process(m).mat.get
+
   "Initial step " should "do nothing" in {
     val m = readImageFromResources(imageLocation)
-    val m2 = ProcessingStep.initialStep.processMat(m).mat
+    val m2 = processMat(initialStep,m)
     Highgui.imwrite(testImgPath("1-original-" + imageLocation).toString, m2)
     assert(m eq m2)
   }
 
   "threshold step" should "convert to grayscale" in {
     val m = readImageFromResources(imageLocation)
-    val m2 = ProcessingStep.thresholdStep.processMat(m).mat
+    val m2 = processMat(thresholdStep,m)
     Highgui.imwrite(testImgPath("2-threshold-" + imageLocation).toString, m2)
   }
 
 
   "noise reduction step" should "reduce noise" in {
     val m = readImageFromResources(imageLocation)
-    val m2 = ProcessingStep.noiseReductionStep.processMat(m).mat
+    val m2 = processMat(noiseReductionStep,m)
     Highgui.imwrite(testImgPath("3-noisereduction-" + imageLocation).toString, m2)
   }
 
   "Contour extraction step" should "extract contours" in {
     val m = readImageFromResources(imageLocation)
-    val m2 = ProcessingStep.contourStep.withDrawContours.processMat(m).mat
+    val m2 = processMat( contourStep.withDrawContours( i => Some(i.contours) ), m)
     Highgui.imwrite(testImgPath("4-contours-" + imageLocation).toString, m2)
   }
 
   "Quadrilateral filter step" should "extract quadrilaterals" in {
     val m = readImageFromResources(imageLocation)
-    val m2 = ProcessingStep.quadrilateralStep.withDrawContours.processMat(m).mat
+    val m2 = processMat( quadrilateralStep.withDrawContours( i => Some(i.quadrilaterals) ), m)
     Highgui.imwrite(testImgPath("5-quads-" + imageLocation).toString, m2)
   }
 
   "Biggest quadrilaterals step" should "find quadrilaterals" in {
     val m = readImageFromResources(imageLocation)
-    val m2 = ProcessingStep.biggestQuadrilateralsStep.withDrawContours.processMat(m).mat
+    val m2 = processMat( biggestQuadrilateralsStep.withDrawContours( i=> Some(i.biggestQuadrilaterals) ), m)
     Highgui.imwrite(testImgPath("6-bigquads-" + imageLocation).toString, m2)
   }
 
 
   "Answer location step" should "find a location" in {
     val m = readImageFromResources(imageLocation)
-    val location = ProcessingStep.answerMatrixLocationStep.processMat(m).info
+    val location = answerMatrixLocationStep.process(m).location
     assert(location.isDefined)
   }
 
   "Answer location step" should "find a location and save image" in {
     val m = readImageFromResources(imageLocation)
-    val m2 = ProcessingStep.answerMatrixLocationStep.withDrawContour.processMat(m).mat
+    val m2 = processMat(answerMatrixLocationStep.withDrawContours(i => i.location.map( r => Seq(r)) ),m)
     Highgui.imwrite(testImgPath("7-answerlocation-" + imageLocation).toString, m2)
   }
 
@@ -125,7 +128,7 @@ class ProcessingStepTest extends FlatSpec {
     for (imageLocation <- positiveMatchImages) {
       println( s"imageLocation:$imageLocation")
       val m = readImageFromResources(imageLocation)
-      val extracted = ProcessingStep.answerMatrixStep().processMat(m).mat
+      val extracted = ProcessingStep.answerMatrixStep.process(m).mat.get
       Highgui.imwrite(testImgPath("8-extracted-" + imageLocation).toString, extracted)
     }
   }
@@ -134,7 +137,7 @@ class ProcessingStepTest extends FlatSpec {
     for (imageLocation <- positiveMatchImages) {
       println( s"imageLocation:$imageLocation")
       val m = readImageFromResources(imageLocation)
-      val extracted = ProcessingStep.cellsOfAnswerMatrix(40).withDrawContours.processMat(m).mat
+      val extracted = ProcessingStep.cellsOfAnswerMatrix.withDrawContours( i => i.cells ).process(m).mat.get
       Highgui.imwrite(testImgPath("9-cells-" + imageLocation).toString, extracted)
     }
   }
