@@ -24,18 +24,22 @@ trait ProcessingStep {
   val process: Info => Info
   val stepName: String
 
+
   def extend[T](name: String)(p: Info => Info) : ProcessingStep = ExtendedStep(this, name, p)
 
   def withDrawContours( extractContours : Info => Option[Seq[MatOfPoint]] ) : ProcessingStep= extend(stepName){ p =>
     val newM = p.mat.get.clone
-    val m = extractContours(p).flatMap( c => p.mat.map( m => ImageProcessing.drawContours( newM, c, new Scalar(1,1,1))) )
+    val m = extractContours(p).flatMap( c => p.mat.map( m => ImageProcessing.drawContours( newM, c ) ) )
     p.copy( mat = m )
   }
 
   def withDrawString( extractString : Info => Option[String] ) : ProcessingStep= extend(stepName){ p =>
-    val newM = p.mat.get.clone
-    val m = extractString(p).flatMap( s => p.mat.map( m => ImageProcessing.drawString(newM,s,new Scalar(1,1,1), new Point(10,10) ) ) )
-    p.copy( mat = m )
+
+    val matWithString = for( m <- p.mat ; s <- extractString(p) ) yield {
+      val newM = m.clone()
+      ImageProcessing.drawString(newM,s,new Point(10,10) )
+    }
+    p.copy( mat = matWithString )
   }
 }
 
@@ -235,12 +239,12 @@ object ProcessingStep {
   }
 
   val biggestQuadrilateralsStep = quadrilateralStep.extend("Los mayores cinco cuadriláteros") { csi =>
-    val quadrilaterals = findBiggestAlignedQuadrilaterals()(csi.contours)
+    val quadrilaterals = findBiggestAlignedQuadrilaterals()(csi.quadrilaterals)
     csi.copy(biggestQuadrilaterals = quadrilaterals)
   }
 
   val answerMatrixLocationStep = biggestQuadrilateralsStep.extend("Localización de la tabla de respuestas") { lsi =>
-    val location = locateAnswerMatrix()(lsi.contours)
+    val location = locateAnswerMatrix()(lsi.biggestQuadrilaterals)
     lsi.copy(location = location)
   }
 
@@ -274,6 +278,8 @@ object ProcessingStep {
       BinaryConverter.fromBinarySolutions(data)
     }
 
+
+
     psi.copy(answers = psi.qrText.map(compute))
   }
 
@@ -284,8 +290,7 @@ object ProcessingStep {
 
       case Some((rect, s)) =>
 
-        val data = BinaryConverter.fromBase64(s.get)
-        val answers = BinaryConverter.fromBinarySolutions(data)
+        val answers = psi.answers
         val dstPoints = AnswerMatrixMeasures.destinationContour(answers.size)
 
         val h = findHomography(rect, dstPoints)

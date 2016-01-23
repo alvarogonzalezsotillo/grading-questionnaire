@@ -31,7 +31,7 @@ object GUI extends App {
       import imgproc.Implicits._
       setOverlayImage(m)
       val ret = step.process(m)
-      image = ret.mat.get
+      image = ret.mat.getOrElse(null)
       ret
     }
 

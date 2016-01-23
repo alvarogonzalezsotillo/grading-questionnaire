@@ -25,7 +25,10 @@ object BinaryConverter {
 
   def fromBinarySolutions(solutions: Array[Byte]) = {
     val readVersion = solutions(0)
-    assert(readVersion == version)
+    if( readVersion != version ){
+      throw new IllegalArgumentException( s"Version $version expected: $readVersion" )
+    }
+
     val bitsPerIndex = solutions(1)
     val valuesPerByte = 8 / bitsPerIndex
     val n = solutions(2)

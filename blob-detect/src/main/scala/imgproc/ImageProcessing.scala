@@ -106,8 +106,9 @@ object ImageProcessing {
     }
   }
 
+  private val defaultColor = new Scalar(0,255,0)
 
-  def drawContours(dst: Mat, contours: Seq[MatOfPoint], color: Scalar, thickness: Int = 1, drawCenters: Boolean = false): Mat = {
+  def drawContours(dst: Mat, contours: Seq[MatOfPoint], color: Scalar = defaultColor, thickness: Int = 3, drawCenters: Boolean = false): Mat = {
     import scala.collection.JavaConversions._
     Imgproc.drawContours(dst, contours, -1, color, thickness)
     Imgproc.drawContours(dst, contours.map(c => new MatOfPoint(c.center)), -1, color, thickness) If drawCenters
@@ -116,7 +117,7 @@ object ImageProcessing {
 
 
 
-  def drawString(dst: Mat, string: String, color: Scalar, point: Point): Mat = {
+  def drawString(dst: Mat, string: String, point: Point, color: Scalar = defaultColor): Mat = {
     val fontFace = Core.FONT_HERSHEY_SIMPLEX
     val fontScale = 0.6
     Core.putText(dst,string,point,fontFace,fontScale,color)
