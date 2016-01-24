@@ -40,7 +40,7 @@ object BinaryConverter {
       val mask = originalMask << (bitsPerIndex * indexInByte)
       val sol = (data(i / valuesPerByte) & mask)
       solutionIndexes(i) = sol >> (bitsPerIndex * indexInByte)
-      println(s"i:$i indexInByte:$indexInByte mask:$mask data():${data(i / valuesPerByte)} sol:$sol solutionIndexes:${solutionIndexes(i)}")
+      //println(s"i:$i indexInByte:$indexInByte mask:$mask data():${data(i / valuesPerByte)} sol:$sol solutionIndexes:${solutionIndexes(i)}")
     }
     solutionIndexes
   }

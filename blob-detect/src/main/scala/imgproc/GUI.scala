@@ -4,6 +4,7 @@ import java.awt.{Graphics, Image}
 import javax.swing._
 import javax.swing.event.{ChangeEvent, ChangeListener}
 
+import common.{Sounds, Logging}
 import org.opencv.core._
 import org.opencv.imgproc.Imgproc
 
@@ -96,7 +97,7 @@ object GUI extends App {
     extractQRStep,
     decodeQRStep.withDrawString( _.qrText ),
     answerMatrixStep,
-    cellsOfAnswerMatrix.withDrawContours( i => i.location.map( c => Seq(c)) ),
+    cellsOfAnswerMatrix.withDrawContours( _.cells ),
     cellsOfAnswerMatrix.withFilter()(_.mat.isDefined).withSaveMatrix()
   ))
 
@@ -104,6 +105,9 @@ object GUI extends App {
   frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
   frame.setVisible(true)
 
+  Logging.disableLogging()
   videoSource.execute
+
+  Sounds.beep()
 
 }

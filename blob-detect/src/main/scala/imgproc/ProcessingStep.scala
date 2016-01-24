@@ -5,11 +5,13 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import common.BinaryConverter
+import common.{Sounds, BinaryConverter}
 import org.opencv.core._
 import org.opencv.highgui.Highgui
 
 import org.opencv.imgproc.Imgproc
+
+import scala.util.Try
 
 
 /**
@@ -25,21 +27,25 @@ trait ProcessingStep {
   val stepName: String
 
 
-  def extend[T](name: String)(p: Info => Info) : ProcessingStep = ExtendedStep(this, name, p)
+  def extend[T](name: String)(p: Info => Info): ProcessingStep = ExtendedStep(this, name, p)
 
-  def withDrawContours( extractContours : Info => Option[Seq[MatOfPoint]] ) : ProcessingStep= extend(stepName){ p =>
-    val newM = p.mat.get.clone
-    val m = extractContours(p).flatMap( c => p.mat.map( m => ImageProcessing.drawContours( newM, c ) ) )
-    p.copy( mat = m )
+  def withDrawContours(extractContours: Info => Option[Seq[MatOfPoint]]): ProcessingStep = extend(stepName) { p =>
+
+    val matWithContours = for (m <- p.mat; contours <- extractContours(p)) yield {
+      val newM = m.clone
+      ImageProcessing.drawContours(newM, contours)
+    }
+    p.copy(mat = matWithContours)
+
   }
 
-  def withDrawString( extractString : Info => Option[String] ) : ProcessingStep= extend(stepName){ p =>
+  def withDrawString(extractString: Info => Option[String]): ProcessingStep = extend(stepName) { p =>
 
-    val matWithString = for( m <- p.mat ; s <- extractString(p) ) yield {
+    val matWithString = for (m <- p.mat; s <- extractString(p)) yield {
       val newM = m.clone()
-      ImageProcessing.drawString(newM,s,new Point(10,10) )
+      ImageProcessing.drawString(newM, s, new Point(10, 10))
     }
-    p.copy( mat = matWithString )
+    p.copy(mat = matWithString)
   }
 }
 
@@ -66,11 +72,11 @@ object ProcessingStep {
 
     private val defaultDelay = 2500
 
-    def withFilter(name: String = "Filtrado:" + step.stepName, delay: Int = defaultDelay)(accept: Info => Boolean) : ProcessingStep = {
+    def withFilter(name: String = "Filtrado:" + step.stepName, delay: Int = defaultDelay)(accept: Info => Boolean): ProcessingStep = {
       var lastAccept = System.currentTimeMillis()
-      var lastInfo: Info = null
+      var lastInfo: Info = Info(None)
       step.extend(name) { psi =>
-        if (System.currentTimeMillis() > lastAccept + delay && accept(psi) ) {
+        if (System.currentTimeMillis() > lastAccept + delay && accept(psi)) {
           lastAccept = System.currentTimeMillis()
           lastInfo = psi
         }
@@ -78,12 +84,13 @@ object ProcessingStep {
       }
     }
 
-    def withSaveMatrix( name: String = "Grabando:" + step.stepName ) : ProcessingStep = {
-      var lastInfo : Info = null
-      step.extend(name){ psi =>
-        if( !(psi eq lastInfo) ){
+    def withSaveMatrix(name: String = "Grabando:" + step.stepName): ProcessingStep = {
+      var lastInfo: Info = Info(None)
+      step.extend(name) { psi =>
+        if (!(psi eq lastInfo)) {
           lastInfo = psi
           lastInfo.mat.map(saveMatrix)
+          Sounds.beep()
         }
         psi
       }
@@ -171,7 +178,7 @@ object ProcessingStep {
         }
     }
 
-    doIt If checkIt _
+    Try(doIt).filter(checkIt).toOption
   }
 
 
@@ -210,17 +217,17 @@ object ProcessingStep {
                   quadrilaterals: Seq[MatOfPoint] = null, biggestQuadrilaterals: Seq[MatOfPoint] = null,
                   location: Option[MatOfPoint] = None, locatedMat: Option[Mat] = None, qrLocatedMat: Option[Mat] = None, qrLocation: Option[MatOfPoint] = None,
                   qrText: Option[String] = None, answers: Option[Seq[Int]] = None, cells: Option[Seq[MatOfPoint]] = None)
-    extends OriginalMatInfo with LocationInfo with ContoursInfo with QRLocationInfo with QRInfo with AnswersInfo{
+    extends OriginalMatInfo with LocationInfo with ContoursInfo with QRLocationInfo with QRInfo with AnswersInfo {
   }
 
-  implicit def infoFromMat(m: Mat) = Info(Some(m),m)
+  implicit def infoFromMat(m: Mat) = Info(Some(m), m)
 
 
-  val initialStep : ProcessingStep = InitialStep("Imagen original")
+  val initialStep: ProcessingStep = InitialStep("Imagen original")
 
   val thresholdStep = initialStep.extend("Umbral adaptativo") { psi =>
     val t = threshold()(psi.originalMat)
-    psi.copy(thresholdMat = t, mat = Some(t) )
+    psi.copy(thresholdMat = t, mat = Some(t))
   }
 
   val noiseReductionStep = thresholdStep.extend("Eliminación de ruido (open-close)") { psi =>
@@ -263,7 +270,7 @@ object ProcessingStep {
     }
 
     val m: Option[Mat] = psi.qrLocation.map(compute)
-    psi.copy(mat=m, qrLocatedMat = m)
+    psi.copy(mat = m, qrLocatedMat = m)
   }
 
 
@@ -278,28 +285,22 @@ object ProcessingStep {
       BinaryConverter.fromBinarySolutions(data)
     }
 
-
-
     psi.copy(answers = psi.qrText.map(compute))
   }
 
 
   val answerMatrixStep = informationOfQRStep.extend("Extracción de la tabla de respuestas") { psi =>
 
-    psi.location.map((_, psi.qrText)) match {
+    val am = for (rect <- psi.location; answers <- psi.answers) yield {
 
-      case Some((rect, s)) =>
+      val dstPoints = AnswerMatrixMeasures.destinationContour(answers.size)
 
-        val answers = psi.answers
-        val dstPoints = AnswerMatrixMeasures.destinationContour(answers.size)
-
-        val h = findHomography(rect, dstPoints)
-        val am = warpImage()(psi.originalMat, h, AnswerMatrixMeasures.destinationSize(answers.size))
-        psi.copy(mat = Some(am), locatedMat = Some(am))
-
-      case None =>
-        psi
+      val h = findHomography(rect, dstPoints)
+      warpImage()(psi.originalMat, h, AnswerMatrixMeasures.destinationSize(answers.size))
     }
+
+    psi.copy(mat = am, locatedMat = am)
+
   }
 
   val cellsOfAnswerMatrix = answerMatrixStep.extend("Localización de celdas") { psi =>
