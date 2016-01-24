@@ -108,6 +108,5 @@ object GUI extends App {
   Logging.disableLogging()
   videoSource.execute
 
-  Sounds.beep()
 
 }

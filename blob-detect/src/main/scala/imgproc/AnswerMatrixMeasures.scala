@@ -38,6 +38,11 @@ object AnswerMatrixMeasures {
     new MatOfPoint((0.0, 0.0), (w, 0.0), (w, h), (0.0, h))
   }
 
+  def studentInfoDestinationContour(i: Int) : MatOfPoint = {
+    ???
+  }
+
+
   def destinationSize(questions: Int) = {
     val contour = destinationContour(questions)
     val thirdCorner = contour.toArray()(2)

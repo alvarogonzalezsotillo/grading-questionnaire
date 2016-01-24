@@ -213,11 +213,17 @@ object ProcessingStep {
     val cells: Option[Seq[MatOfPoint]]
   }
 
+  trait StudentInfo{
+    val studentInfoLocation : Option[MatOfPoint]
+    val studentInfoMat : Option[Mat]
+  }
+
   case class Info(mat: Option[Mat], originalMat: Mat = null, cleanedMat: Mat = null, thresholdMat: Mat = null, contours: Seq[MatOfPoint] = null,
                   quadrilaterals: Seq[MatOfPoint] = null, biggestQuadrilaterals: Seq[MatOfPoint] = null,
                   location: Option[MatOfPoint] = None, locatedMat: Option[Mat] = None, qrLocatedMat: Option[Mat] = None, qrLocation: Option[MatOfPoint] = None,
-                  qrText: Option[String] = None, answers: Option[Seq[Int]] = None, cells: Option[Seq[MatOfPoint]] = None)
-    extends OriginalMatInfo with LocationInfo with ContoursInfo with QRLocationInfo with QRInfo with AnswersInfo {
+                  qrText: Option[String] = None, answers: Option[Seq[Int]] = None, cells: Option[Seq[MatOfPoint]] = None, studentInfoLocation: Option[MatOfPoint] = None,
+                   studentInfoMat: Option[Mat] = None)
+    extends OriginalMatInfo with LocationInfo with ContoursInfo with QRLocationInfo with QRInfo with AnswersInfo with StudentInfo{
   }
 
   implicit def infoFromMat(m: Mat) = Info(Some(m), m)
@@ -300,6 +306,27 @@ object ProcessingStep {
     }
 
     psi.copy(mat = am, locatedMat = am)
+
+  }
+
+  val studentInfoStep = answerMatrixStep.extend( "Información del alumno") { psi =>
+
+    def studentInfoRect( qrLocation: MatOfPoint, matrixLocation: MatOfPoint ) : MatOfPoint = {
+      ???
+    }
+
+    val sm: Option[(Some[MatOfPoint], Mat)] = for( qrLocation <- psi.qrLocation ; matrixLocation <- psi.location ; answers <- psi.answers ) yield {
+      val rect = studentInfoRect(qrLocation,matrixLocation)
+      val dstPoints = AnswerMatrixMeasures.studentInfoDestinationContour(answers.size)
+      val h = findHomography(rect,dstPoints)
+      ( Some(rect), warpImage()(psi.originalMat, h, AnswerMatrixMeasures.destinationSize(answers.size)) )
+    }
+
+    sm match{
+      case Some((sil, sim)) =>
+        psi.copy( mat = Some(sim), studentInfoMat = Some(sim), studentInfoLocation = sil )
+      case None => psi
+    }
 
   }
 
