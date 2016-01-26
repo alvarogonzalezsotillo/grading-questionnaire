@@ -50,7 +50,7 @@ class ProcessingStepTest extends FlatSpec {
       }
     }
 
-    val p = new File("./test-img")
+    val p = new File("./build/test-img")
     remove(p)
     p.mkdir()
     p
