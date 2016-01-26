@@ -83,7 +83,6 @@ class ProcessingStepTest extends FlatSpec {
       saveTestImage("01-original-" + imageLocation, m2)
       assert(m eq m2)
     }
-    fail( "quitame" )
   }
 
   "threshold step" should "convert to grayscale" in {
