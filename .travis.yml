@@ -1,4 +1,11 @@
 
 language: java
+
+sudo: required
+
+before_install:
+	- sudo apt-get update -qq
+	- sudo apt-get install -qq texlive texlive-latex-extra
+
 script: ./gradlew --debug check
 
