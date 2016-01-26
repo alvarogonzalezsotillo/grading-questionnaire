@@ -32,3 +32,4 @@ task run(type: JavaExec, dependsOn: classes) {
 tasks.withType(Test) {
     systemProperty "java.library.path", "./lib"
 }
+

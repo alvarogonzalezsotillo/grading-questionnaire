@@ -2,6 +2,9 @@ plugins {
   id "com.dorongold.task-tree" version "1.2.1"
 }
 
+// SHOW STACK TRACES IN TRAVIS CI
+gradle.startParameter.showStacktrace = org.gradle.logging.ShowStacktrace.ALWAYS
+
 repositories {
     mavenCentral()
 }
@@ -29,7 +32,9 @@ subprojects{
         compile 'org.slf4j:slf4j-api:1.7.7'
         runtime 'org.slf4j:slf4j-jdk14:1.7.7'
     }
+
 }
+
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.4'
