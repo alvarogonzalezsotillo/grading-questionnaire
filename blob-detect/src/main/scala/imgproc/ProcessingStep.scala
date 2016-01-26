@@ -311,15 +311,16 @@ object ProcessingStep {
 
   val studentInfoStep = answerMatrixStep.extend( "Información del alumno") { psi =>
 
+
     def studentInfoRect( qrLocation: MatOfPoint, matrixLocation: MatOfPoint ) : MatOfPoint = {
-      ???
+      AnswerMatrixMeasures.fromMatrixToStudentInfoLocation(matrixLocation)
     }
 
     val sm: Option[(Some[MatOfPoint], Mat)] = for( qrLocation <- psi.qrLocation ; matrixLocation <- psi.location ; answers <- psi.answers ) yield {
       val rect = studentInfoRect(qrLocation,matrixLocation)
       val dstPoints = AnswerMatrixMeasures.studentInfoDestinationContour(answers.size)
       val h = findHomography(rect,dstPoints)
-      ( Some(rect), warpImage()(psi.originalMat, h, AnswerMatrixMeasures.destinationSize(answers.size)) )
+      ( Some(rect), warpImage()(psi.originalMat, h, AnswerMatrixMeasures.studentInfoDestinationSize(answers.size)) )
     }
 
     sm match{

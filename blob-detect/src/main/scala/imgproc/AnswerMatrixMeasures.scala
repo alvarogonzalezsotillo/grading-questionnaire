@@ -38,8 +38,38 @@ object AnswerMatrixMeasures {
     new MatOfPoint((0.0, 0.0), (w, 0.0), (w, h), (0.0, h))
   }
 
-  def studentInfoDestinationContour(i: Int) : MatOfPoint = {
-    ???
+  def fromMatrixToStudentInfoLocation( matrixLocation: MatOfPoint ) : MatOfPoint = {
+    val points = matrixLocation.toArray
+    val tl = points(0)
+    val tr = points(1)
+    val bl = points(3)
+    val br = points(2)
+
+    val matrixHeight = (bl - tl).withModulus( (bl - tl).modulus*(1 + AnswerMatrixMeasures.matrixWithToQRWidthRatio) )
+
+    val xAxis = (tr - tl)
+    val yAxis = new Point(-xAxis.y, xAxis.x)
+
+    val topLeft = tl -
+      (yAxis * AnswerMatrixMeasures.matrixWithToTopOfQRRatio) -
+      (xAxis * AnswerMatrixMeasures.matrixWithToLeftOfQRRatio)
+    val topRight = topLeft + (xAxis * (1+2*AnswerMatrixMeasures.matrixWithToLeftOfQRRatio ) )
+    val bottomLeft = topLeft + (yAxis * AnswerMatrixMeasures.matrixWithToQRWidthRatio) + matrixHeight
+    val bottomRight = topRight + (yAxis * AnswerMatrixMeasures.matrixWithToQRWidthRatio) + matrixHeight
+
+    new MatOfPoint(topLeft, topRight, bottomRight, bottomLeft)
+  }
+
+  def studentInfoDestinationContour(questions: Int) : MatOfPoint = {
+    val sidc = fromMatrixToStudentInfoLocation(destinationContour(questions) ).toArray
+    val topLeft = sidc(0)
+    val topRight = sidc(1)
+    val bottomRight = sidc(2)
+    val bottomLeft = sidc(3)
+
+    val origin = topLeft
+
+    new MatOfPoint(topLeft-origin, topRight-origin, bottomRight-origin, bottomLeft-origin)
   }
 
 
@@ -48,6 +78,13 @@ object AnswerMatrixMeasures {
     val thirdCorner = contour.toArray()(2)
     new Size(thirdCorner.x, thirdCorner.y)
   }
+
+  def studentInfoDestinationSize(questions: Int) = {
+    val contour = studentInfoDestinationContour(questions)
+    val thirdCorner = contour.toArray()(2)
+    new Size(thirdCorner.x, thirdCorner.y)
+  }
+
 
   def cells(questions: Int): Seq[MatOfPoint] = {
     def xPositionOfCellColumn(column: Int) = column * (cellWidth + columnSpaceWidth)

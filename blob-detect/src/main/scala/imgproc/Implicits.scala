@@ -134,6 +134,8 @@ object Implicits {
 
     def normalize = this * (1/modulus)
 
+    def withModulus( m: Double ) = normalize * m
+
     def minus(p:Point) = new Point(point.x-p.x,point.y-p.y)
     def plus(p:Point) = new Point(point.x+p.x,point.y+p.y)
 
