@@ -18,39 +18,40 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class GiftToLatexTest extends FlatSpec {
 
+  def testFile( name: String ) = new File( new File("./build/gift-to-latex/"), name )
 
   "latex compile" should "work with a generated file" in {
 
     val s = generateGift(40,5)
-    val f = Util.createFile(renderGift(s), new File("generated.gift"))
+    val f = Util.createFile(renderGift(s), testFile("generated.gift"))
 
     val latex = GiftToLatex(f, imagePath = Seq("src/test/resources/giftParser/") )
-    LatexCompiler.compile( latex, new File( "generated.pdf") )
+    LatexCompiler.compile( latex, testFile( "generated.pdf") )
 
   }
 
   "An image in html" should "translate to latex" in {
     val html = """a question <img src="image.jpg"> and some text """
     val tex = GiftToLatex.htmlToLatex(html)
-    assert( tex == """a question \\ \includegraphics{image.jpg} and some text """ )
+    assert( tex == """a question \\ \begin{center}\includegraphics{image.jpg}\end{center} and some text """ )
   }
 
   "Some images in html" should "translate to latex" in {
     val html = """a question <img src="image.jpg"> and some text <img src="image2.jpg"> """
     val tex = GiftToLatex.htmlToLatex(html)
-    assert( tex == """a question \\ \includegraphics{image.jpg} and some text \\ \includegraphics{image2.jpg} """ )
+    assert( tex == """a question \\ \begin{center}\includegraphics{image.jpg}\end{center} and some text \\ \begin{center}\includegraphics{image2.jpg}\end{center} """ )
   }
 
   "Some images in html (quoted or not)" should "translate to latex" in {
     val html = """a question <img src="image.jpg"> and some text <img src="image2.jpg"> and another image <img src=image3.jpg> more """
     val tex = GiftToLatex.htmlToLatex(html)
-    assert( tex == """a question \\ \includegraphics{image.jpg} and some text \\ \includegraphics{image2.jpg} and another image \\ \includegraphics{image3.jpg} more """ )
+    assert( tex == """a question \\ \begin{center}\includegraphics{image.jpg}\end{center} and some text \\ \begin{center}\includegraphics{image2.jpg}\end{center} and another image \\ \begin{center}\includegraphics{image3.jpg}\end{center} more """ )
   }
 
   "Some images in (answers) html (quoted or not)" should "translate to latex" in {
     val html = """a question <img src="image.jpg"> and some text <img src="image2.jpg"> and another image <img src=image3.jpg> more """
     val tex = GiftToLatex.htmlToLatex(html)
-    assert( tex == """a question \\ \includegraphics{image.jpg} and some text \\ \includegraphics{image2.jpg} and another image \\ \includegraphics{image3.jpg} more """ )
+    assert( tex == """a question \\ \begin{center}\includegraphics{image.jpg}\end{center} and some text \\ \begin{center}\includegraphics{image2.jpg}\end{center} and another image \\ \begin{center}\includegraphics{image3.jpg}\end{center} more """ )
   }
 
   "A question with html list" should "parse" in{

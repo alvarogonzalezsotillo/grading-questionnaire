@@ -2,8 +2,8 @@ plugins {
   id "com.dorongold.task-tree" version "1.2.1"
 }
 
-// SHOW STACK TRACES IN TRAVIS CI
-gradle.startParameter.showStacktrace = org.gradle.logging.ShowStacktrace.ALWAYS
+//SAME AS --stacktrace
+//gradle.startParameter.showStacktrace = org.gradle.logging.ShowStacktrace.ALWAYS
 
 repositories {
     mavenCentral()

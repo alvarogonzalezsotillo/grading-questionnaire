@@ -52,6 +52,7 @@ object Util {
   }
 
   def createFile( content: String, file: File ) = {
+    file.getParentFile.mkdirs()
     withResource(  new FileWriter(file) ) { out =>
       out.write(content)
       out.flush()

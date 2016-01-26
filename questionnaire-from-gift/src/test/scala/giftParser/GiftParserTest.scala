@@ -114,10 +114,12 @@ class GiftParserTest extends FlatSpec {
     }
   }
 
+  def testFile( name: String ) = new File( new File("./build/gift-parser/"), name )
+
   "A generated file" should "parse" in {
 
     val s = TestGiftGenerator.generateGift(40,4)
-    val f = createFile(renderGift(s), new File("generated.gift"))
+    val f = createFile(renderGift(s), testFile("generated.gift"))
 
     val ret = GiftParser.parse(f)
 
