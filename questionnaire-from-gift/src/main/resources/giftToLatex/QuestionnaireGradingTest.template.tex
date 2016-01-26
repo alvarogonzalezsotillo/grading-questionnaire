@@ -3,7 +3,6 @@
 \documentclass[8pt,a4paper,spanish,openany]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{ifpdf}
 \usepackage{enumitem}
 \usepackage{multicol}
 \usepackage{setspace}
@@ -36,12 +35,20 @@
 
 \graphicspath{$ImagePath$}
 
+\newcommand{\Solutions}{$Solutions$}
+
 \hypersetup{
   colorlinks,
   citecolor=black,
   filecolor=black,
   linkcolor=black,
-  urlcolor=blue
+  urlcolor=blue,
+  pdfauthor={Álvaro González Sotillo},%
+  pdftitle={$HeaderText$},%
+  pdfsubject={\Solutions},%
+  pdfkeywords={GIFT,Latex,Scala},%
+  pdfproducer={LaTeX},%
+  pdfcreator={pdfLaTeX}
 }
 
 
@@ -123,17 +130,7 @@
 }
 
 
-\newcommand{\Solution}[1]
-{
-  \ifpdf
-    \pdfinfo{
-      /Author (Alvaro Gonzalez Sotillo)
-      /Title (Examen a partir de fichero GIFT y Latex, con Scala)
-      /Keywords (PDF;LaTeX)
-      /Subject (#1)
-    }
-  \fi
-}
+
 
 \newcommand{\Instructions}[2]
 {
@@ -271,7 +268,7 @@
   %\end{center}%
 }
 
-\newcommand{\Solutions}{$Solutions$}
+
 
 \newcommand{\FirstPage}[3]{
 
@@ -290,7 +287,6 @@
 
 \IndentOff
 
-\Solution{\Solutions}
 
 
 

@@ -57,11 +57,9 @@ object Sounds extends App {
     val BEEP_FILE = "/sounds/Censored_Beep.wav"
     Future {
       playSound2(BEEP_FILE)
+      Thread.sleep(2000)
     }
   }
 
-
-  beep()
-  Thread.sleep(1000)
 
 }
