@@ -5,6 +5,7 @@ import javax.swing._
 import javax.swing.event.{ChangeEvent, ChangeListener}
 
 import common.{Sounds, Logging}
+import imgproc.steps.ProcessingStep
 import org.opencv.core._
 import org.opencv.imgproc.Imgproc
 
@@ -30,6 +31,7 @@ object GUI extends App {
 
     def processMat(m: Mat) = {
       import imgproc.Implicits._
+      import imgproc.steps.ProcessingStep.Implicits._
       setOverlayImage(m)
       val ret = step.process(m)
       image = ret.mat.getOrElse(null)
@@ -78,7 +80,9 @@ object GUI extends App {
 
   nu.pattern.OpenCV.loadLibrary()
 
-  import imgproc.ProcessingStep._
+  import ProcessingStep._
+  import imgproc.steps.ProcessingStep.Implicits._
+  import imgproc.Implicits._
 
   UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
 
@@ -98,7 +102,7 @@ object GUI extends App {
     decodeQRStep.withDrawString( _.qrText ),
     answerMatrixStep,
     studentInfoStep,
-    cellsOfAnswerMatrix.withDrawContours( _.cells ),
+    cellsOfAnswerMatrix.withDrawContours( _.cells.map( s => s.map(rectToMatOfPoint) ) ),
     studentInfoStep.withFilter()(_.mat.isDefined).withSaveMatrix()
   ))
 

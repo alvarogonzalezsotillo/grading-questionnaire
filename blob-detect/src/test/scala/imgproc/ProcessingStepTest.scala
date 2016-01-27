@@ -6,12 +6,15 @@ package imgproc
 
 import java.io.File
 
+import imgproc.steps.ProcessingStep
 import org.junit.runner.RunWith
 import org.opencv.highgui.Highgui
 
 import org.opencv.core.Mat
 import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner
+
+import scala.util.Try
 
 
 @RunWith(classOf[JUnitRunner])
@@ -70,11 +73,12 @@ class ProcessingStepTest extends FlatSpec {
 
 
   import ProcessingStep._
+  import ProcessingStep.Implicits._
 
   def processMat(step: ProcessingStep, m: Mat) = step.process(m).mat.get
 
-  def saveTestImage(name: String, m: Mat ) = Highgui.imwrite(  testImgPath(name).toString, m)
-  
+  def saveTestImage(name: String, m: Mat) = Highgui.imwrite(testImgPath(name).toString, m)
+
 
   "Initial step " should "do nothing" in {
     for (imageLocation <- positiveMatchImages) {
@@ -146,7 +150,7 @@ class ProcessingStepTest extends FlatSpec {
   "Answer matrix extraction step" should "extract matrix" in {
     for (imageLocation <- positiveMatchImages) {
       val m = readImageFromResources(imageLocation)
-      val extracted = processMat(answerMatrixStep,m)
+      val extracted = processMat(answerMatrixStep, m)
       saveTestImage("08-extracted-" + imageLocation, extracted)
     }
   }
@@ -154,7 +158,7 @@ class ProcessingStepTest extends FlatSpec {
   "Cells extraction step" should "extract cells" in {
     for (imageLocation <- positiveMatchImages) {
       val m = readImageFromResources(imageLocation)
-      val extracted = processMat(cellsOfAnswerMatrix.withDrawContours(i => i.cells), m )
+      val extracted = processMat(cellsOfAnswerMatrix.withDrawContours(_.cells.map(s => s.map(rectToMatOfPoint))), m)
       saveTestImage("09-cells-" + imageLocation, extracted)
     }
   }
@@ -162,11 +166,25 @@ class ProcessingStepTest extends FlatSpec {
   "Student info step" should "extract QR, student info and answer matrix" in {
     for (imageLocation <- positiveMatchImages) {
       val m = readImageFromResources(imageLocation)
-      val extracted = processMat( studentInfoStep, m )
+      val extracted = processMat(studentInfoStep, m)
       saveTestImage("10-studentinfo-" + imageLocation, extracted)
     }
 
   }
+
+  "Student info" should "be enough to parse again" in {
+    for (imageLocation <- positiveMatchImages) {
+      val m = readImageFromResources(imageLocation)
+      val extracted = processMat(studentInfoStep, m)
+      Try {
+        val extracted2 = processMat(studentInfoStep, extracted)
+        println ( imageLocation )
+        saveTestImage("11-studentinfoagain-" + imageLocation, extracted2)
+      }
+    }
+
+  }
+
 
 }
 

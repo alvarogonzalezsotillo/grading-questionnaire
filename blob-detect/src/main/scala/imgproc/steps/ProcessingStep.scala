@@ -1,14 +1,14 @@
-package imgproc
-
+package imgproc.steps
 
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import common.{Sounds, BinaryConverter}
+import common.{BinaryConverter, Sounds}
+import imgproc.steps.ProcessingStep.ExtendedStep
+import imgproc.{AnswerMatrixMeasures, ImageProcessing, QRScanner}
 import org.opencv.core._
 import org.opencv.highgui.Highgui
-
 import org.opencv.imgproc.Imgproc
 
 import scala.util.Try
@@ -20,8 +20,6 @@ import scala.util.Try
 
 
 trait ProcessingStep {
-
-  import imgproc.ProcessingStep._
 
   val process: Info => Info
   val stepName: String
@@ -52,9 +50,8 @@ trait ProcessingStep {
 
 object ProcessingStep {
 
-  import imgproc.Implicits._
-
   import imgproc.ImageProcessing._
+  import imgproc.Implicits._
 
 
   private case class Step(override val stepName: String)(override val process: Info => Info) extends ProcessingStep
@@ -67,38 +64,43 @@ object ProcessingStep {
     override val process = (m: Info) => m
   }
 
+  object Implicits {
 
-  implicit class AcceptStep(step: ProcessingStep) {
+    implicit def infoFromMat(m: Mat) = Info(Some(m), m)
 
-    private val defaultDelay = 2500
+    implicit class AcceptStep(step: ProcessingStep) {
 
-    def withFilter(name: String = "Filtrado:" + step.stepName, delay: Int = defaultDelay)(accept: Info => Boolean): ProcessingStep = {
-      var lastAccept = System.currentTimeMillis()
-      var lastInfo: Info = Info(None)
-      step.extend(name) { psi =>
-        if (System.currentTimeMillis() > lastAccept + delay && accept(psi)) {
-          lastAccept = System.currentTimeMillis()
-          lastInfo = psi
+      private val defaultDelay = 2500
+
+      def withFilter(name: String = "Filtrado:" + step.stepName, delay: Int = defaultDelay)(accept: Info => Boolean): ProcessingStep = {
+        var lastAccept = System.currentTimeMillis()
+        var lastInfo: Info = Info(None)
+        step.extend(name) { psi =>
+          if (System.currentTimeMillis() > lastAccept + delay && accept(psi)) {
+            lastAccept = System.currentTimeMillis()
+            lastInfo = psi
+          }
+          lastInfo
         }
-        lastInfo
       }
-    }
 
-    def withSaveMatrix(name: String = "Grabando:" + step.stepName): ProcessingStep = {
-      var lastInfo: Info = Info(None)
-      step.extend(name) { psi =>
-        if (!(psi eq lastInfo)) {
-          lastInfo = psi
-          lastInfo.mat.map(saveMatrix)
-          Sounds.beep()
+      def withSaveMatrix(name: String = "Grabando:" + step.stepName): ProcessingStep = {
+        var lastInfo: Info = Info(None)
+        step.extend(name) { psi =>
+          if (!(psi eq lastInfo)) {
+            lastInfo = psi
+            lastInfo.mat.map(saveMatrix)
+            Sounds.beep()
+          }
+          psi
         }
-        psi
       }
+
     }
 
   }
 
-  def saveMatrix(m: Mat) {
+  private def saveMatrix(m: Mat) {
     val shortDateFormat = new SimpleDateFormat("yyyyMMdd")
     val longDateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss-SSS")
     val date = new Date
@@ -110,7 +112,7 @@ object ProcessingStep {
   }
 
 
-  def locateQR(answerMatrixLocation: MatOfPoint): MatOfPoint = {
+  private def locateQR(answerMatrixLocation: MatOfPoint): MatOfPoint = {
     val points = answerMatrixLocation.toArray
     val tl = points(0)
     val tr = points(1)
@@ -128,7 +130,7 @@ object ProcessingStep {
   }
 
 
-  def locateAnswerMatrix(number: Int = 5, insideLimit: Int = -8)(contours: Seq[MatOfPoint]): Option[MatOfPoint] = {
+  private def locateAnswerMatrix(number: Int = 5, insideLimit: Int = -8)(contours: Seq[MatOfPoint]): Option[MatOfPoint] = {
     import scala.collection.JavaConverters._
 
     val allPoints = contours.map(_.toList.asScala).flatten
@@ -182,51 +184,6 @@ object ProcessingStep {
   }
 
 
-  trait OriginalMatInfo {
-    val originalMat: Mat
-    val thresholdMat: Mat
-    val cleanedMat: Mat
-  }
-
-  trait LocationInfo {
-    val location: Option[MatOfPoint]
-    val locatedMat: Option[Mat]
-  }
-
-  trait ContoursInfo {
-    val contours: Seq[MatOfPoint]
-    val quadrilaterals: Seq[MatOfPoint]
-    val biggestQuadrilaterals: Seq[MatOfPoint]
-  }
-
-  trait QRLocationInfo {
-    val qrLocation: Option[MatOfPoint]
-    val qrLocatedMat: Option[Mat]
-  }
-
-  trait QRInfo {
-    val qrText: Option[String]
-  }
-
-  trait AnswersInfo {
-    val answers: Option[Seq[Int]]
-    val cells: Option[Seq[MatOfPoint]]
-  }
-
-  trait StudentInfo{
-    val studentInfoLocation : Option[MatOfPoint]
-    val studentInfoMat : Option[Mat]
-  }
-
-  case class Info(mat: Option[Mat], originalMat: Mat = null, cleanedMat: Mat = null, thresholdMat: Mat = null, contours: Seq[MatOfPoint] = null,
-                  quadrilaterals: Seq[MatOfPoint] = null, biggestQuadrilaterals: Seq[MatOfPoint] = null,
-                  location: Option[MatOfPoint] = None, locatedMat: Option[Mat] = None, qrLocatedMat: Option[Mat] = None, qrLocation: Option[MatOfPoint] = None,
-                  qrText: Option[String] = None, answers: Option[Seq[Int]] = None, cells: Option[Seq[MatOfPoint]] = None, studentInfoLocation: Option[MatOfPoint] = None,
-                   studentInfoMat: Option[Mat] = None)
-    extends OriginalMatInfo with LocationInfo with ContoursInfo with QRLocationInfo with QRInfo with AnswersInfo with StudentInfo{
-  }
-
-  implicit def infoFromMat(m: Mat) = Info(Some(m), m)
 
 
   val initialStep: ProcessingStep = InitialStep("Imagen original")
@@ -334,6 +291,15 @@ object ProcessingStep {
   val cellsOfAnswerMatrix = answerMatrixStep.extend("Localización de celdas") { psi =>
     psi.copy(cells = psi.answers.map(a => AnswerMatrixMeasures.cells(a.size)))
   }
+
+  val saveIndividualCells = cellsOfAnswerMatrix.extend("Gravar celdas individuales") { psi =>
+    for( m <- psi.locatedMat ; cells <- psi.cells ; c <- cells ){
+      val cellMat = submatrix(m,c)
+      println( "Hay que gravar esto:" + cellMat )
+    }
+    psi
+  }
+
 
 
 }

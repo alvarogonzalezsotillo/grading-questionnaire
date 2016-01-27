@@ -1,4 +1,4 @@
-package ocr
+package imgproc.ocr
 
 import imgproc.ImageProcessing._
 import org.opencv.core.{Rect, Mat}
