@@ -2,6 +2,7 @@ package imgproc
 
 import org.opencv.calib3d.Calib3d
 import org.opencv.core._
+import org.opencv.highgui.Highgui
 import org.opencv.imgproc.Imgproc
 
 /**
@@ -10,6 +11,24 @@ import org.opencv.imgproc.Imgproc
 object ImageProcessing {
 
   import imgproc.Implicits._
+
+
+  def readImageFromResources(f: String): Mat = {
+    def mat() = {
+      val url = getClass().
+        getResource(f).
+        getPath
+      println("readImageFromResources:" + f + " --> " + url)
+      Highgui.imread(url)
+    }
+
+    def imageio() : Mat = {
+      val url = getClass().getResource(f)
+      if( url != null ) javax.imageio.ImageIO.read(url) else null
+    }
+
+    imageio
+  }
 
   def threshold(blockSize: Int = 101, C: Double = 3)(src: Mat): Mat = {
     val dst = new Mat(src.height(), src.width(), CvType.CV_8UC1)
@@ -28,15 +47,11 @@ object ImageProcessing {
     }
   }
 
+  private def newMatrixIfNull(m:Mat) = if( m == null ) new Mat else m
 
   def clean(iterations: Int = 3, sizeOpen: Int = 7, sizeClose: Int = 7)(dst: Mat = null)(src: Mat): Mat = {
 
-    val ret = if (dst == null) {
-      new Mat
-    }
-    else {
-      dst
-    }
+    val ret = newMatrixIfNull(dst)
     val open = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(sizeOpen, sizeOpen))
     val close = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(sizeClose, sizeClose))
     try {
@@ -139,12 +154,7 @@ object ImageProcessing {
   }
 
   def warpImage(dst: Mat = null)(m: Mat, H: Mat, size: Size = null) = {
-    val ret = if (dst == null) {
-      new Mat
-    }
-    else {
-      dst
-    }
+    val ret = newMatrixIfNull(dst)
     val s = if (size == null) m.size() else size
     Imgproc.warpPerspective(m, ret, H, s)
     ret
@@ -152,6 +162,12 @@ object ImageProcessing {
 
   def submatrix(m:Mat, rect: Rect) : Mat = {
     new Mat(m,rect)
+  }
+
+  def stretchImage(dst: Mat = null)(m:Mat, w:Int, h:Int) = {
+    val ret = newMatrixIfNull(dst)
+    Imgproc.resize(m,ret,new Size(w,h))
+    ret
   }
 
 }

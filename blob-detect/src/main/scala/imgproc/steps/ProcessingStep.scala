@@ -89,7 +89,8 @@ object ProcessingStep {
         step.extend(name) { psi =>
           if (!(psi eq lastInfo)) {
             lastInfo = psi
-            lastInfo.mat.map(saveMatrix)
+            lastInfo.mat.map(saveMatrix(_))
+            saveMatrix( lastInfo.originalMat, "-original" )
             Sounds.beep()
           }
           psi
@@ -100,14 +101,14 @@ object ProcessingStep {
 
   }
 
-  private def saveMatrix(m: Mat) {
+  private def saveMatrix(m: Mat, suffix: String = "") {
     val shortDateFormat = new SimpleDateFormat("yyyyMMdd")
     val longDateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss-SSS")
     val date = new Date
     val lDate = longDateFormat.format(date)
     val sDate = shortDateFormat.format(date)
     new File(sDate).mkdirs
-    val file = s"$sDate/$lDate.png"
+    val file = s"$sDate/$lDate$suffix.png"
     Highgui.imwrite(file, m)
   }
 
@@ -130,7 +131,7 @@ object ProcessingStep {
   }
 
 
-  private def locateAnswerMatrix(number: Int = 5, insideLimit: Int = -8)(contours: Seq[MatOfPoint]): Option[MatOfPoint] = {
+  private def locateAnswerMatrix(imageWidth: Int, imageHeight: Int, number: Int = 5, insideLimit: Int = -8)(contours: Seq[MatOfPoint]): Option[MatOfPoint] = {
     import scala.collection.JavaConverters._
 
     val allPoints = contours.map(_.toList.asScala).flatten
@@ -171,13 +172,32 @@ object ProcessingStep {
     }
 
     def checkIt(contour: MatOfPoint) = {
-      contours.size == number &&
-        allPoints.forall { p =>
-          val contour2f = new MatOfPoint2f()
-          contour.convertTo(contour2f, CvType.CV_32FC2)
-          val inside = Imgproc.pointPolygonTest(contour2f, p, true)
-          inside > insideLimit
-        }
+
+      def insideImage( p: Point ) = {
+        p.x > 0 && p.y > 0 && p.x < imageWidth && p.y < imageHeight
+      }
+
+      val contour2f = new MatOfPoint2f()
+      contour.convertTo(contour2f, CvType.CV_32FC2)
+
+      def insideContour( p: Point ) = {
+        val inside = Imgproc.pointPolygonTest(contour2f, p, true)
+        inside > insideLimit
+      }
+
+      val upperLeft = contour.toArray()(0)
+      val upperRight = contour.toArray()(1)
+      val w = upperRight.x - upperLeft.x
+
+      val contoursSizeOK = contours.size == number
+      val insideImageOK = contour.toArray.forall( insideImage )
+      val insideContourOK = allPoints.forall( insideContour )
+      val widthOK = w > imageWidth*0.60
+
+      val ret = contoursSizeOK && insideImageOK && insideContourOK && widthOK
+      println( s"$contoursSizeOK  $insideImageOK $insideContourOK $widthOK $w $imageWidth" )
+
+      ret
     }
 
     Try(doIt).filter(checkIt).toOption
@@ -214,7 +234,7 @@ object ProcessingStep {
   }
 
   val answerMatrixLocationStep = biggestQuadrilateralsStep.extend("Localización de la tabla de respuestas") { lsi =>
-    val location = locateAnswerMatrix()(lsi.biggestQuadrilaterals)
+    val location = locateAnswerMatrix(lsi.originalMat.width(), lsi.originalMat.height())(lsi.biggestQuadrilaterals)
     lsi.copy(location = location)
   }
 
@@ -292,10 +312,10 @@ object ProcessingStep {
     psi.copy(cells = psi.answers.map(a => AnswerMatrixMeasures.cells(a.size)))
   }
 
-  val saveIndividualCells = cellsOfAnswerMatrix.extend("Gravar celdas individuales") { psi =>
+  val saveIndividualCells = cellsOfAnswerMatrix.extend("Grabar celdas individuales") { psi =>
     for( m <- psi.locatedMat ; cells <- psi.cells ; c <- cells ){
       val cellMat = submatrix(m,c)
-      println( "Hay que gravar esto:" + cellMat )
+      println( "Hay que grabar esto:" + cellMat )
     }
     psi
   }
