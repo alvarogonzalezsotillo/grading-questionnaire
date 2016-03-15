@@ -19,14 +19,23 @@ object OneLetterOCR {
     num.toDouble( ts.sum ) / ts.size
   }
 
+  def normalizeLetter( m: Mat ) = {
+    import ImageProcessing._
+
+    val squared = stretchImage()(m,Pattern.patternSize,Pattern.patternSize)
+    val thresholded = preciseThreshold()(squared)
+    val cleaned = clean(3,3,3)()(thresholded)
+    thresholded
+  }
+
+  def extractPossibleLetters( m: Mat ) = Seq(m)
+
   def scan( m: Mat ) : LetterResult = {
-    /*
-    val normalized = ImageProcessing.stretchImage()(m,Pattern.patternSize,Pattern.patternSize)
+
+    val normalized = normalizeLetter(m)
 
     def howMuchDifferent(m:Mat) : Double = {
-      val diff = new Mat
-      Core.absdiff( normalized,m,diff)
-
+      ???
     }
 
     for( p <- Pattern.patterns ) yield {
@@ -36,8 +45,7 @@ object OneLetterOCR {
       val probability = (1.0/minDifference) max 1
       new LetterProb( p.letter, probability )
     }
-    */
-    ???
+
   }
 
   def apply( m: Mat ) = scan(m)

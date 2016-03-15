@@ -14,7 +14,7 @@ trait Pattern{
 
 object Pattern{
 
-  val patternSize: Int = 20
+  val patternSize: Int = 150
 
 
   lazy val patterns: Seq[Pattern] = {

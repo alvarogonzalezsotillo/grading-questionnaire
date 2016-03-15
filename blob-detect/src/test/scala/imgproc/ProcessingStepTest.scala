@@ -5,16 +5,17 @@ package imgproc
  */
 
 import java.io.{PrintStream, File}
-
 import imgproc.steps.ProcessingStep
 import org.junit.runner.RunWith
 import org.opencv.highgui.Highgui
 import imgproc.ImageProcessing._
-
 import org.opencv.core.Mat
 import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner
-
+import imgproc.Implicits._
+import TestUtil._
+import ProcessingStep._
+import ProcessingStep.Implicits._
 import scala.util.Try
 
 
@@ -23,47 +24,10 @@ class ProcessingStepTest extends FlatSpec {
 
   nu.pattern.OpenCV.loadLibrary()
 
-  import imgproc.Implicits._
 
-
-  private val testImgPath = {
-
-    def remove(f: File): Unit = if (f.isFile) {
-      f.delete()
-
-    }
-    else {
-      val files = f.listFiles
-      if (files != null) {
-        files.foreach(remove)
-      }
-    }
-
-    val p = new File("./build/test-img")
-    remove(p)
-    p.mkdir()
-    p
-  }
-
-  private def testImgPath(file: String): File = new File(testImgPath, file)
-
-  private val positiveMatchImages = Seq(
-    "2016-01-26-101322.jpg",
-    "2016-01-26-101343.jpg",
-    "2016-01-26-101403.jpg",
-    "2016-01-26-101423.jpg",
-    "2016-01-26-101448.jpg",
-    "2016-01-26-101502.jpg",
-    "2016-01-26-101516.jpg"
-  )
-
-
-  import ProcessingStep._
-  import ProcessingStep.Implicits._
 
   private def processMat(step: ProcessingStep, m: Mat) = step.process(m).mat.get
 
-  private def saveTestImage(name: String, m: Mat) = Highgui.imwrite(testImgPath(name).toString, m)
 
 
   private def runSomeTestAndFailIfSoMuchFailures[T](files: Seq[String], allowedFailureRatio: Double = 0.2)(test: String => T): Unit = {
@@ -183,7 +147,7 @@ class ProcessingStepTest extends FlatSpec {
         val info = cellsOfAnswerMatrix.process(m)
         val cells = info.cells.get.zipWithIndex
         for ((cell, index) <- cells) {
-          saveTestImage(s"09-cell-${index+1}" + imageLocation, cell)
+          saveTestImage(s"09-cell-${index+1}-" + imageLocation, cell)
         }
       }
     }
