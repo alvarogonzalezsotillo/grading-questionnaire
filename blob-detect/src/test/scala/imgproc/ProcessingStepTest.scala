@@ -166,12 +166,28 @@ class ProcessingStepTest extends FlatSpec {
     }
   }
 
-  "Cells extraction step" should "extract cells" in {
-    runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
-      val m = readImageFromResources(imageLocation)
-      val extracted = processMat(cellsOfAnswerMatrix.withDrawContours(_.cells.map(s => s.map(rectToMatOfPoint))), m)
-      saveTestImage("09-cells-" + imageLocation, extracted)
+  {
+    behavior of "Cells extraction step"
+
+    it should "extract cells" in {
+      runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
+        val m = readImageFromResources(imageLocation)
+        val extracted = processMat(cellsOfAnswerMatrix.withDrawContours(_.cellsRect.map(s => s.map(rectToMatOfPoint))), m)
+        saveTestImage("09-cells-" + imageLocation, extracted)
+      }
     }
+
+    it should "save extracted individual cells" in{
+      runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
+        val m = readImageFromResources(imageLocation)
+        val info = cellsOfAnswerMatrix.process(m)
+        val cells = info.cells.get.zipWithIndex
+        for ((cell, index) <- cells) {
+          saveTestImage(s"09-cell-${index+1}" + imageLocation, cell)
+        }
+      }
+    }
+
   }
 
   {

@@ -90,7 +90,7 @@ object ProcessingStep {
           if (!(psi eq lastInfo)) {
             lastInfo = psi
             lastInfo.mat.map(saveMatrix(_))
-            saveMatrix( lastInfo.originalMat, "-original" )
+            saveMatrix(lastInfo.originalMat, "-original")
             Sounds.beep()
           }
           psi
@@ -173,14 +173,14 @@ object ProcessingStep {
 
     def checkIt(contour: MatOfPoint) = {
 
-      def insideImage( p: Point ) = {
+      def insideImage(p: Point) = {
         p.x > 0 && p.y > 0 && p.x < imageWidth && p.y < imageHeight
       }
 
       val contour2f = new MatOfPoint2f()
       contour.convertTo(contour2f, CvType.CV_32FC2)
 
-      def insideContour( p: Point ) = {
+      def insideContour(p: Point) = {
         val inside = Imgproc.pointPolygonTest(contour2f, p, true)
         inside > insideLimit
       }
@@ -190,20 +190,18 @@ object ProcessingStep {
       val w = upperRight.x - upperLeft.x
 
       val contoursSizeOK = contours.size == number
-      val insideImageOK = contour.toArray.forall( insideImage )
-      val insideContourOK = allPoints.forall( insideContour )
-      val widthOK = w > imageWidth*0.60
+      val insideImageOK = contour.toArray.forall(insideImage)
+      val insideContourOK = allPoints.forall(insideContour)
+      val widthOK = w > imageWidth * 0.60
 
       val ret = contoursSizeOK && insideImageOK && insideContourOK && widthOK
-      println( s"$contoursSizeOK  $insideImageOK $insideContourOK $widthOK $w $imageWidth" )
+      println(s"$contoursSizeOK  $insideImageOK $insideContourOK $widthOK $w $imageWidth")
 
       ret
     }
 
     Try(doIt).filter(checkIt).toOption
   }
-
-
 
 
   val initialStep: ProcessingStep = InitialStep("Imagen original")
@@ -286,38 +284,35 @@ object ProcessingStep {
 
   }
 
-  val studentInfoStep = answerMatrixStep.extend( "Información del alumno") { psi =>
+  val studentInfoStep = answerMatrixStep.extend("Información del alumno") { psi =>
 
 
-    def studentInfoRect( qrLocation: MatOfPoint, matrixLocation: MatOfPoint ) : MatOfPoint = {
+    def studentInfoRect(qrLocation: MatOfPoint, matrixLocation: MatOfPoint): MatOfPoint = {
       AnswerMatrixMeasures.fromMatrixToStudentInfoLocation(matrixLocation)
     }
 
-    val sm: Option[(Some[MatOfPoint], Mat)] = for( qrLocation <- psi.qrLocation ; matrixLocation <- psi.location ; answers <- psi.answers ) yield {
-      val rect = studentInfoRect(qrLocation,matrixLocation)
+    val sm: Option[(Some[MatOfPoint], Mat)] = for (qrLocation <- psi.qrLocation; matrixLocation <- psi.location; answers <- psi.answers) yield {
+      val rect = studentInfoRect(qrLocation, matrixLocation)
       val dstPoints = AnswerMatrixMeasures.studentInfoDestinationContour(answers.size)
-      val h = findHomography(rect,dstPoints)
-      ( Some(rect), warpImage()(psi.originalMat, h, AnswerMatrixMeasures.studentInfoDestinationSize(answers.size)) )
+      val h = findHomography(rect, dstPoints)
+      (Some(rect), warpImage()(psi.originalMat, h, AnswerMatrixMeasures.studentInfoDestinationSize(answers.size)))
     }
 
-    sm match{
+    sm match {
       case Some((sil, sim)) =>
-        psi.copy( mat = Some(sim), studentInfoMat = Some(sim), studentInfoLocation = sil )
+        psi.copy(mat = Some(sim), studentInfoMat = Some(sim), studentInfoLocation = sil)
       case None => psi
     }
 
   }
 
   val cellsOfAnswerMatrix = answerMatrixStep.extend("Localización de celdas") { psi =>
-    psi.copy(cells = psi.answers.map(a => AnswerMatrixMeasures.cells(a.size)))
-  }
-
-  val saveIndividualCells = cellsOfAnswerMatrix.extend("Grabar celdas individuales") { psi =>
-    for( m <- psi.locatedMat ; cells <- psi.cells ; c <- cells ){
-      val cellMat = submatrix(m,c)
-      println( "Hay que grabar esto:" + cellMat )
+    val ret = for (m <- psi.locatedMat; a <- psi.answers) yield {
+      val cr = AnswerMatrixMeasures.cells(a.size)
+      val c = for (r <- cr) yield submatrix(m, r)
+      psi.copy(cellsRect = Some(cr), cells = Some(c))
     }
-    psi
+    ret.getOrElse(psi)
   }
 
 

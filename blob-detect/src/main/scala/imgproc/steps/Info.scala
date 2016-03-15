@@ -31,7 +31,9 @@ trait QRInfo {
 
 trait AnswersInfo {
   val answers: Option[Seq[Int]]
-  val cells: Option[Seq[Rect]]
+  val cellsRect: Option[Seq[Rect]]
+  val cells: Option[Seq[Mat]]
+  val cleanedCells: Option[Seq[Mat]]
 }
 
 trait StudentInfo{
@@ -42,7 +44,7 @@ trait StudentInfo{
 case class Info(mat: Option[Mat], originalMat: Mat = null, cleanedMat: Mat = null, thresholdMat: Mat = null, contours: Seq[MatOfPoint] = null,
                 quadrilaterals: Seq[MatOfPoint] = null, biggestQuadrilaterals: Seq[MatOfPoint] = null,
                 location: Option[MatOfPoint] = None, locatedMat: Option[Mat] = None, qrLocatedMat: Option[Mat] = None, qrLocation: Option[MatOfPoint] = None,
-                qrText: Option[String] = None, answers: Option[Seq[Int]] = None, cells: Option[Seq[Rect]] = None, studentInfoLocation: Option[MatOfPoint] = None,
-                studentInfoMat: Option[Mat] = None)
+                qrText: Option[String] = None, answers: Option[Seq[Int]] = None, cellsRect: Option[Seq[Rect]] = None, cells: Option[Seq[Mat]] = None,
+                 cleanedCells: Option[Seq[Mat]] = None,  studentInfoLocation: Option[MatOfPoint] = None, studentInfoMat: Option[Mat] = None)
   extends OriginalMatInfo with LocationInfo with ContoursInfo with QRLocationInfo with QRInfo with AnswersInfo with StudentInfo{
 }
