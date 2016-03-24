@@ -4,6 +4,8 @@ import imgproc.ImageProcessing
 import org.opencv.core.{Core, Mat}
 import org.opencv.imgproc.Imgproc
 
+import scala.collection.JavaConverters._
+
 /**
  * Created by alvaro on 20/01/16.
  */
@@ -19,31 +21,25 @@ object OneLetterOCR {
     num.toDouble( ts.sum ) / ts.size
   }
 
-  def normalizeLetter( m: Mat ) = {
-    import ImageProcessing._
-
-    val squared = stretchImage()(m,Pattern.patternSize,Pattern.patternSize)
-    val thresholded = preciseThreshold()(squared)
-    val cleaned = clean(3,3,3)()(thresholded)
-    thresholded
-  }
 
   def extractPossibleLetters( m: Mat ) = Seq(m)
+
+  def normalizeLetter(mat: Mat) : Mat = ???
 
   def scan( m: Mat ) : LetterResult = {
 
     val normalized = normalizeLetter(m)
 
-    def howMuchDifferent(m:Mat) : Double = {
+    def howMuchDifferent(m: Mat): Double = {
       ???
     }
 
-    for( p <- Pattern.patterns ) yield {
+    for (p <- Pattern.patterns) yield {
       val differences = p.mats.map(howMuchDifferent)
       val minDifference = differences.max
-      val avgDifference = average( differences )
-      val probability = (1.0/minDifference) max 1
-      new LetterProb( p.letter, probability )
+      val avgDifference = average(differences)
+      val probability = (1.0 / minDifference) max 1
+      new LetterProb(p.letter, probability)
     }
 
   }

@@ -38,27 +38,7 @@ object ImageProcessing {
     dst
   }
 
-  def preciseThreshold(blockSize: Int = 3, C: Double = 0)(src: Mat): Mat = {
-    val b = {
-      val d = Pattern.patternSize/15
-      if( d%2 == 1  ) d else d+1
-    }
-    clean(1,(b/2).toInt,(b/2).toInt)()(threshold(b,0)(src))
-  }
 
-  def preciseThreshold2(blockSize: Int = 3, C: Double = 0)(src: Mat): Mat = {
-    val dst = new Mat(src.height(), src.width(), CvType.CV_8UC1)
-    Imgproc.cvtColor(src, dst, Imgproc.COLOR_RGB2GRAY)
-
-
-    //Imgproc.adaptiveThreshold(dst, dst, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY_INV, blockSize, C)
-    val mean = Core.mean(src).`val`(0)
-    println( s"mean:$mean")
-    val thresh = mean - 10 //235
-    Imgproc.threshold(dst,dst,thresh,255,Imgproc.THRESH_BINARY)
-    dst
-
-  }
 
   def toColorImage(src: Mat) = {
     if (src.channels() > 1)
