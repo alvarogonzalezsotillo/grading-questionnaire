@@ -50,6 +50,23 @@ object ImageProcessing {
     }
   }
 
+
+  def canny(t1: Int = 1, t2: Int = 20)(m: Mat) = {
+    val ret = new Mat
+    Imgproc.Canny(m, ret, t1, t2)
+    ret
+  }
+
+  def meanShift(m: Mat) = {
+    val ret = new Mat
+    val spatialWindow = 20
+    val colorWindow = 20
+
+    Imgproc.pyrMeanShiftFiltering(m, ret, spatialWindow, colorWindow)
+    ret
+  }
+
+
   private def newMatrixIfNull(m:Mat) = if( m == null ) new Mat else m
 
   def clean(iterations: Int = 3, sizeOpen: Int = 7, sizeClose: Int = 7)(dst: Mat = null)(src: Mat): Mat = {

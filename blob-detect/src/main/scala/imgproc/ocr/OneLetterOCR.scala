@@ -1,7 +1,8 @@
 package imgproc.ocr
 
 import imgproc.ImageProcessing
-import org.opencv.core.{Core, Mat}
+import imgproc.ImageProcessing._
+import org.opencv.core.{MatOfPoint, Core, Mat}
 import org.opencv.imgproc.Imgproc
 
 import scala.collection.JavaConverters._
@@ -22,7 +23,38 @@ object OneLetterOCR {
   }
 
 
-  def extractPossibleLetters( m: Mat ) = Seq(m)
+  def thresholdLettersImage(m: Mat) = canny()(meanShift(m))
+
+
+  def mergeBoundingBoxes(points: Seq[MatOfPoint])(offset: Int = 3) = {
+    import imgproc.Implicits._
+    import scala.util.control.Breaks._
+
+    val bboxes = scala.collection.mutable.ArrayBuffer() ++ points.map( _.boundingBox )
+
+    var finish = false
+    while( !finish ){
+      finish = true
+      breakable {
+        for (i <- 0 until bboxes.size; j <- i + 1 until bboxes.size) {
+          if (bboxes(i).grow(offset) overlaps bboxes(j)) {
+            bboxes(i) = bboxes(i) add bboxes(j)
+            bboxes.remove(j)
+            finish = false
+            break
+          }
+        }
+      }
+    }
+
+    bboxes.toSeq
+  }
+
+  def extractPossibleLettersBBox( m: Mat ) = {
+    val thresholded = thresholdLettersImage(m)
+    val contours = findContours(thresholded)
+    mergeBoundingBoxes(contours)()
+  }
 
   def normalizeLetter(mat: Mat) : Mat = ???
 

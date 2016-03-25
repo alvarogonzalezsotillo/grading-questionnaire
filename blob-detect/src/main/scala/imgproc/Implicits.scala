@@ -111,6 +111,37 @@ object Implicits {
     lazy val area = Imgproc.contourArea(contour)
   }
 
+  implicit class MyRect(rect: Rect){
+    val minX = rect.x
+    val minY = rect.y
+    val maxX = rect.x + rect.width
+    val maxY = rect.y + rect.height
+
+    def add( r: Rect ) = {
+      val xmin = minX min r.minX
+      val ymin = minY min r.minY
+      val xmax = maxX max r.maxX
+      val ymax = maxY max r.maxY
+      new Rect( xmin, ymin, xmax-xmin, ymax-ymin)
+    }
+
+    def grow( n: Int ) = new Rect( rect.x-n, rect.y-n, rect.width+2*n, rect.height+2*n)
+
+    def overlaps( r: Rect ) = {
+      println( s"overlaps $rect $r")
+      println( s"  $minX $minY $maxX $maxY")
+      println( s"  ${r.minX} ${r.minY} ${r.maxX} ${r.maxY}")
+      val ox = (minX max r.minX) - (maxX min r.maxX)
+      val oy = (minY max r.minY) - (maxY min r.maxY)
+      println( s"  ox:$ox oy:$oy")
+      val ret = ox < 0 && oy < 0
+      println( s"  $ret" )
+      ret
+    }
+
+    lazy val asShape = new MatOfPoint( new Point(minX,minY), new Point(maxX,minY), new Point(maxX,maxY), new Point(minX,maxY) )
+  }
+
   implicit class RubyPostfixConditionals[T]( proc: => T ){
     def If( b: Boolean) = if(b) Some(proc) else None
     def If( condition: T => Boolean) = {
