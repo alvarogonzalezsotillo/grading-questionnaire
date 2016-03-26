@@ -59,7 +59,7 @@ object ImageProcessing {
 
   def meanShift(m: Mat) = {
     val ret = new Mat
-    val spatialWindow = 20
+    val spatialWindow = 2
     val colorWindow = 20
 
     Imgproc.pyrMeanShiftFiltering(m, ret, spatialWindow, colorWindow)

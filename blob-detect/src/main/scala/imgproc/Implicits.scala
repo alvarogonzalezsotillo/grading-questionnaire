@@ -117,7 +117,7 @@ object Implicits {
     val maxX = rect.x + rect.width
     val maxY = rect.y + rect.height
 
-    def add( r: Rect ) = {
+    def union( r: Rect ) = {
       val xmin = minX min r.minX
       val ymin = minY min r.minY
       val xmax = maxX max r.maxX
@@ -134,7 +134,7 @@ object Implicits {
       val ox = (minX max r.minX) - (maxX min r.maxX)
       val oy = (minY max r.minY) - (maxY min r.maxY)
       println( s"  ox:$ox oy:$oy")
-      val ret = ox < 0 && oy < 0
+      val ret = ox <= 0 && oy <= 0
       println( s"  $ret" )
       ret
     }

@@ -34,7 +34,7 @@ class OCRTest extends FlatSpec {
 
     it should "find overlap if contained" in{
       val r1 = new Rect(0,0,10,10)
-      val r2 = new Rect(1,1,2,2)
+      val r2 = new Rect(1,1,1,1)
       assert( r1 overlaps r2)
       assert( r2 overlaps r1)
     }

@@ -26,7 +26,7 @@ object OneLetterOCR {
   def thresholdLettersImage(m: Mat) = canny()(meanShift(m))
 
 
-  def mergeBoundingBoxes(points: Seq[MatOfPoint])(offset: Int = 3) = {
+  def mergeBoundingBoxes(points: Seq[MatOfPoint])(offset: Int = 2) = {
     import imgproc.Implicits._
     import scala.util.control.Breaks._
 
@@ -38,7 +38,7 @@ object OneLetterOCR {
       breakable {
         for (i <- 0 until bboxes.size; j <- i + 1 until bboxes.size) {
           if (bboxes(i).grow(offset) overlaps bboxes(j)) {
-            bboxes(i) = bboxes(i) add bboxes(j)
+            bboxes(i) = bboxes(i) union bboxes(j)
             bboxes.remove(j)
             finish = false
             break
