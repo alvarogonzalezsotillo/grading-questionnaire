@@ -56,6 +56,12 @@ object OneLetterOCR {
     mergeBoundingBoxes(contours)()
   }
 
+  def extractPossibleLettersImage( m: Mat ) = {
+    import imgproc.Implicits._
+    val contours = extractPossibleLettersBBox(m)
+    contours.map( c => submatrix(m, (c.grow(2) intersection m.rect).get ))
+  }
+
   def normalizeLetter(mat: Mat) : Mat = ???
 
   def scan( m: Mat ) : LetterResult = {

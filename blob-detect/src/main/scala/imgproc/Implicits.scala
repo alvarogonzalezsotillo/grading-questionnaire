@@ -127,16 +127,23 @@ object Implicits {
 
     def grow( n: Int ) = new Rect( rect.x-n, rect.y-n, rect.width+2*n, rect.height+2*n)
 
+    def intersection( r: Rect ) : Option[Rect]= {
+      if( !overlaps(r) ){
+        None
+      }
+      else{
+        val xmin = minX max r.minX
+        val ymin = minY max r.minY
+        val xmax = maxX min r.maxX
+        val ymax = maxY min r.maxY
+        Some(new Rect( xmin, ymin, xmax-xmin, ymax-ymin))
+      }
+    }
+
     def overlaps( r: Rect ) = {
-      println( s"overlaps $rect $r")
-      println( s"  $minX $minY $maxX $maxY")
-      println( s"  ${r.minX} ${r.minY} ${r.maxX} ${r.maxY}")
       val ox = (minX max r.minX) - (maxX min r.maxX)
       val oy = (minY max r.minY) - (maxY min r.maxY)
-      println( s"  ox:$ox oy:$oy")
-      val ret = ox <= 0 && oy <= 0
-      println( s"  $ret" )
-      ret
+      ox <= 0 && oy <= 0
     }
 
     lazy val asShape = new MatOfPoint( new Point(minX,minY), new Point(maxX,minY), new Point(maxX,maxY), new Point(minX,maxY) )

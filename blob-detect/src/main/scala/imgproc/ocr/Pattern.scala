@@ -14,7 +14,9 @@ trait Pattern{
 
 object Pattern{
 
-  val patternSize: Int = 150
+  val patternSize: Int = 25
+
+  def resizeToPatterSize(m: Mat) = ImageProcessing.stretchImage()(m,patternSize,patternSize)
 
 
   lazy val patterns: Seq[Pattern] = {
@@ -30,12 +32,14 @@ object Pattern{
       ???
     }
 
+
+
     def loadPatterns( letters: Seq[Char], prefix: String ) ={
       for( l <- letters ) yield {
         val patterns = (0 to Int.MaxValue).
           map(i => loadPattern(l,prefix,i) ).
           takeWhile( _ != null ).
-          map( m => ImageProcessing.stretchImage()(m,patternSize,patternSize) )
+          map( resizeToPatterSize )
         new PatternI( l, patterns )
       }
     }

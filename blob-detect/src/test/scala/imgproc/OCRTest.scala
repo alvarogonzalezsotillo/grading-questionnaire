@@ -7,6 +7,7 @@ package imgproc
 import imgproc.ImageProcessing._
 import imgproc.TestUtil._
 import imgproc.ocr.OneLetterOCR._
+import imgproc.ocr.Pattern
 import imgproc.steps.ProcessingStep
 import imgproc.steps.ProcessingStep.Implicits._
 import org.junit.runner.RunWith
@@ -91,11 +92,20 @@ class OCRTest extends FlatSpec {
       }
     }
 
-    it should "find letter contours from thresholded image" in{
+    it should "find letter candidate contours from thresholded image" in{
       for (f <- fs; cells = cellsOfTestImage(f) ; (c, index) <- cells.zipWithIndex ){
         val contours = extractPossibleLettersBBox(c)
         drawContours(c, contours.map( _.asShape ), new Scalar(255,0,255), 1 )
         saveTestImage(s"14-${index + 1}-$f", c)
+      }
+    }
+
+    it should "find candidate letters from image" in{
+      for (f <- fs; cells = cellsOfTestImage(f) ; (c, index) <- cells.zipWithIndex ){
+        val candidates = extractPossibleLettersImage(c).map( Pattern.resizeToPatterSize )
+        for( (candidate,candidateIndex) <- candidates.zipWithIndex ) {
+          saveTestImage(s"15-${index + 1}-$candidateIndex-$f", candidate)
+        }
       }
     }
 
