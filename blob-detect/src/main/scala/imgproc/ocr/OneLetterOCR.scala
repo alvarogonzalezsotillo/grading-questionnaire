@@ -80,12 +80,21 @@ object OneLetterOCR {
       grayscale
     }
 
+    def invertGrayscale( m: Mat ) = {
+      val white = new Mat(grayscale.rows(),grayscale.cols(),grayscale.`type`(),new Scalar(255))
+      Core.subtract(white,m,m)
+      m
+    }
+
     def equalize = {
       Imgproc.equalizeHist(grayscale,grayscale)
       //Core.LUT(grayscale,lut,grayscale)
       //Contrib.applyColorMap(grayscale,grayscale,Contrib.COLORMAP_PINK)
-      val white = new Mat(grayscale.rows(),grayscale.cols(),grayscale.`type`(),new Scalar(255))
-      Core.subtract(white,grayscale,grayscale)
+      //invertGrayscale(grayscale)
+      val t = Core.mean(grayscale).`val`(0)
+      Imgproc.threshold(grayscale,grayscale,t,255,Imgproc.THRESH_TRUNC)
+      invertGrayscale(grayscale)
+      Imgproc.threshold(grayscale,grayscale,t,-1,Imgproc.THRESH_TOZERO)
       grayscale
     }
 
