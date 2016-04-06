@@ -1,8 +1,9 @@
 package imgproc.ocr
 
-import imgproc.ImageProcessing
+import imgproc.{AnswerMatrixMeasures, ImageProcessing}
 import imgproc.ImageProcessing._
-import org.opencv.core.{MatOfPoint, Core, Mat}
+import org.opencv.contrib.Contrib
+import org.opencv.core._
 import org.opencv.imgproc.Imgproc
 
 import scala.collection.JavaConverters._
@@ -23,23 +24,23 @@ object OneLetterOCR {
   }
 
 
-  def thresholdLettersImage(m: Mat) = canny()(meanShift(m))
+  def thresholdLettersImage(m: Mat) = canny()(meanShift()(m))
 
 
   def mergeBoundingBoxes(points: Seq[MatOfPoint])(offset: Int = 2) = {
     import imgproc.Implicits._
     import scala.util.control.Breaks._
 
-    val bboxes = scala.collection.mutable.ArrayBuffer() ++ points.map( _.boundingBox )
+    val bBoxes = scala.collection.mutable.ArrayBuffer() ++ points.map( _.boundingBox )
 
     var finish = false
     while( !finish ){
       finish = true
       breakable {
-        for (i <- 0 until bboxes.size; j <- i + 1 until bboxes.size) {
-          if (bboxes(i).grow(offset) overlaps bboxes(j)) {
-            bboxes(i) = bboxes(i) union bboxes(j)
-            bboxes.remove(j)
+        for (i <- 0 until bBoxes.size; j <- i + 1 until bBoxes.size) {
+          if (bBoxes(i).grow(offset) overlaps bBoxes(j)) {
+            bBoxes(i) = bBoxes(i) union bBoxes(j)
+            bBoxes.remove(j)
             finish = false
             break
           }
@@ -47,12 +48,19 @@ object OneLetterOCR {
       }
     }
 
-    bboxes.toSeq
+    bBoxes.toSeq
+  }
+
+  val letterFragmentToCellRatio = 500
+
+  def findContoursOfLetterFragment( m: Mat, minAreaForLetterFragment: Double = AnswerMatrixMeasures.cellArea/letterFragmentToCellRatio ) = {
+    import imgproc.Implicits._
+    findContours(m).filter( _.boundingBox.area > minAreaForLetterFragment )
   }
 
   def extractPossibleLettersBBox( m: Mat ) = {
     val thresholded = thresholdLettersImage(m)
-    val contours = findContours(thresholded)
+    val contours = findContoursOfLetterFragment(thresholded)
     mergeBoundingBoxes(contours)()
   }
 
@@ -62,7 +70,28 @@ object OneLetterOCR {
     contours.map( c => submatrix(m, (c.grow(2) intersection m.rect).get ))
   }
 
-  def normalizeLetter(mat: Mat) : Mat = ???
+
+  def normalizeLetter(mat: Mat) : Mat = {
+    val grayscale = toGrayscaleImage(mat)
+    def gray = {
+
+      val t = Core.mean(grayscale).`val`(0) - 1
+      Imgproc.threshold(grayscale, grayscale, t, 255, Imgproc.THRESH_BINARY_INV)
+      grayscale
+    }
+
+    def equalize = {
+      Imgproc.equalizeHist(grayscale,grayscale)
+      //Core.LUT(grayscale,lut,grayscale)
+      //Contrib.applyColorMap(grayscale,grayscale,Contrib.COLORMAP_PINK)
+      val white = new Mat(grayscale.rows(),grayscale.cols(),grayscale.`type`(),new Scalar(255))
+      Core.subtract(white,grayscale,grayscale)
+      grayscale
+    }
+
+    equalize
+  }
+
 
   def scan( m: Mat ) : LetterResult = {
 

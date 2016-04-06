@@ -31,9 +31,14 @@ object ImageProcessing {
     imageio
   }
 
-  def threshold(blockSize: Int = 101, C: Double = 3)(src: Mat): Mat = {
+  def toGrayscaleImage( src: Mat ) = {
     val dst = new Mat(src.height(), src.width(), CvType.CV_8UC1)
     Imgproc.cvtColor(src, dst, Imgproc.COLOR_RGB2GRAY)
+    dst
+  }
+
+  def threshold(blockSize: Int = 101, C: Double = 3)(src: Mat): Mat = {
+    val dst = toGrayscaleImage(src)
     Imgproc.adaptiveThreshold(dst, dst, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY_INV, blockSize, C)
     dst
   }
@@ -57,11 +62,8 @@ object ImageProcessing {
     ret
   }
 
-  def meanShift(m: Mat) = {
+  def meanShift(spatialWindow : Int = 2, colorWindow:  Int = 20)(m: Mat) = {
     val ret = new Mat
-    val spatialWindow = 2
-    val colorWindow = 20
-
     Imgproc.pyrMeanShiftFiltering(m, ret, spatialWindow, colorWindow)
     ret
   }

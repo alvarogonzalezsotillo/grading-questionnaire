@@ -86,7 +86,7 @@ class OCRTest extends FlatSpec {
 
     it should "find contours from thresholded image" in{
       for (f <- fs; cells = cellsOfTestImage(f) ; (c, index) <- cells.zipWithIndex ){
-        val contours = findContours(thresholdLettersImage(c))
+        val contours = findContoursOfLetterFragment(thresholdLettersImage(c))
         drawContours(c, contours, new Scalar(255,0,255), 1 )
         saveTestImage(s"13-${index + 1}-$f", c)
       }
@@ -109,5 +109,15 @@ class OCRTest extends FlatSpec {
       }
     }
 
+    behavior of "Candidate letter"
+
+    it should "be normalized" in{
+      for (f <- fs; cells = cellsOfTestImage(f) ; (c, index) <- cells.zipWithIndex ){
+        val candidates = extractPossibleLettersImage(c).map( Pattern.resizeToPatterSize )
+        for( (candidate,candidateIndex) <- candidates.zipWithIndex ) {
+          saveTestImage(s"16-${index + 1}-$candidateIndex-$f", normalizeLetter(candidate) )
+        }
+      }
+    }
   }
 }

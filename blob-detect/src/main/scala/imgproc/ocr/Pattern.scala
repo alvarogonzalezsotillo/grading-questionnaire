@@ -14,7 +14,7 @@ trait Pattern{
 
 object Pattern{
 
-  val patternSize: Int = 25
+  val patternSize: Int = 20
 
   def resizeToPatterSize(m: Mat) = ImageProcessing.stretchImage()(m,patternSize,patternSize)
 

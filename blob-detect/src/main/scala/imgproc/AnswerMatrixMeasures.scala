@@ -121,4 +121,6 @@ object AnswerMatrixMeasures {
       new Rect(x.toInt, y.toInt, w.toInt, h.toInt)
     }
   }
+
+  val cellArea = cells(1)(0).area()
 }
