@@ -111,6 +111,18 @@ object Implicits {
     lazy val area = Imgproc.contourArea(contour)
   }
 
+  implicit def toMat( array: Array[Array[Int]] ) = {
+    val rows = array.size
+    val cols = array(0).size
+    val ret = new Mat(rows,cols,CvType.CV_8UC1)
+    val buffer = new Array[Byte](1)
+    for( r <- 0 until rows ; c <- 0 until cols ){
+      buffer(0) = array(r)(c).toByte
+      ret.put(r,c,buffer)
+    }
+    ret
+  }
+
   implicit class MyRect(rect: Rect){
     val minX = rect.x
     val minY = rect.y

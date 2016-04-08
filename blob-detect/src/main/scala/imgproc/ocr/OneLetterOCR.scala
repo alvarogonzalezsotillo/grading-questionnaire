@@ -17,7 +17,10 @@ object OneLetterOCR {
     assert(probability >= 0 && probability <= 1)
   }
   
-  type LetterResult = Seq[LetterProb]
+  implicit class LetterResult( results: Seq[LetterProb] ){
+    def best = results.maxBy( _.probability ).char
+    override def toString = "best:" + best + " -- " + results.toString
+  }
 
   def average[T]( ts: Iterable[T] )( implicit num: Numeric[T] ) = {
     num.toDouble( ts.sum ) / ts.size
