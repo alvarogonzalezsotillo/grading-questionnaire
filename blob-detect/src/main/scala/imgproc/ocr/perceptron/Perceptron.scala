@@ -136,7 +136,6 @@ class Perceptron( nodesInInternalLayers: Int = 50, internalLayers: Int = 2, patt
       val doubles: Array[Double] = mOutput.get(0, labelOfLetter(l) )
       val out = doubles(0)/255
       val prob = normalizeProbability( out )
-      println( s"l:$l -> $out -> $prob")
       LetterProb(l, prob )
     }
   }

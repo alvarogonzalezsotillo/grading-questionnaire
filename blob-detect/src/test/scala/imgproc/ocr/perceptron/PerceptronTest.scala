@@ -33,7 +33,7 @@ class PerceptronTest extends FlatSpec {
       if (c == 0) 255 else 0
     }
 
-    def noise( matrix: Array[Array[Int]], times: Int = patternSize ) = {
+    def noise( matrix: Array[Array[Int]], times: Int = patternSize*3 ) = {
       for( _ <- 1 to times ) {
         val f = Random.nextInt(matrix.length)
         val c = Random.nextInt(matrix(0).length)
@@ -51,14 +51,11 @@ class PerceptronTest extends FlatSpec {
       println( "--------")
     }
 
-    val samples = 10
-    val A = Iterator.continually[Mat]( noise(a) ).take(samples).toSeq
-    val B = Iterator.continually[Mat]( noise(b) ).take(samples).toSeq
-    val C = Iterator.continually[Mat]( noise(c) ).take(samples).toSeq
-    val D = Iterator.continually[Mat]( noise(d) ).take(samples).toSeq
+    val samples = 1000
 
+    val letters = Map( 'A' -> a _, 'B' -> b _ , 'C'-> c _ , 'D' -> d _ )
 
-    val data = Map('A' -> A, 'B' -> B, 'C' -> C, 'D' -> D)
+    val data = letters.map{ case(l,f) => l -> Iterator.continually[Mat]( noise(f()) ).take(samples).toSeq}
 
 
     val p = new Perceptron(patternSize, 2, patternSize)
@@ -66,17 +63,13 @@ class PerceptronTest extends FlatSpec {
     println(s"iterations:$iterations")
 
 
-    val predictionA = p.predict(noise(a))
-    println(s"predictionA:$predictionA")
+    for( (l,f) <- letters ){
 
-    val predictionB = p.predict(noise(b))
-    println(s"predictionB:$predictionB")
+      val prediction = p.predict(noise(f()) )
+      println(s"prediction:$prediction")
+      assert( prediction.best == l )
+    }
 
-    val predictionC = p.predict(noise(c))
-    println(s"predictionC:$predictionC")
-
-    val predictionD = p.predict(noise(d))
-    println(s"predictionD:$predictionD")
 
     dump(noise(a))
   }
