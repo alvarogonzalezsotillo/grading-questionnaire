@@ -1,6 +1,7 @@
 package imgproc.ocr.perceptron
 
 import imgproc.ImageProcessing
+import imgproc.ocr.Pattern
 import org.junit.runner.RunWith
 import org.opencv.core.Mat
 import org.scalatest.FlatSpec
@@ -26,13 +27,13 @@ class PerceptronTest extends FlatSpec {
 
 
   "A pattern" should "be converted to a bidimensional array" in {
-    val m = ImageProcessing.readImageFromResources("A.png", getClass() )
+    val m = ImageProcessing.readImageFromResources("/imgproc/ocr/perceptron/A.png", getClass() )
     val array = m.toIntArray
     dump( array )
   }
 
   "Simple forms" should "be inferred" in {
-    val patternSize = 5
+    val patternSize = Pattern.patternSize
 
     def noise( matrix: Array[Array[Int]], times: Int = patternSize*3 ) = {
       for( _ <- 1 to times ) {
@@ -60,7 +61,7 @@ class PerceptronTest extends FlatSpec {
     }
 
 
-    val samples = 1000
+    val samples = 10000
 
     val letters = Map( 'A' -> a _, 'B' -> b _ , 'C'-> c _ , 'D' -> d _ )
 
