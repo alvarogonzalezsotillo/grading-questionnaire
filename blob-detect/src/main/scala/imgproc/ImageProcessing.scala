@@ -14,9 +14,9 @@ object ImageProcessing {
   import imgproc.Implicits._
 
 
-  def readImageFromResources(f: String): Mat = {
+  def readImageFromResources[T](f: String, clazz: java.lang.Class[T] = ImageProcessing.getClass ): Mat = {
     def mat() = {
-      val url = getClass().
+      val url = clazz.
         getResource(f).
         getPath
       println("readImageFromResources:" + f + " --> " + url)

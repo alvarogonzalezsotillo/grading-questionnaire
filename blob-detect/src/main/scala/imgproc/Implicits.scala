@@ -85,6 +85,16 @@ object Implicits {
   implicit class MyMat(m:Mat){
     lazy val rect = new Rect(0,0,m.width(),m.height())
     lazy val area = rect.area()
+    lazy val toIntArray = {
+      val ret = new Array[Array[Int]](m.rows())
+      for( r <- 0 until m.rows ){
+        ret(r) = new Array[Int](m.cols())
+        for( c <- 0 until m.cols ){
+          ret(r)(c) = m.get(r,c)(0).toInt
+        }
+      }
+      ret
+    }
   }
 
   implicit class Shape(contour: MatOfPoint){

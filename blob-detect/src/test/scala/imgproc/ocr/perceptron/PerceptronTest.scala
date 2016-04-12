@@ -1,5 +1,6 @@
 package imgproc.ocr.perceptron
 
+import imgproc.ImageProcessing
 import org.junit.runner.RunWith
 import org.opencv.core.Mat
 import org.scalatest.FlatSpec
@@ -14,9 +15,34 @@ class PerceptronTest extends FlatSpec {
 
   import imgproc.Implicits._
 
+  def dump( m: Array[Array[Int]]) = {
+    println( "--------")
+    for( r <- 0 until m.length ){
+      println( m(r).mkString("\t") )
+    }
+    println( "--------")
+  }
+
+
+
+  "A pattern" should "be converted to a bidimensional array" in {
+    val m = ImageProcessing.readImageFromResources("A.png", getClass() )
+    val array = m.toIntArray
+    dump( array )
+  }
 
   "Simple forms" should "be inferred" in {
     val patternSize = 5
+
+    def noise( matrix: Array[Array[Int]], times: Int = patternSize*3 ) = {
+      for( _ <- 1 to times ) {
+        val f = Random.nextInt(matrix.length)
+        val c = Random.nextInt(matrix(0).length)
+        val v = if (Random.nextBoolean) 255 else 0
+        matrix(f)(c) = v
+      }
+      matrix
+    }
 
     def a = Array.tabulate[Int](patternSize, patternSize) { (f, c) =>
       if (f < c) 255 else 0
@@ -33,23 +59,6 @@ class PerceptronTest extends FlatSpec {
       if (c == 0) 255 else 0
     }
 
-    def noise( matrix: Array[Array[Int]], times: Int = patternSize*3 ) = {
-      for( _ <- 1 to times ) {
-        val f = Random.nextInt(matrix.length)
-        val c = Random.nextInt(matrix(0).length)
-        val v = if (Random.nextBoolean) 255 else 0
-        matrix(f)(c) = v
-      }
-      matrix
-    }
-
-    def dump( m: Array[Array[Int]]) = {
-      println( "--------")
-      for( r <- 0 until m.length ){
-        println( m(r).mkString("\t") )
-      }
-      println( "--------")
-    }
 
     val samples = 1000
 
