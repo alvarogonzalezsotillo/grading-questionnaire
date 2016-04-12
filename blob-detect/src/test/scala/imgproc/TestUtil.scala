@@ -1,7 +1,7 @@
 package imgproc
 
 import java.io.File
-
+import javax.imageio.ImageIO
 import org.opencv.core.Mat
 import org.opencv.highgui.Highgui
 
@@ -43,8 +43,14 @@ object TestUtil {
   )
 
   def saveTestImage(name: String, m: Mat) = {
+    import imgproc.Implicits._
     println( s"saving ${testImgPath(name).getAbsolutePath}")
-    Highgui.imwrite(testImgPath(name).toString, m)
+    // IT IS NOT A GOOD IDEA TO USE OPENCV, SINCE THE VERSION OF LIBPNG SHOULD MATCH
+    //Highgui.imwrite(testImgPath(name).toString, m)
+    val format = name.takeRight(3).toLowerCase
+    assert( name.takeRight(4).head == '.' )
+    ImageIO.write(m,format, testImgPath(name))
+
   }
 
 

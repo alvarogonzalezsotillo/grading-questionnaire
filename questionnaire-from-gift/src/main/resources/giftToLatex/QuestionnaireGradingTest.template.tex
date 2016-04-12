@@ -218,10 +218,11 @@
 \newcommand{\AnswerCellTemplate}[1]
 {%
   \setlength{\arrayrulewidth}{.02em}%
-  \begin{tabular}{|p{0.7cm} p{0.01cm} !{\color{light-gray}\vrule}p{1.29cm}!{\color{light-gray}\vrule}}%
-    \arrayrulecolor{light-gray}\cline{3-3}%
-    \cellcolor{black}\textcolor{white}{\hfill #1 \hfill} &  & \\[2pt]%
-    \arrayrulecolor{light-gray}\cline{3-3}%
+  %\setlength{\tabcolsep}{20pt}
+  \begin{tabular}{p{0.7cm}@{\hskip 0.4cm}!{\color{light-gray}\vrule}p{1.3cm}!{\color{light-gray}\vrule}}%
+    \arrayrulecolor{light-gray}\cline{2-2}%
+    \cellcolor{black}\textcolor{white}{\hfill #1 \hfill} &  \hfill \\[2pt]%
+    \arrayrulecolor{light-gray}\cline{2-2}%
   \end{tabular}%
 }
 
