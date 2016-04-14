@@ -9,7 +9,7 @@ object AnswerMatrixMeasures {
 
   val columns = 5
   val destinationWidth = 800.0
-  val cellHeaderToHeaderWidthRatio = 0.7 / (0.7 + 1.3)
+  val cellHeaderToHeaderWidthRatio = (0.7 + 0.3) / (0.7 + 1.3)
   val columnSpaceToCellWidthRatio = 0.15
   val matrixWithToTopOfQRRatio = 0.20
   val matrixWithToLeftOfQRRatio = 0.02
@@ -86,30 +86,7 @@ object AnswerMatrixMeasures {
   }
 
 
-  def cellsAsMatOfPoint(questions: Int): Seq[MatOfPoint] = {
-    def xPositionOfCellColumn(column: Int) = column * (cellWidth + columnSpaceWidth)
-    def yPositionOfCellRow(row: Int) = row * destinationHeight(questions) / rows(questions)
-
-    if (false) {
-      // COLUMNS
-      for (c <- 0 until columns) yield {
-        val x = xPositionOfCellColumn(c)
-        val h = destinationHeight(questions)
-        new MatOfPoint((x, 0.0), (x + cellWidth, 0.0), (x + cellWidth, h), (x, h))
-      }
-    }
-    else {
-      for (c <- 0 until columns; r <- 0 until rows(questions)) yield {
-        val x = xPositionOfCellColumn(c) + cellHeaderWidth
-        val h = destinationHeight(questions) / rows(questions)
-        val y = yPositionOfCellRow(r)
-        new MatOfPoint((x, y), (x + cellWidth - cellHeaderWidth, y), (x + cellWidth - cellHeaderWidth, y + h), (x, y + h))
-      }
-
-    }
-  }
-
-  def cells(questions: Int): Seq[Rect] = {
+    def cells(questions: Int): Seq[Rect] = {
     def xPositionOfCellColumn(column: Int) = column * (cellWidth + columnSpaceWidth)
     def yPositionOfCellRow(row: Int) = row * destinationHeight(questions) / rows(questions)
 
