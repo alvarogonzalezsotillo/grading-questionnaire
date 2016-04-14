@@ -55,7 +55,7 @@ object GiftToLatex extends LazyLogging{
       '%' -> """\%""",
       '&' -> """\&""",
       '$' -> """\$""",
-      '\\' -> """\textbackslash""",
+      '\\' -> """{\textbackslash}""",
       '{' -> """\{""",
       '}' -> """\}""",
       '^' -> """\string^"""

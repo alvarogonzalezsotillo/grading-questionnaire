@@ -54,8 +54,8 @@ class GiftParserTest extends FlatSpec {
 
     val s = "Incorrect{ =good =also good ~bad }"
 
-    val t = Try( GiftParser.parse(s) )
-    assert( t.isFailure )
+    val t = Try(GiftParser.parse(s))
+    assert(t.isFailure)
   }
 
   val singleClosedQuestion =
@@ -114,11 +114,11 @@ class GiftParserTest extends FlatSpec {
     }
   }
 
-  def testFile( name: String ) = new File( new File("./build/gift-parser/"), name )
+  def testFile(name: String) = new File(new File("./build/gift-parser/"), name)
 
   "A generated file" should "parse" in {
 
-    val s = TestGiftGenerator.generateGift(40,4)
+    val s = TestGiftGenerator.generateGift(40, 4)
     val f = createFile(renderGift(s), testFile("generated.gift"))
 
     val ret = GiftParser.parse(f)
@@ -135,7 +135,7 @@ class GiftParserTest extends FlatSpec {
   }
 
 
-  "A multiline question" should "parse" in{
+  "A multiline question" should "parse" in {
     val s = """Una pregunta
                multilínea
                que debería funcionar{
@@ -146,14 +146,14 @@ class GiftParserTest extends FlatSpec {
       case GiftError(msg, line, column, lineContents) =>
         fail(msg + "-" + line + "-" + column + "-" + lineContents)
       case GiftFile(questions) =>
-        assert(questions.size==1)
-        assert(questions(0).text contains "Una pregunta" )
-        assert(questions(0).text contains "multilínea" )
-        assert(questions(0).text contains "que debería funcionar" )
+        assert(questions.size == 1)
+        assert(questions(0).text contains "Una pregunta")
+        assert(questions(0).text contains "multilínea")
+        assert(questions(0).text contains "que debería funcionar")
     }
   }
 
-  "= and ~" should "parse if escaped" in{
+  "= and ~" should "parse if escaped" in {
     val s =
       """Una pregunta{
         |  = La respuesta \=
@@ -166,11 +166,30 @@ class GiftParserTest extends FlatSpec {
       case GiftError(msg, line, column, lineContents) =>
         fail(msg + "-" + line + "-" + column + "-" + lineContents)
       case GiftFile(questions) =>
-        assert(questions.size==1)
+        assert(questions.size == 1)
         val question = questions(0).asInstanceOf[QuestionnaireQuestion]
         assert(question.answers.size == 2)
     }
 
+  }
+
+  "backslash alone (\\)" should "be parsed" in {
+    val s =
+      """Una pregunta{
+        |  =La respuesta correcta \
+        |  ~La que no \ es
+        |}
+      """.stripMargin
+
+    val ret = GiftParser.parse(s)
+    ret match {
+      case GiftError(msg, line, column, lineContents) =>
+        fail(msg + "-" + line + "-" + column + "-" + lineContents)
+      case GiftFile(questions) =>
+        assert(questions.size == 1)
+        val question = questions(0).asInstanceOf[QuestionnaireQuestion]
+        assert(question.answers.size == 2)
+    }
   }
 
 }
