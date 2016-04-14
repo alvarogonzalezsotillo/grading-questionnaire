@@ -32,7 +32,7 @@ class GiftParser extends RegexParsers {
 
   // ANY CHARACTERS, NOT INCLUDING THE FIRST }, ~ OR =
   // Note: }, ~ and = can be escaped as \}, \~ and \=
-  def answerBody: Parser[String] = """(\\=|\\\}|\\~|\\=|[^\\\}~=])*""".r | failure("}, = or ~ expected")
+  def answerBody: Parser[String] = """(\\=|\\\}|\\~|\\=|[^\}~=])*""".r | failure("}, = or ~ expected")
 
   // ANY CHARACTERS, NOT INCLUDING THE FIRST {
   def questionText: Parser[String] = """[^\{]*""".r | failure("{ expected")

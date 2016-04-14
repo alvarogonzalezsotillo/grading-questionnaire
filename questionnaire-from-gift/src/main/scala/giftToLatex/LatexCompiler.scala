@@ -74,6 +74,7 @@ object LatexCompiler extends LazyLogging{
     if( keepTexFile ){
       val texOutputFile = new File( outputFile.getParentFile, texFileName )
       move( texFile, texOutputFile )
+      extractResourcesToDir(texOutputFile.getParentFile)
     }
 
     cleanDirOrFile(dir)
