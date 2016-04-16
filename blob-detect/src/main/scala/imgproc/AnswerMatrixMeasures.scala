@@ -88,16 +88,18 @@ object AnswerMatrixMeasures {
 
     def cells(questions: Int): Seq[Rect] = {
     def xPositionOfCellColumn(column: Int) = column * (cellWidth + columnSpaceWidth)
-    def yPositionOfCellRow(row: Int) = row * destinationHeight(questions) / rows(questions)
+    def yPositionOfCellRow(row: Int) = row * cellHeight
 
     for (c <- 0 until columns; r <- 0 until rows(questions)) yield {
       val x = xPositionOfCellColumn(c) + cellHeaderWidth
-      val h = destinationHeight(questions) / rows(questions)
+      val h = cellHeight
       val y = yPositionOfCellRow(r)
       val w = cellWidth - cellHeaderWidth
       new Rect(x.toInt, y.toInt, w.toInt, h.toInt)
     }
   }
 
+  val cellHeight = destinationHeight(20) / rows(20)
+  
   val cellArea = cells(1)(0).area()
 }

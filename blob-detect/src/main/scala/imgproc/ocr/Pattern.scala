@@ -1,16 +1,15 @@
 package imgproc.ocr
 
+import java.io.File
+import javax.imageio.ImageIO
+
 import imgproc.ImageProcessing
 import org.opencv.core.Mat
+import imgproc.Implicits._
 
 /**
  * Created by alvaro on 3/02/16.
  */
-
-trait Pattern{
-  val letter: Char
-  val mats: Seq[Mat]
-}
 
 object Pattern{
 
@@ -18,37 +17,29 @@ object Pattern{
 
   def resizeToPatterSize(m: Mat) = ImageProcessing.stretchImage()(m,patternSize,patternSize)
 
+  type TrainingPatterns = Map[Char,Seq[Mat]]
 
-  lazy val patterns: Seq[Pattern] = {
+  lazy val trainingPatterns:  TrainingPatterns = {
 
-    class PatternI( val letter: Char, val mats: Seq[Mat] ) extends Pattern
+    val baseDir = new File("blob-detect/src/main/resources/training-models/")
 
 
-    def loadPattern( letter: Char, prefix: String, index: Int ) = {
-      /*
-      val fileName = String.format( "/ocr/patterns/%s-%c-%03d.png", prefix, letter.toLower, index )
-      ImageProcessing.readImageFromResources(fileName)
-      */
-      ???
+    def loadPattern( letter: Char ) = {
+      val f = new File(baseDir, s"uppercase-${letter.toLower}")
+      f.listFiles().map( ImageIO.read )
     }
 
 
 
-    def loadPatterns( letters: Seq[Char], prefix: String ) ={
-      for( l <- letters ) yield {
-        val patterns = (0 to Int.MaxValue).
-          map(i => loadPattern(l,prefix,i) ).
-          takeWhile( _ != null ).
-          map( resizeToPatterSize )
-        new PatternI( l, patterns )
+    def loadPatterns( letters: Seq[Char]  ) = {
+      val pairs = for( l <- letters ) yield{
+        l -> loadPattern(l).map(m => resizeToPatterSize(m)).toSeq
       }
+      Map( pairs :_* )
     }
 
-    val letters = ('a' to 'd')
-    val lowerCaseLetters = loadPatterns( letters.map(_.toLower), "lower" )
-    val upperCaseLetters = loadPatterns( letters.map(_.toUpper), "upper" )
 
-    lowerCaseLetters ++ upperCaseLetters
+    loadPatterns( 'A' to 'D' )
   }
 
 }

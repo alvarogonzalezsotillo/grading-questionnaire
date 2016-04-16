@@ -1,5 +1,6 @@
 package imgproc.ocr
 
+import imgproc.ocr.perceptron.Perceptron
 import imgproc.{AnswerMatrixMeasures, ImageProcessing}
 import imgproc.ImageProcessing._
 import org.opencv.contrib.Contrib
@@ -54,30 +55,42 @@ object OneLetterOCR {
     bBoxes.toSeq
   }
 
-  val letterFragmentToCellRatio = 500
+  val letterFragmentToCellRatio = 400
 
   def findContoursOfLetterFragment( m: Mat, minAreaForLetterFragment: Double = AnswerMatrixMeasures.cellArea/letterFragmentToCellRatio ) = {
     import imgproc.Implicits._
+
     findContours(m).filter( _.boundingBox.area > minAreaForLetterFragment )
   }
 
   def extractPossibleLettersBBox( m: Mat ) = {
     val thresholded = thresholdLettersImage(m)
     val contours = findContoursOfLetterFragment(thresholded)
-    mergeBoundingBoxes(contours)()
+    val bboxes = mergeBoundingBoxes(contours)()
+
+
+    import AnswerMatrixMeasures._
+
+    val filters : Seq[ Rect => Boolean ] = Seq(
+      _.width > (cellWidth - cellHeaderWidth)/10,
+      _.width < (cellWidth - cellHeaderWidth)/3,
+      _.height > cellHeight/2
+    )
+
+    filters.foldLeft(bboxes)( (b,f) => b.filter(f) )
   }
 
   def extractPossibleLettersImage( m: Mat ) = {
     import imgproc.Implicits._
     val contours = extractPossibleLettersBBox(m)
-    contours.map( c => submatrix(m, (c.grow(2) intersection m.rect).get ))
+    contours.map( c => submatrix(m, (c.grow(3) intersection m.rect).get ))
   }
 
 
   def normalizeLetter(mat: Mat) : Mat = {
     val grayscale = toGrayscaleImage(mat)
-    def gray = {
 
+    def gray = {
       val t = Core.mean(grayscale).`val`(0) - 1
       Imgproc.threshold(grayscale, grayscale, t, 255, Imgproc.THRESH_BINARY_INV)
       grayscale
@@ -104,25 +117,26 @@ object OneLetterOCR {
     equalize
   }
 
+}
 
-  def scan( m: Mat ) : LetterResult = {
 
-    val normalized = normalizeLetter(m)
 
-    def howMuchDifferent(m: Mat): Double = {
-      ???
-    }
+abstract class OneLetterOCR{
+  import OneLetterOCR._
 
-    for (p <- Pattern.patterns) yield {
-      val differences = p.mats.map(howMuchDifferent)
-      val minDifference = differences.max
-      val avgDifference = average(differences)
-      val probability = (1.0 / minDifference) max 1
-      new LetterProb(p.letter, probability)
-    }
+  protected val perceptron : Perceptron
 
+  def predict( pattern: Mat ) : LetterResult = perceptron.predict( normalizeLetter(pattern) )
+}
+
+class TrainedOneLetterOCR extends OneLetterOCR{
+  import OneLetterOCR._
+
+  val perceptron = new Perceptron()
+
+  val normalizedTrainingPatterns = Pattern.trainingPatterns.map{ case(c,mats) =>
+    c -> mats.map(normalizeLetter)
   }
 
-  def apply( m: Mat ) = scan(m)
-
+  perceptron.train(normalizedTrainingPatterns)
 }

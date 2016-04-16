@@ -4,6 +4,7 @@ import java.util
 
 import imgproc.ocr.OneLetterOCR.{LetterProb, LetterResult}
 import imgproc.ocr.Pattern
+import imgproc.ocr.Pattern.TrainingPatterns
 import org.opencv.core.{CvType, Mat}
 import org.opencv.ml.CvANN_MLP
 
@@ -67,9 +68,9 @@ class Perceptron( nodesInInternalLayers: Int = 50, internalLayers: Int = 2, patt
 
   val ann = new CvANN_MLP
 
-  def train( data: Map[Char,Seq[Mat]], alpha: Double = 1,  beta: Double = 1, activateFunc : Int = CvANN_MLP.SIGMOID_SYM) : Int = {
+  def train( data: TrainingPatterns, alpha: Double = 1,  beta: Double = 1, activateFunc : Int = CvANN_MLP.SIGMOID_SYM) : Int = {
 
-    def trainDataset( data: Map[Char,Seq[Mat]] ) : (Mat,Mat,Mat) = {
+    def trainDataset : (Mat,Mat,Mat) = {
       val letters = data.keys.toList
 
       assert( letters.toSet == (0 until letters.size).map( letterOfLabel ).toSet )
@@ -99,14 +100,13 @@ class Perceptron( nodesInInternalLayers: Int = 50, internalLayers: Int = 2, patt
       }
 
       (input,labels,weights)
-
     }
 
 
 
     ann.create(layerSizes(data.size), activateFunc, alpha, beta)
 
-    val (input,labels,weights) = trainDataset( data )
+    val (input,labels,weights) = trainDataset
     ann.train( input, labels, weights )
   }
 
