@@ -1,5 +1,6 @@
 package imgproc.ocr
 
+import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
@@ -21,12 +22,25 @@ object Pattern{
 
   lazy val trainingPatterns:  TrainingPatterns = {
 
-    val baseDir = new File("blob-detect/src/main/resources/training-models/")
+    val baseDirs = Seq(
+      new File("blob-detect/src/main/resources/training-models/"),
+      new File("src/main/resources/training-models/")
+    )
+
 
 
     def loadPattern( letter: Char ) = {
-      val f = new File(baseDir, s"uppercase-${letter.toLower}")
-      f.listFiles().map( ImageIO.read )
+      val a = for( baseDir <- baseDirs ) yield {
+        val f = new File(baseDir, s"uppercase-${letter.toLower}")
+        val files = f.listFiles()
+        if( files != null ) files.map(ImageIO.read) else null
+      }
+
+      val b = a.filter(_!=null)
+
+      val c = b.flatten
+
+      c
     }
 
 
