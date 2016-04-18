@@ -26,3 +26,5 @@ project/plugins/project/
 *.out
 *.aux
 
+gradle.properties
+
