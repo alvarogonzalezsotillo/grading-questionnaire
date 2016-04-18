@@ -27,7 +27,7 @@ class PerceptronTest extends FlatSpec {
 
 
   "A pattern" should "be converted to a bidimensional array" in {
-    val m = ImageProcessing.readImageFromResources("/imgproc/ocr/perceptron/A.png", getClass() )
+    val m = ImageProcessing.readImageFromResources("/imgproc/to-recognize-a.png", getClass() )
     val array = m.toIntArray
     dump( array )
   }
