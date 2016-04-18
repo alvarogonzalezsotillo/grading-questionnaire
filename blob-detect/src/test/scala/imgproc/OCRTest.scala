@@ -124,11 +124,11 @@ class OCRTest extends FlatSpec {
 
   {
 
-    def recognize(c: Char) = {
+    def recognize(letter: Char) = {
       val ocr = new TrainedOneLetterOCR()
-      val m = readImageFromResources(s"to-recognize-$c.png")
+      val m = readImageFromResources(s"to-recognize-$letter.png")
       val prediction = ocr.predict(m)
-      assert(prediction.best.toLower == c)
+      assert(prediction.best.toLower == letter)
     }
 
     behavior of "A trained ocr"
@@ -144,9 +144,11 @@ class OCRTest extends FlatSpec {
     it should "recognize sample b" in {
       recognize('b')
     }
+
     it should "recognize sample c" in {
       recognize('c')
     }
+
     it should "recognize sample d" in {
       recognize('d')
     }
