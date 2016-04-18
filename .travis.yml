@@ -10,8 +10,8 @@ cache:
 before_install:
  - sudo apt-get update -qq
  - sudo apt-get install -qq texlive texlive-full texlive-latex-extra texlive-lang-spanish
- # INSTALL currfile.sty manually
- - cd /tmp && curl -OL http://mirrors.ctan.org/macros/latex/contrib/currfile.zip && cd /usr/share/texmf/tex/latex/ && sudo unzip /tmp/currfile.zip && cd currfile && sudo latex currfile.ins && sudo texhash
+ # INSTALL currfile.sty manually DOESNT WORK, ALSO NEEDS ydoc
+ # - cd /tmp && curl -OL http://mirrors.ctan.org/macros/latex/contrib/currfile.zip && cd /usr/share/texmf/tex/latex/ && sudo unzip /tmp/currfile.zip && cd currfile && sudo latex currfile.ins && sudo texhash
 
 script: ./gradlew --debug check
 
