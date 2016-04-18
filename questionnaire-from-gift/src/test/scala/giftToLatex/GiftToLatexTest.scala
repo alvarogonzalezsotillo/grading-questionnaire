@@ -26,7 +26,7 @@ class GiftToLatexTest extends FlatSpec {
     val f = Util.createFile(renderGift(s), testFile("generated.gift"))
 
     val latex = GiftToLatex(f, imagePath = Seq("src/test/resources/giftParser/") )
-    LatexCompiler.compile( latex, testFile( "generated.pdf") )
+    LatexCompiler.compile( latex, testFile( "generated.pdf"), true, 2, true )
 
   }
 

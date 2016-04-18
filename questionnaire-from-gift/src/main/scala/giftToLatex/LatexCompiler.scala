@@ -14,15 +14,26 @@ object LatexCompiler extends LazyLogging{
   import giftParser.Util._
 
 
-  private def consumeInputStream(in:InputStream){
-    new Thread{
-      while( in.read != -1 ){
-      }
-    }.run()
-  }
 
 
-  private def compile(f: File): Process = {
+  private def compile(f: File, showLog: Boolean ): Process = {
+
+    def consumeInputStream(in:InputStream){
+      new Thread{
+        var c = in.read
+        while( c != -1 ){
+          if( showLog ) {
+            if( c == '\n' )
+              System.out.print( "\n<< LATEX LOG >> ");
+            else
+              System.out.write(c)
+          }
+          c = in.read
+        }
+      }.run()
+    }
+
+
     val fileName = f.getName
     val quotes = '\"'
     val cmd = s"pdflatex  --shell-escape -synctex=1 -interaction=nonstopmode $quotes$fileName$quotes"
@@ -48,7 +59,7 @@ object LatexCompiler extends LazyLogging{
     }
   }
 
-  def compile( latex: String, outputFile : File, keepTexFile : Boolean = true, times: Int = 2 ) : IndexedSeq[Process] = {
+  def compile( latex: String, outputFile : File, keepTexFile : Boolean = true, times: Int = 2, showLog: Boolean = false ) : IndexedSeq[Process] = {
     val dir = createTempDirectory
 
     val fileName = outputFile.getName.take( outputFile.getName.lastIndexOf('.') )
@@ -61,7 +72,7 @@ object LatexCompiler extends LazyLogging{
 
     createFile( latex, texFile )
     val processes = for( t <- 0 to times ) yield {
-      val p = compile(texFile)
+      val p = compile(texFile, showLog )
       p.exitValue()
       p
     }
