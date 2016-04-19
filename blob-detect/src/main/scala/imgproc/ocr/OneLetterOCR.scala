@@ -25,7 +25,7 @@ object OneLetterOCR {
       true
     }
     val prediction : Option[Char] = if(significative) Some(best) else None
-    def description = results.map( lp => String.format("%s%2.2f", lp.char, lp.probability) ).mkString("-")
+    def description = results.map( lp => f"${lp.char}${lp.probability}%2.5f" ).mkString("-")
     override def toString = "best:" + best + " -- " + results.toString
   }
 

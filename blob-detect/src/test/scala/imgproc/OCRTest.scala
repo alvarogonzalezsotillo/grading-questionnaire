@@ -170,7 +170,7 @@ class OCRTest extends FlatSpec {
       for(f <- files ){
         val m : Mat = ImageIO.read(f)
         val prediction = ocr.predict(m)
-        saveTestImage("prediction-" + prediction.best + "-" + f.getName(), m)
+        saveTestImage("prediction-" + prediction.description + "-" + f.getName(), m)
       }
     }
   }

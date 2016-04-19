@@ -85,8 +85,8 @@ class Perceptron( nodesInInternalLayers: Int = 50, internalLayers: Int = 2, patt
         val ret = new Mat(labelsArray.size, letters.size,CvType.CV_32FC1)
         val buffer = new Array[Float](letters.size)
         for( r <- 0 until labelsArray.size ){
-          util.Arrays.fill(buffer,0)
-          buffer(labelsArray(r)) = 1
+          util.Arrays.fill(buffer,-1.5f)
+          buffer(labelsArray(r)) = 1.5f
           ret.put(r,0,buffer)
         }
         ret
