@@ -11,9 +11,13 @@ import imgproc.ocr.{TrainedOneLetterOCR, Pattern}
 import imgproc.steps.ProcessingStep
 import imgproc.steps.ProcessingStep.Implicits._
 import org.junit.runner.RunWith
-import org.opencv.core.{Rect, Scalar}
 import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner
+import java.io.File
+import javax.imageio.ImageIO
+import org.opencv.core._
+
+
 import Implicits._
 
 
@@ -151,6 +155,23 @@ class OCRTest extends FlatSpec {
 
     it should "recognize sample d" in {
       recognize('d')
+    }
+
+    it should "try to clasify all pending images" in{
+      val baseDirs = Seq(
+        new File("blob-detect/src/main/resources/training-models/to-clasify"),
+        new File("src/main/resources/training-models/to-clasify")
+      )
+
+
+      val files = baseDirs.map(_.listFiles).filter(_ != null ).flatten
+      val ocr = new TrainedOneLetterOCR()
+      
+      for(f <- files ){
+        val m : Mat = ImageIO.read(f)
+        val prediction = ocr.predict(m)
+        saveTestImage("prediction-" + prediction.best + "-" + f.getName(), m)
+      }
     }
   }
 }

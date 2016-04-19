@@ -70,6 +70,11 @@ class Perceptron( nodesInInternalLayers: Int = 50, internalLayers: Int = 2, patt
 
   def train( data: TrainingPatterns, alpha: Double = 1,  beta: Double = 1, activateFunc : Int = CvANN_MLP.SIGMOID_SYM) : Int = {
 
+    println( s"data: ${data.keys}" )
+    for( l <- data.keys ){
+      println(s"$l ${data(l).size}")
+    }
+
     def trainDataset : (Mat,Mat,Mat) = {
       val letters = data.keys.toList
 
