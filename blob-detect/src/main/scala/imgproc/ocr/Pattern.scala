@@ -29,9 +29,11 @@ object Pattern{
 
 
 
-    def loadPattern( letter: Char ) = {
+    def loadPatternsFromLetter( letter: Char ) = loadPatternsFromDir(s"uppercase-${letter.toLower}" )
+
+    def loadPatternsFromDir( dir: String ) = {
       val a = for( baseDir <- baseDirs ) yield {
-        val f = new File(baseDir, s"uppercase-${letter.toLower}")
+        val f = new File(baseDir, dir)
         val files = f.listFiles()
         if( files != null ) files.map(ImageIO.read) else null
       }
@@ -47,9 +49,10 @@ object Pattern{
 
     def loadPatterns( letters: Seq[Char]  ) = {
       val pairs = for( l <- letters ) yield{
-        l -> loadPattern(l).map(m => resizeToPatterSize(m)).toSeq
+        l -> loadPatternsFromLetter(l).map(m => resizeToPatterSize(m)).toSeq
       }
-      Map( pairs :_* )
+      val unrecognizables = loadPatternsFromDir( "unrecognizable" ).map(m => resizeToPatterSize(m))
+      Map( pairs :_* ) ++ Map( '@' -> unrecognizables )
     }
 
 

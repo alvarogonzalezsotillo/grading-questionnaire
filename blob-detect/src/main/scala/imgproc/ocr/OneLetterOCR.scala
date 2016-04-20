@@ -20,13 +20,16 @@ object OneLetterOCR {
   
   implicit class LetterResult( results: Seq[LetterProb] ){
 
-    val best = results.maxBy( _.probability ).char
-    val significative = {
-      true
+    val minProbability = 0.35
+    val minGap = 0.15
+
+    val bestProbability = results.maxBy( _.probability )
+    val significative = bestProbability.probability >= minProbability && results.forall{
+      case LetterProb(c,p) => c == bestProbability.char || p + minGap < bestProbability.probability
     }
-    val prediction : Option[Char] = if(significative) Some(best) else None
+    val prediction : Option[Char] = if(significative) Some(bestProbability.char) else None
     def description = results.map( lp => f"${lp.char}${lp.probability}%2.5f" ).mkString("-")
-    override def toString = "best:" + best + " -- " + results.toString
+    override def toString = "prediction:" + prediction + " -- " + results.toString
   }
 
 

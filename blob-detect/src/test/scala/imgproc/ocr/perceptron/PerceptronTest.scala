@@ -35,7 +35,7 @@ class PerceptronTest extends FlatSpec {
   "Simple forms" should "be inferred" in {
     val patternSize = Pattern.patternSize
 
-    def noise( matrix: Array[Array[Int]], times: Int = patternSize*3 ) = {
+    def noise( matrix: Array[Array[Int]], times: Int = patternSize*4 ) = {
       for( _ <- 1 to times ) {
         val f = Random.nextInt(matrix.length)
         val c = Random.nextInt(matrix(0).length)
@@ -60,10 +60,14 @@ class PerceptronTest extends FlatSpec {
       if (c == 0) 255 else 0
     }
 
+    def unrecognizable = Array.tabulate[Int](patternSize, patternSize) { (f, c) =>
+      0
+    }
 
-    val samples = 10000
 
-    val letters = Map( 'A' -> a _, 'B' -> b _ , 'C'-> c _ , 'D' -> d _ )
+    val samples = 1000
+
+    val letters = Map( ' ' -> unrecognizable _,  'A' -> a _, 'B' -> b _ , 'C'-> c _ , 'D' -> d _ )
 
     val data = letters.map{ case(l,f) => l -> Iterator.continually[Mat]( noise(f()) ).take(samples).toSeq}
 
@@ -77,7 +81,8 @@ class PerceptronTest extends FlatSpec {
 
       val prediction = p.predict(noise(f()) )
       println(s"prediction:$prediction")
-      assert( prediction.best == l )
+      assert(prediction.significative)
+      assert( prediction.prediction.get == l )
     }
 
 

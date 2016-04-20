@@ -34,7 +34,7 @@ class OCRTest extends FlatSpec {
   }
 
 
-  {
+  if( false ){
     behavior of "bounding boxes"
 
     it should "find overlap if contained" in {
@@ -75,7 +75,7 @@ class OCRTest extends FlatSpec {
 
   }
 
-  {
+  if( false ){
 
     val fs = Seq("ocr-1.png", "ocr-2.png")
 
@@ -132,7 +132,9 @@ class OCRTest extends FlatSpec {
       val ocr = new TrainedOneLetterOCR()
       val m = readImageFromResources(s"to-recognize-$letter.png")
       val prediction = ocr.predict(m)
-      assert(prediction.best.toLower == letter)
+      println( s"Reconociendo $letter: $prediction")
+      assert( prediction.significative )
+      assert(prediction.prediction.get.toLower == letter)
     }
 
     behavior of "A trained ocr"
@@ -170,7 +172,7 @@ class OCRTest extends FlatSpec {
       for(f <- files ){
         val m : Mat = ImageIO.read(f)
         val prediction = ocr.predict(m)
-        saveTestImage("prediction-" + prediction.description + "-" + f.getName(), m)
+        saveTestImage("prediction-" + prediction.prediction.getOrElse("#") + "-" + prediction.description + "-" + f.getName(), m)
       }
     }
   }

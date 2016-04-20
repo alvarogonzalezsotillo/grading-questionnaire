@@ -5,8 +5,8 @@ import java.util
 import imgproc.ocr.OneLetterOCR.{LetterProb, LetterResult}
 import imgproc.ocr.Pattern
 import imgproc.ocr.Pattern.TrainingPatterns
-import org.opencv.core.{CvType, Mat}
-import org.opencv.ml.CvANN_MLP
+import org.opencv.core.{TermCriteria, CvType, Mat}
+import org.opencv.ml.{CvANN_MLP, CvANN_MLP_TrainParams}
 
 /**
  * Created by alvaro on 6/04/16.
@@ -21,8 +21,6 @@ object Perceptron{
   private def imageToSignal(i: Byte ) : Float = 1.0f*i/255
   private def signalToImage(s: Float ) : Byte = (s*255).toByte
 
-  def labelOfLetter( le: Char ) : Int = le - 'A'
-  def letterOfLabel( la: Int ) : Char = ('A' + la).toChar
 
   private def fillRowWithArray( m: Mat, row: Int, b: Array[Float] ){
     assert(m.cols() == b.size )
@@ -35,7 +33,7 @@ object Perceptron{
 
 }
 
-class Perceptron( nodesInInternalLayers: Int = 50, internalLayers: Int = 2, patternSize : Int = Pattern.patternSize ) {
+class Perceptron( nodesInInternalLayers: Int = Pattern.patternSize*2, internalLayers: Int = 2, patternSize : Int = Pattern.patternSize ) {
 
   import Perceptron._
 
@@ -67,26 +65,26 @@ class Perceptron( nodesInInternalLayers: Int = 50, internalLayers: Int = 2, patt
 
 
   val ann = new CvANN_MLP
+  var characters : IndexedSeq[Char] = null
+
+  def labelOfLetter( le: Char ) : Int = characters.indexOf(le)
+  def letterOfLabel( la: Int ) : Char = characters(la)
+
 
   def train( data: TrainingPatterns, alpha: Double = 1,  beta: Double = 1, activateFunc : Int = CvANN_MLP.SIGMOID_SYM) : Int = {
+    val letters = data.keys.toList
 
-    println( s"data: ${data.keys}" )
-    for( l <- data.keys ){
-      println(s"$l ${data(l).size}")
-    }
+    characters = letters.toIndexedSeq
 
     def trainDataset : (Mat,Mat,Mat) = {
-      val letters = data.keys.toList
-
-      assert( letters.toSet == (0 until letters.size).map( letterOfLabel ).toSet )
 
       val labels = {
         val labelsArray : Array[Int] = letters.flatMap( l => Iterator.continually(labelOfLetter(l)).take(data(l).size) ).toArray
         val ret = new Mat(labelsArray.size, letters.size,CvType.CV_32FC1)
         val buffer = new Array[Float](letters.size)
         for( r <- 0 until labelsArray.size ){
-          util.Arrays.fill(buffer,-1.5f)
-          buffer(labelsArray(r)) = 1.5f
+          util.Arrays.fill(buffer,-1f)
+          buffer(labelsArray(r)) = 1f
           ret.put(r,0,buffer)
         }
         ret
@@ -98,8 +96,8 @@ class Perceptron( nodesInInternalLayers: Int = 50, internalLayers: Int = 2, patt
         val patterns = letters.flatMap( l => data(l).toList ).toArray
         val n = patterns.size
         val ret = new Mat(n,nodesInInputLayer,CvType.CV_32FC1)
-        for( r <- 0 until n ; inputData = patternToInputData(patterns(r)); c <- 0 until inputData.size){
-          ret.put(r,c, Array(inputData(c)) )
+        for( r <- 0 until n ; inputData = patternToInputData(patterns(r)) ){
+          fillRowWithArray(ret,r,inputData)
         }
         ret
       }
@@ -112,7 +110,20 @@ class Perceptron( nodesInInternalLayers: Int = 50, internalLayers: Int = 2, patt
     ann.create(layerSizes(data.size), activateFunc, alpha, beta)
 
     val (input,labels,weights) = trainDataset
-    ann.train( input, labels, weights )
+    val params = {
+      // https://github.com/arnaudgelas/OpenCVExamples/blob/master/NeuralNetwork/NeuralNetwork.cpp
+      val ret = new CvANN_MLP_TrainParams
+      ret.set_train_method(CvANN_MLP_TrainParams.BACKPROP)
+      val maxIterations = 1000
+      val epsilon = 0.0001
+      val termCriteria = new TermCriteria(TermCriteria.MAX_ITER+TermCriteria.EPS,maxIterations,epsilon)
+      ret.set_term_crit( termCriteria )
+      ret
+    }
+
+    val flags = 0// CvANN_MLP.NO_INPUT_SCALE | CvANN_MLP.NO_OUTPUT_SCALE
+
+    ann.train( input, labels, weights, new Mat(), params, flags )
   }
 
 
@@ -120,16 +131,21 @@ class Perceptron( nodesInInternalLayers: Int = 50, internalLayers: Int = 2, patt
   If you are using the default cvANN_MLP::SIGMOID_SYM activation function with
    the default parameter values fparam1=0 and fparam2=0 then the function used is y = 1.7159*tanh(2/3 * x),
    so the output will range from [-1.7159, 1.7159], instead of [0,1].
+
+   BUT I GET -0.0039,0.0039, DONT KNOW WHY
    */
   def normalizeProbability(d: Double) = {
-    val min = -1.7159
-    val max = 1.7159
+    val min = -0.0041
+    val max = -min
     val norm = (d - min)/(max-min)
     val ret = (norm min 1) max 0
     ret
   }
 
+  def trained = characters != null
+
   def predict( pattern: Mat ) : LetterResult = {
+    assert( trained )
     val input = patternToInputData(pattern)
     val mInput = new Mat(1,nodesInInputLayer,CvType.CV_32FC1)
     fillRowWithArray( mInput, 0, input )
