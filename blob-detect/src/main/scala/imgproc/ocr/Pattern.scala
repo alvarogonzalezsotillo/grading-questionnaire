@@ -51,8 +51,9 @@ object Pattern{
       val pairs = for( l <- letters ) yield{
         l -> loadPatternsFromLetter(l).map(m => resizeToPatterSize(m)).toSeq
       }
-      val unrecognizables = loadPatternsFromDir( "unrecognizable" ).map(m => resizeToPatterSize(m))
-      Map( pairs :_* ) ++ Map( '@' -> unrecognizables )
+      //val unrecognizables = loadPatternsFromDir( "unrecognizable" ).map(m => resizeToPatterSize(m))
+      //Map( pairs :_* ) ++ Map( '@' -> unrecognizables )
+      Map( pairs :_* )
     }
 
 

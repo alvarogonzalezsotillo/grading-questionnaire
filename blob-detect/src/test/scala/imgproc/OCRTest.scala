@@ -34,7 +34,7 @@ class OCRTest extends FlatSpec {
   }
 
 
-  if( false ){
+  {
     behavior of "bounding boxes"
 
     it should "find overlap if contained" in {
@@ -75,7 +75,7 @@ class OCRTest extends FlatSpec {
 
   }
 
-  if( false ){
+  {
 
     val fs = Seq("ocr-1.png", "ocr-2.png")
 
