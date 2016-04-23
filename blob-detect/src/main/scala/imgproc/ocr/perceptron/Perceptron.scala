@@ -33,7 +33,7 @@ object Perceptron{
 
 }
 
-class Perceptron( nodesInInternalLayers: Int = Pattern.patternSize*2, internalLayers: Int = 2, patternSize : Int = Pattern.patternSize ) {
+class Perceptron( nodesInInternalLayers: Int = Pattern.patternSize*4, internalLayers: Int = 2, patternSize : Int = Pattern.patternSize ) {
 
   import Perceptron._
 
@@ -115,7 +115,7 @@ class Perceptron( nodesInInternalLayers: Int = Pattern.patternSize*2, internalLa
       val ret = new CvANN_MLP_TrainParams
       ret.set_train_method(CvANN_MLP_TrainParams.BACKPROP)
       val maxIterations = 1000
-      val epsilon = 0.001
+      val epsilon = 0.0001
       val termCriteria = new TermCriteria(TermCriteria.MAX_ITER+TermCriteria.EPS,maxIterations,epsilon)
       ret.set_term_crit( termCriteria )
       ret

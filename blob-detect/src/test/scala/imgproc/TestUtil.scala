@@ -1,9 +1,11 @@
 package imgproc
 
-import java.io.File
+import java.io.{PrintStream, File}
 import javax.imageio.ImageIO
 import org.opencv.core.Mat
 import org.opencv.highgui.Highgui
+
+import scala.util.Try
 
 /**
  * Created by alvaro on 15/03/16.
@@ -52,6 +54,32 @@ object TestUtil {
     ImageIO.write(m,format, testImgPath(name))
 
   }
+
+  case class SomeTestsResult( allowedFailureRatio: Double, total: Int, failures: Int )
+
+  def runSomeTestAndFailIfSoMuchFailures[I,T](files: Seq[I], allowedFailureRatio: Double = 0.2, showFailures : Boolean = false)(test: I => T): SomeTestsResult = {
+
+    def runSomeTestAndCollectFailures[T](files: Seq[I])(test: I => T) = {
+      val results = for (f <- files) yield (f, Try(test(f)))
+      results.filter(_._2.isFailure)
+    }
+
+    def reportFailures[T](failures: Seq[(I, Try[T])], out: PrintStream = System.out) {
+      for ((file, failure) <- failures) {
+        out.println(file)
+        failure.failed.get.printStackTrace(out)
+      }
+    }
+
+    val failures = runSomeTestAndCollectFailures(files)(test)
+    if (showFailures) reportFailures(failures)
+    val ret = SomeTestsResult(allowedFailureRatio, files.size, failures.size )
+    assert(failures.size < allowedFailureRatio * files.size, s"To much failures: $ret")
+    ret
+  }
+
+  def ignored( proc : => Unit) = {}
+
 
 
 }

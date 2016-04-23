@@ -16,7 +16,7 @@ import imgproc.Implicits._
 import TestUtil._
 import ProcessingStep._
 import ProcessingStep.Implicits._
-import scala.util.Try
+
 
 
 @RunWith(classOf[JUnitRunner])
@@ -30,26 +30,6 @@ class ProcessingStepTest extends FlatSpec {
 
 
 
-  private def runSomeTestAndFailIfSoMuchFailures[T](files: Seq[String], allowedFailureRatio: Double = 0.2)(test: String => T): Unit = {
-
-    def runSomeTestAndCollectFailures[T](files: Seq[String])(test: String => T) = {
-      val results = for (f <- files) yield (f, Try(test(f)))
-      results.filter(_._2.isFailure)
-    }
-
-    def reportFailures[T](failures: Seq[(String, Try[T])], out: PrintStream = System.out) {
-      for ((file, failure) <- failures) {
-        out.println(file)
-        failure.failed.get.printStackTrace(out)
-      }
-    }
-
-    val failures = runSomeTestAndCollectFailures(files)(test)
-    reportFailures(failures)
-    if (failures.size > allowedFailureRatio * files.size) {
-      fail(s"To much failures: ratio:$allowedFailureRatio failures:${failures.size} files:${files.size}")
-    }
-  }
 
 
   "Initial step " should "do nothing" in {

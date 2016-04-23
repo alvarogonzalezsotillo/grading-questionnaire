@@ -1,5 +1,8 @@
 package imgproc.ocr
 
+import javax.imageio.ImageIO
+
+import imgproc.ocr.Pattern.TrainingPatterns
 import imgproc.ocr.perceptron.Perceptron
 import imgproc.{AnswerMatrixMeasures, ImageProcessing}
 import imgproc.ImageProcessing._
@@ -90,10 +93,10 @@ object OneLetterOCR {
     filters.foldLeft(bboxes)( (b,f) => b.filter(f) )
   }
 
-  def extractPossibleLettersImage( m: Mat ) = {
+  def extractPossibleLettersImage( m: Mat, bboxGrow: Int = 3 ) = {
     import imgproc.Implicits._
     val contours = extractPossibleLettersBBox(m)
-    contours.map( c => submatrix(m, (c.grow(3) intersection m.rect).get ))
+    contours.map( c => submatrix(m, (c.grow(bboxGrow) intersection m.rect).get ))
   }
 
 
@@ -124,7 +127,7 @@ object OneLetterOCR {
       grayscale
     }
 
-    equalize
+    Pattern.resizeToPatterSize(equalize)
   }
 
 }
@@ -133,19 +136,29 @@ object OneLetterOCR {
 
 abstract class OneLetterOCR{
   import OneLetterOCR._
+  import imgproc.Implicits._
 
   protected val perceptron : Perceptron
 
-  def predict( pattern: Mat ) : LetterResult = perceptron.predict( normalizeLetter(pattern) )
+  def predict( pattern: Mat ) : LetterResult = {
+    val e = extractPossibleLettersImage(pattern)
+    if( e.size == 0 ){
+      perceptron.predict(normalizeLetter(pattern))
+    }
+    else {
+      val mat = e.maxBy(_.area)
+      perceptron.predict(normalizeLetter(mat))
+    }
+  }
 }
 
-class TrainedOneLetterOCR extends OneLetterOCR{
+class TrainedOneLetterOCR(trainingPatterns: TrainingPatterns = Pattern.trainingPatterns ) extends OneLetterOCR{
   import OneLetterOCR._
 
   val perceptron = new Perceptron()
 
-  val normalizedTrainingPatterns = Pattern.trainingPatterns.map{ case(c,mats) =>
-    c -> mats.map(normalizeLetter)
+  val normalizedTrainingPatterns = trainingPatterns.map{ case(c,mats) =>
+    c -> mats.flatMap(extractPossibleLettersImage(_)).map(normalizeLetter)
   }
 
   perceptron.train(normalizedTrainingPatterns)

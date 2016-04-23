@@ -178,8 +178,7 @@
   \fbox{\usebox{\fmboxx}}
 }
 
-\newcommand{\StudentData}
-{
+\newcommand{\StudentData}{
   \qrcode[height=2.3cm]{$QRCodeData$}
   \begin{ShadowBox}{0.85\Width}
     \vspace{0.3cm}
@@ -216,8 +215,7 @@
 
 
 \definecolor{light-gray}{gray}{0.60}
-\newcommand{\AnswerCellTemplate}[1]
-{%
+\newcommand{\LetterAnswerCellTemplate}[1]{%
   \setlength{\arrayrulewidth}{.02em}%
   %\setlength{\tabcolsep}{20pt}
   \begin{tabular}{p{0.7cm}@{\hskip 0.4cm}!{\color{light-gray}\vrule}p{1.3cm}!{\color{light-gray}\vrule}}%
@@ -226,6 +224,26 @@
     \arrayrulecolor{light-gray}\cline{2-2}%
   \end{tabular}%
 }
+
+\newcommand{\TickWidth}{0.5cm}
+\usepackage{array}
+\newcolumntype{x}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}b{#1}}
+\newcommand{\TickedAnswerCellTemplate}[5]{%
+  \setlength{\tabcolsep}{0pt}
+  \begin{tabular}{x{1.0cm}@{\hskip 0.1cm}!{\color{light-gray}\vrule}@{}x{\TickWidth}@{}!{\color{light-gray}\vrule}@{}x{\TickWidth}@{}!{\color{light-gray}\vrule}@{}x{\TickWidth}@{}!{\color{light-gray}\vrule}@{}x{\TickWidth}@{}!{\color{light-gray}\vrule}}%
+    \arrayrulecolor{light-gray}\cline{2-5}%
+    \ifthenelse{\equal{#2}{}}
+    {
+    \cellcolor{black}\textcolor{white}{ #1 } & #2 &#3&#4& {#5}\\[2pt]%
+    }
+    {
+    \cellcolor{white}\textcolor{black}{ #1 } & \cellcolor{black}\textcolor{white}#2 &\cellcolor{black}\textcolor{white}#3&\cellcolor{black}\textcolor{white}#4& \cellcolor{black}\textcolor{white}{#5}\\[2pt]%
+    }
+    \arrayrulecolor{light-gray}\cline{2-5}%
+  \end{tabular}%
+}
+
+\newcommand{\AnswerCellTemplate}[1]{\TickedAnswerCellTemplate{#1}{}{}{}{}}
 
 \newcommand{\HorizontalAnswerTable}[1]
 {
@@ -243,12 +261,61 @@
     \addtocounter{AnswerTableC}{1}
   }
 
+  \newcommand{\HeaderCell}
+  {
+    \TickedAnswerCellTemplate{}{a}{b}{c}{d}
+    \hspace{0mm}
+    \addtocounter{AnswerTableC}{0}
+  }
+
+
+  {
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+
+  }
+
+
+  \forloop[5]{DummyAnswerCounter}{-4}{\value{DummyAnswerCounter}<#1 \OR \value{AnswerTableC}=#1}
+  {
+    \AnswerCell %\hfill
+    \AnswerCell %\hfill
+    \AnswerCell %\hfill
+    \AnswerCell %\hfill
+    \AnswerCell
+
+  }
+
+
+}
+
+
+\newcommand{\HorizontalAnswerTableDisabled}[1]
+{
+  \vspace{0.5cm}
+
+  \newcounter{AnswerTableC}
+  \setcounter{AnswerTableC}{1}
+  \newcounter{DummyAnswerCounter}
+
+
+  \newcommand{\AnswerCell}
+  {
+    \ifthenelse{\value{AnswerTableC}>#1}{\AnswerCellTemplate{}}{\AnswerCellTemplate{\arabic{AnswerTableC}}}
+    \hspace{0mm}
+    \addtocounter{AnswerTableC}{1}
+  }
+
+  \TickedTableHeader%
   \forloop[5]{DummyAnswerCounter}{1}{\value{DummyAnswerCounter}<#1 \OR \value{AnswerTableC}=#1}
   {
-    \AnswerCell \hfill
-    \AnswerCell \hfill
-    \AnswerCell \hfill
-    \AnswerCell \hfill
+    \AnswerCell %\hfill
+    \AnswerCell %\hfill
+    \AnswerCell %\hfill
+    \AnswerCell %\hfill
     \AnswerCell
 
   }
@@ -297,7 +364,7 @@
 
 $GeneratedContent$
 
-%\FirstPage{30}{70}{51}
+\FirstPage{30}{70}{51}
 
 
 
