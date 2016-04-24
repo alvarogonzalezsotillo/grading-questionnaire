@@ -140,7 +140,7 @@
     \begin{multicols}{2}
     \textbf{Instrucciones generales para las preguntas cerradas:}
     \begin{itemize}
-      \item No se tendrán en cuenta anotaciones fuera de la tabla de respuestas. Utiliza \textbf{MAYÚSCULAS}.
+      \item No se tendrán en cuenta anotaciones fuera de la tabla de respuestas.
       \item Todas las preguntas tienen el mismo valor.
       \item Hay una, y sólo una, respuesta correcta en cada pregunta.
       \item Responde solo a aquellas preguntas de las que estés seguro. Una respuesta incorrecta resta un tercio del valor de una respuesta acertada, pero una pregunta sin responder no resta puntos.
@@ -243,9 +243,9 @@
   \end{tabular}%
 }
 
-\newcommand{\AnswerCellTemplate}[1]{\TickedAnswerCellTemplate{#1}{}{}{}{}}
 
-\newcommand{\HorizontalAnswerTable}[1]
+
+\newcommand{\TickedHorizontalAnswerTable}[1]
 {
   \vspace{0.5cm}
 
@@ -256,7 +256,7 @@
 
   \newcommand{\AnswerCell}
   {
-    \ifthenelse{\value{AnswerTableC}>#1}{\AnswerCellTemplate{}}{\AnswerCellTemplate{\arabic{AnswerTableC}}}
+    \ifthenelse{\value{AnswerTableC}>#1}{\TickedAnswerCellTemplate{}{}{}{}{}}{\TickedAnswerCellTemplate{\arabic{AnswerTableC}}{}{}{}{}}
     \hspace{0mm}
     \addtocounter{AnswerTableC}{1}
   }
@@ -279,12 +279,12 @@
   }
 
 
-  \forloop[5]{DummyAnswerCounter}{-4}{\value{DummyAnswerCounter}<#1 \OR \value{AnswerTableC}=#1}
+  \forloop[5]{DummyAnswerCounter}{1}{\value{DummyAnswerCounter}<#1 \OR \value{AnswerTableC}=#1}
   {
-    \AnswerCell %\hfill
-    \AnswerCell %\hfill
-    \AnswerCell %\hfill
-    \AnswerCell %\hfill
+    \AnswerCell 
+    \AnswerCell 
+    \AnswerCell 
+    \AnswerCell 
     \AnswerCell
 
   }
@@ -293,7 +293,7 @@
 }
 
 
-\newcommand{\HorizontalAnswerTableDisabled}[1]
+\newcommand{\LetterHorizontalAnswerTable}[1]
 {
   \vspace{0.5cm}
 
@@ -304,37 +304,67 @@
 
   \newcommand{\AnswerCell}
   {
-    \ifthenelse{\value{AnswerTableC}>#1}{\AnswerCellTemplate{}}{\AnswerCellTemplate{\arabic{AnswerTableC}}}
+    \ifthenelse{\value{AnswerTableC}>#1}{\LetterAnswerCellTemplate{}}{\LetterAnswerCellTemplate{\arabic{AnswerTableC}}}
     \hspace{0mm}
     \addtocounter{AnswerTableC}{1}
   }
 
-  \TickedTableHeader%
+
   \forloop[5]{DummyAnswerCounter}{1}{\value{DummyAnswerCounter}<#1 \OR \value{AnswerTableC}=#1}
   {
-    \AnswerCell %\hfill
-    \AnswerCell %\hfill
-    \AnswerCell %\hfill
-    \AnswerCell %\hfill
+    \AnswerCell \hfill
+    \AnswerCell \hfill
+    \AnswerCell \hfill
+    \AnswerCell \hfill
     \AnswerCell
 
   }
 }
 
-\newcommand{\VerticalAnswerTable}[1]
+\newcommand{\LetterVerticalAnswerTable}[1]
 {
   \vspace{0.5cm}
   \newcounter{AnswerTableC}
   \begin{multicols}{5}%
     \forloop{AnswerTableC}{1}{\value{AnswerTableC}<#1 \OR \value{AnswerTableC}=#1}%
-    {      \AnswerCellTemplate{\arabic{AnswerTableC}}    }%
+    {      \LetterAnswerCellTemplate{\arabic{AnswerTableC}}    }%
+  \end{multicols}%
+}
+
+\newcommand{\TickedVerticalAnswerTable}[1]
+{
+  \vspace{0.5cm}
+  \newcounter{AnswerTableC}
+
+  \newcommand{\HeaderCell}
+  {
+    \TickedAnswerCellTemplate{}{a}{b}{c}{d}
+    \hspace{0mm}
+    \addtocounter{AnswerTableC}{0}
+  }
+
+
+  {
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+
+  }
+
+  \begin{multicols}{5}%
+    \forloop{AnswerTableC}{1}{\value{AnswerTableC}<#1 \OR \value{AnswerTableC}=#1}%
+    {      \LetterAnswerCellTemplate{\arabic{AnswerTableC}}    }%
   \end{multicols}%
 }
 
 \newcommand{\AnswerTable}[1]{
   %\begin{center}%
-    %\VerticalAnswerTable{#1}%
-    \HorizontalAnswerTable{#1}%
+    %\LetterVerticalAnswerTable{#1}%
+    %\LetterHorizontalAnswerTable{#1}%
+    \TickedHorizontalAnswerTable{#1}%
+    %\TickedVerticalAnswerTable{#1}
   %\end{center}%
 }
 
@@ -364,7 +394,7 @@
 
 $GeneratedContent$
 
-\FirstPage{30}{70}{51}
+\FirstPage{30}{70}{49}
 
 
 
