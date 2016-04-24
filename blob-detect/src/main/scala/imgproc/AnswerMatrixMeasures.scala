@@ -3,17 +3,20 @@ package imgproc
 import org.opencv.core._
 
 object AnswerMatrixMeasures {
+  def apply(version: Int) = version match{
+    case 0 => new AnswerMatrixMeasures()
+    case 1 => new AnswerMatrixMeasures( 0.25, 0.25 )
+  }
+}
 
-
+class AnswerMatrixMeasures(val matrixWithToTopOfQRRatio : Double = 0.20, val matrixWithToQRWidthRatio: Double = 0.18 ){
   import imgproc.Implicits._
 
   val columns = 5
   val destinationWidth = 800.0
   val cellHeaderToHeaderWidthRatio = (0.7 + 0.3) / (0.7 + 1.3)
   val columnSpaceToCellWidthRatio = 0.15
-  val matrixWithToTopOfQRRatio = 0.20
   val matrixWithToLeftOfQRRatio = 0.02
-  val matrixWithToQRWidthRatio = 0.18
 
 
   val answerHeightRatio = 5.5 * columns
@@ -33,8 +36,8 @@ object AnswerMatrixMeasures {
 
 
   def destinationContour(questions: Int) = {
-    val w = AnswerMatrixMeasures.destinationWidth
-    val h = AnswerMatrixMeasures.destinationHeight(questions)
+    val w = destinationWidth
+    val h = destinationHeight(questions)
     new MatOfPoint((0.0, 0.0), (w, 0.0), (w, h), (0.0, h))
   }
 
@@ -45,17 +48,17 @@ object AnswerMatrixMeasures {
     val bl = points(3)
     val br = points(2)
 
-    val matrixHeight = (bl - tl).withModulus( (bl - tl).modulus*(1 + AnswerMatrixMeasures.matrixWithToQRWidthRatio) )
+    val matrixHeight = (bl - tl).withModulus( (bl - tl).modulus*(1 + matrixWithToQRWidthRatio) )
 
     val xAxis = (tr - tl)
     val yAxis = new Point(-xAxis.y, xAxis.x)
 
     val topLeft = tl -
-      (yAxis * AnswerMatrixMeasures.matrixWithToTopOfQRRatio) -
-      (xAxis * AnswerMatrixMeasures.matrixWithToLeftOfQRRatio)
-    val topRight = topLeft + (xAxis * (1+2*AnswerMatrixMeasures.matrixWithToLeftOfQRRatio ) )
-    val bottomLeft = topLeft + (yAxis * AnswerMatrixMeasures.matrixWithToQRWidthRatio) + matrixHeight
-    val bottomRight = topRight + (yAxis * AnswerMatrixMeasures.matrixWithToQRWidthRatio) + matrixHeight
+      (yAxis * matrixWithToTopOfQRRatio) -
+      (xAxis * matrixWithToLeftOfQRRatio)
+    val topRight = topLeft + (xAxis * (1+2*matrixWithToLeftOfQRRatio ) )
+    val bottomLeft = topLeft + (yAxis * matrixWithToQRWidthRatio) + matrixHeight
+    val bottomRight = topRight + (yAxis * matrixWithToQRWidthRatio) + matrixHeight
 
     new MatOfPoint(topLeft, topRight, bottomRight, bottomLeft)
   }

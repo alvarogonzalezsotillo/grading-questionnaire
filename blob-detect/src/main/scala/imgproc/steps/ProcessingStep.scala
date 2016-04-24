@@ -121,11 +121,11 @@ object ProcessingStep {
     val yAxis = new Point(-xAxis.y, xAxis.x)
 
     val topLeft = tl -
-      (yAxis * AnswerMatrixMeasures.matrixWithToTopOfQRRatio) -
-      (xAxis * AnswerMatrixMeasures.matrixWithToLeftOfQRRatio)
-    val topRight = topLeft + (xAxis * AnswerMatrixMeasures.matrixWithToQRWidthRatio)
-    val bottomLeft = topLeft + (yAxis * AnswerMatrixMeasures.matrixWithToQRWidthRatio)
-    val bottomRight = topRight + (yAxis * AnswerMatrixMeasures.matrixWithToQRWidthRatio)
+      (yAxis * AnswerMatrixMeasures(1).matrixWithToTopOfQRRatio) -
+      (xAxis * AnswerMatrixMeasures(1).matrixWithToLeftOfQRRatio)
+    val topRight = topLeft + (xAxis * AnswerMatrixMeasures(1).matrixWithToQRWidthRatio)
+    val bottomLeft = topLeft + (yAxis * AnswerMatrixMeasures(1).matrixWithToQRWidthRatio)
+    val bottomRight = topRight + (yAxis * AnswerMatrixMeasures(1).matrixWithToQRWidthRatio)
 
     new MatOfPoint(topLeft, topRight, bottomRight, bottomLeft)
   }
@@ -160,8 +160,8 @@ object ProcessingStep {
         (lowerPoints.minBy(_.normalize * unit), lowerPoints.maxBy(_.normalize * unit))
       }
 
-      val lowerExtension = (lowerRight - lowerLeft) * AnswerMatrixMeasures.extensionFactor
-      val upperExtension = (upperRight - upperLeft) * AnswerMatrixMeasures.extensionFactor
+      val lowerExtension = (lowerRight - lowerLeft) * AnswerMatrixMeasures(1).extensionFactor
+      val upperExtension = (upperRight - upperLeft) * AnswerMatrixMeasures(1).extensionFactor
 
       new MatOfPoint(
         upperLeft + center,
@@ -274,10 +274,10 @@ object ProcessingStep {
 
     val am = for (rect <- psi.location; answers <- psi.answers) yield {
 
-      val dstPoints = AnswerMatrixMeasures.destinationContour(answers.size)
+      val dstPoints = AnswerMatrixMeasures(1).destinationContour(answers.size)
 
       val h = findHomography(rect, dstPoints)
-      warpImage()(psi.originalMat, h, AnswerMatrixMeasures.destinationSize(answers.size))
+      warpImage()(psi.originalMat, h, AnswerMatrixMeasures(1).destinationSize(answers.size))
     }
 
     psi.copy(mat = am, locatedMat = am)
@@ -288,14 +288,14 @@ object ProcessingStep {
 
 
     def studentInfoRect(qrLocation: MatOfPoint, matrixLocation: MatOfPoint): MatOfPoint = {
-      AnswerMatrixMeasures.fromMatrixToStudentInfoLocation(matrixLocation)
+      AnswerMatrixMeasures(1).fromMatrixToStudentInfoLocation(matrixLocation)
     }
 
     val sm: Option[(Some[MatOfPoint], Mat)] = for (qrLocation <- psi.qrLocation; matrixLocation <- psi.location; answers <- psi.answers) yield {
       val rect = studentInfoRect(qrLocation, matrixLocation)
-      val dstPoints = AnswerMatrixMeasures.studentInfoDestinationContour(answers.size)
+      val dstPoints = AnswerMatrixMeasures(1).studentInfoDestinationContour(answers.size)
       val h = findHomography(rect, dstPoints)
-      (Some(rect), warpImage()(psi.originalMat, h, AnswerMatrixMeasures.studentInfoDestinationSize(answers.size)))
+      (Some(rect), warpImage()(psi.originalMat, h, AnswerMatrixMeasures(1).studentInfoDestinationSize(answers.size)))
     }
 
     sm match {
@@ -308,7 +308,7 @@ object ProcessingStep {
 
   val cellsOfAnswerMatrix = answerMatrixStep.extend("Localización de celdas") { psi =>
     val ret = for (m <- psi.locatedMat; a <- psi.answers) yield {
-      val cr = AnswerMatrixMeasures.cells(a.size)
+      val cr = AnswerMatrixMeasures(1).cells(a.size)
       val c = for (r <- cr) yield submatrix(m, r)
       psi.copy(cellsRect = Some(cr), cells = Some(c))
     }

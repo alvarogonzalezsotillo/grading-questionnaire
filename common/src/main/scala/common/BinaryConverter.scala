@@ -4,14 +4,12 @@ import sun.misc.BASE64Decoder
 
 object BinaryConverter {
 
-  val version: Byte = 0
-
   private def log2(x: Double) = Math.log(x) / Math.log(2)
 
   /**
    * (version, bitsPerIndex, numberOfIndexes, byte0, byte1, ...)
    */
-  def toBinarySolutions(solutionIndexes: Seq[Int]): Array[Byte] = {
+  def toBinarySolutions(solutionIndexes: Seq[Int], version: Byte ): Array[Byte] = {
     val bitsPerIndex = log2(solutionIndexes.max).ceil.toInt
     assert(bitsPerIndex <= 8)
     val valuesPerByte = 8 / bitsPerIndex
@@ -23,11 +21,7 @@ object BinaryConverter {
     (Seq(version, bitsPerIndex.toByte, solutionIndexes.size.toByte) ++ solutions).toArray
   }
 
-  def fromBinarySolutions(solutions: Array[Byte]) = {
-    val readVersion = solutions(0)
-    if( readVersion != version ){
-      throw new IllegalArgumentException( s"Version $version expected: $readVersion" )
-    }
+  def fromBinarySolutions(solutions: Array[Byte] ) = {
 
     val bitsPerIndex = solutions(1)
     val valuesPerByte = 8 / bitsPerIndex

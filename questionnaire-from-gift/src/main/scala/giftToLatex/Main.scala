@@ -19,7 +19,8 @@ object Main extends App with LazyLogging {
                     keepTexFile: Boolean = false,
                     help :Boolean = false,
                     headerText: String = "",
-                    numberOfVersions: Int = 2,
+                    numberOfVariations: Int = 2,
+                    version : Byte = 1,
                     questionnaireQuestionsWeight: Int = 60)
   realMain
 
@@ -40,8 +41,12 @@ object Main extends App with LazyLogging {
         c.copy(questionnaireQuestionsWeight = q)
       }
 
-      opt[Int]('v', "number-of-versions") text ("Number of versions of the questionnarie, with permuted answers. Defaults to 2.") action { (v, c) =>
-        c.copy(numberOfVersions = v)
+      opt[Int]('n', "number-of-variations") text ("Number of variations of the questionnarie, with permuted answers. Defaults to 2.") action { (n, c) =>
+        c.copy(numberOfVariations = n)
+      }
+
+      opt[Int]('v', "version") text ("Version of generated questionnaire " + GiftToLatex.versions.mkString(",")  + " . Defaults to 1.") action { (v, c) =>
+        c.copy(version = v.toByte)
       }
 
       opt[String]('t',"header-text") text ("Header text") required() action{ (t,c) =>
@@ -63,7 +68,7 @@ object Main extends App with LazyLogging {
     }
 
     def generateQuestionnarieVersion(c: Config, version: Option[String]) = {
-      val latex = GiftToLatex(c.giftFile, c.headerText, c.questionnaireQuestionsWeight)
+      val latex = GiftToLatex(c.giftFile, c.version, c.headerText, c.questionnaireQuestionsWeight)
       def computeOutFile: File = {
         val name = if( c.giftFile == invalidFile ){
           "stdin"
@@ -88,7 +93,7 @@ object Main extends App with LazyLogging {
 
         logger.error(c.toString)
 
-        (0 until c.numberOfVersions).map(v => (v + 'A').toChar).foreach( v => generateQuestionnarieVersion(c, Some(v.toString)))
+        (0 until c.numberOfVariations).map(v => (v + 'A').toChar).foreach( v => generateQuestionnarieVersion(c, Some(v.toString)))
 
       case None =>
     }
@@ -98,7 +103,7 @@ object Main extends App with LazyLogging {
 
     implicit def toFile(s: String) = new File(s)
 
-    val latex = GiftToLatex("/home/alvaro/SincronizadoCloud/copy/2014-2015-Alonso de Avellaneda/aplicaciones-web-ampliada/Examenes/AW-A-EvaluacionExtraordinaria.gift", "Aplicaciones Web - Evaluacion Extraordinaria", 50)
+    val latex = GiftToLatex("/home/alvaro/SincronizadoCloud/copy/2014-2015-Alonso de Avellaneda/aplicaciones-web-ampliada/Examenes/AW-A-EvaluacionExtraordinaria.gift", 0,"Aplicaciones Web - Evaluacion Extraordinaria", 50)
     LatexCompiler(latex, "AW-A-EvaluacionExtraordinaria.pdf", true)
   }
 }

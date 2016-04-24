@@ -166,34 +166,40 @@ object GiftToLatex extends LazyLogging{
   private val latexTemplate = resourceToString("giftToLatex/QuestionnaireGradingTest.template.tex")
 
 
+  val versions = Map[Byte,String](
+    0.toByte -> "Free hand letter answers",
+    1.toByte -> "Ticked answers"
+  )
 
-
-  def generateLatex(f: GiftFile, headerText: String = "", questionnaireQuestionsWeight: Int = 60, imagePath: Seq[String] = Seq() ): String = {
+  def generateLatex(f: GiftFile, version: Byte, headerText: String = "", questionnaireQuestionsWeight: Int = 60, imagePath: Seq[String] = Seq() ): String = {
 
     val openQuestionsWeight = 100 - questionnaireQuestionsWeight
     val firstPage = s"\\FirstPage{$questionnaireQuestionsWeight}{$openQuestionsWeight}{${f.questionnaireQuestions.size}}"
     val questions = generateLatexForQuestions(f)
     val solutionIndexes = generateSolutionIndexes(f)
     val solutions = solutionIndexes.map(i => (i.toChar + 'a').toChar).mkString(",")
-    val qrCodeData = BinaryConverter.toBase64( BinaryConverter.toBinarySolutions(solutionIndexes) )
+    val qrCodeData = BinaryConverter.toBase64( BinaryConverter.toBinarySolutions(solutionIndexes,version) )
     val generatedContent = List( firstPage, questions ).mkString("\n")
     
     def toImagePath(s: String ) = {
       s"{${if( s.last == '/' ) s else s + '/'}}"
     }
 
-    latexTemplate
-      .replace("$GeneratedContent$", generatedContent)
-      .replace("$ImagePath$", imagePath.map(toImagePath).mkString(","))
-      .replace("$HeaderText$", headerText )
-      .replace("$Solutions$", solutions )
-      .replace("$QRCodeData$", qrCodeData )
-      .replace("$GiftFile$", "\"" + f.file.map(_.getAbsolutePath).getOrElse("") + "\"")
 
+    val substitutions = Map(
+      "$GeneratedContent$" -> generatedContent,
+      "$ImagePath$" -> imagePath.map(toImagePath).mkString(","),
+      "$HeaderText$"-> headerText,
+      "$Solutions$"-> solutions,
+      "$QRCodeData$"-> qrCodeData,
+      "$GiftFile$" -> ("\"" + f.file.map(_.getAbsolutePath).getOrElse("") + "\"")
+    )
+
+    substitutions.foldLeft(latexTemplate){ case (latex,(k,v)) => latex.replace(k,v) }
   }
 
 
-  def apply(f: File,  headerText: String = "", questionnaireQuestionsWeight: Int = 60, imagePath: Seq[String] = Seq()): String = {
+  def apply(f: File, version: Byte, headerText: String = "", questionnaireQuestionsWeight: Int = 60, imagePath: Seq[String] = Seq() ): String = {
     GiftParser.parse(f) match {
       case GiftError(msg, line, column, lineContents) =>
         throw new IllegalArgumentException(s"Error:$msg, at $line,$column\n$lineContents")
@@ -202,7 +208,7 @@ object GiftToLatex extends LazyLogging{
         val additionalImagePath = f.getAbsoluteFile.getParent
         val ip = additionalImagePath +: imagePath
         logger.debug( ip.toString )
-        generateLatex(g, headerText, questionnaireQuestionsWeight, ip )
+        generateLatex(g, version, headerText, questionnaireQuestionsWeight, ip )
     }
 
   }
