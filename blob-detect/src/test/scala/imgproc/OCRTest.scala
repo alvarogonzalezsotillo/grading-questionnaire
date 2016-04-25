@@ -142,7 +142,7 @@ class OCRTest extends FlatSpec {
 
 
 
-  {
+  ignored{
 
     def recognize(letter: Char) = {
       val ocr = new TrainedOneLetterOCR()
@@ -155,23 +155,23 @@ class OCRTest extends FlatSpec {
 
     behavior of "A trained ocr"
 
-    ignore should "not launch any exception" in {
+    it should "not launch any exception" in {
       new TrainedOneLetterOCR()
     }
 
-    ignore should "recognize sample a" in {
+    it should "recognize sample a" in {
       recognize('a')
     }
 
-    ignore should "recognize sample b" in {
+    it should "recognize sample b" in {
       recognize('b')
     }
 
-    ignore should "recognize sample c" in {
+    it should "recognize sample c" in {
       recognize('c')
     }
 
-    ignore should "recognize sample d" in {
+    it should "recognize sample d" in {
       recognize('d')
     }
 
@@ -214,8 +214,7 @@ class OCRTest extends FlatSpec {
         println( s"$l -> $status" )
       }
     }
-
-   it should "have a high accuracy with some of the training patterns" in{
+    it should "have a high accuracy with some of the training patterns" in{
 
       def split( patterns : TrainingPatterns, trainingRatio: Double = 0.5 ) : (TrainingPatterns,TrainingPatterns) = {
         val splitted = for( (l,ps) <- patterns ) yield {
@@ -250,5 +249,6 @@ class OCRTest extends FlatSpec {
         println( s"$l -> $status" )
       }
     }
+
   }
 }

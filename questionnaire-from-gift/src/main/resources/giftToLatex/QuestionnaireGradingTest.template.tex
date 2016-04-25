@@ -344,38 +344,53 @@
   }
 
 
-  {
+  \begin{multicols}{5}%
     \HeaderCell
     \HeaderCell
     \HeaderCell
     \HeaderCell
     \HeaderCell
-
-  }
+  \end{multicols}
 
   \begin{multicols}{5}%
     \forloop{AnswerTableC}{1}{\value{AnswerTableC}<#1 \OR \value{AnswerTableC}=#1}%
-    {      \LetterAnswerCellTemplate{\arabic{AnswerTableC}}    }%
+    {      \TickedAnswerCellTemplate{\arabic{AnswerTableC}}{}{}{}{}    }%
   \end{multicols}%
 }
 
-\newcommand{\AnswerTable}[1]{
+\newcommand{\AnswerTable}[3]{
   %\begin{center}%
-    %\LetterVerticalAnswerTable{#1}%
-    %\LetterHorizontalAnswerTable{#1}%
-    \TickedHorizontalAnswerTable{#1}%
-    %\TickedVerticalAnswerTable{#1}
+
+  \ifthenelse{\equal{#2}{true}}% HORIZONTAL
+  {
+    \ifthenelse{\equal{#3}{true}}% TICKED
+    {
+      \TickedHorizontalAnswerTable{#1}%
+    }
+    {
+      \LetterHorizontalAnswerTable{#1}
+    }
+  }
+  {
+    \ifthenelse{\equal{#3}{true}}% TICKED
+    {
+      \TickedVerticalAnswerTable{#1}%
+    }
+    {
+      \LetterVerticalAnswerTable{#1}
+    }
+  }
   %\end{center}%
 }
 
 
 
-\newcommand{\FirstPage}[3]{
+\newcommand{\FirstPage}[5]{
 
   \FileAutoref \OriginalGiftFile{$GiftFile$}
 
   \StudentData
-  \AnswerTable{#3}
+  \AnswerTable{#3}{#4}{#5}
   \vfill
 
   \Instructions{#1}{#2}
@@ -394,7 +409,7 @@
 
 $GeneratedContent$
 
-\FirstPage{30}{70}{49}
+\FirstPage{30}{70}{49}{false}{true}% horizontal ticked
 
 
 

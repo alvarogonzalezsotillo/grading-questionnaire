@@ -20,6 +20,8 @@ object Main extends App with LazyLogging {
                     help :Boolean = false,
                     headerText: String = "",
                     numberOfVariations: Int = 2,
+                    horizontalTable: Boolean = true,
+                    tickedTable: Boolean = false,
                     version : Byte = 1,
                     questionnaireQuestionsWeight: Int = 60)
   realMain
@@ -51,6 +53,14 @@ object Main extends App with LazyLogging {
 
       opt[String]('t',"header-text") text ("Header text") required() action{ (t,c) =>
         c.copy(headerText = t)
+      }
+
+      opt[Boolean]('x', "ticked-table") text ("Check box answer table instead of letters") action{ (x,c) =>
+        c.copy( tickedTable = x )
+      }
+
+      opt[Boolean]('h', "horizontal-table") text ("Horizontal answer table") action{ (h,c) =>
+        c.copy( horizontalTable = h )
       }
 
       opt[Unit]('h',"help") text("Shows this help") action { (_,c) =>

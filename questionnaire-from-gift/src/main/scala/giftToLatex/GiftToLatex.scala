@@ -171,10 +171,10 @@ object GiftToLatex extends LazyLogging{
     1.toByte -> "Ticked answers"
   )
 
-  def generateLatex(f: GiftFile, version: Byte, headerText: String = "", questionnaireQuestionsWeight: Int = 60, imagePath: Seq[String] = Seq() ): String = {
+  def generateLatex(f: GiftFile, version: Byte, headerText: String = "", questionnaireQuestionsWeight: Int = 60, horizontal: Boolean = true, ticked: Boolean = false, imagePath: Seq[String] = Seq() ): String = {
 
     val openQuestionsWeight = 100 - questionnaireQuestionsWeight
-    val firstPage = s"\\FirstPage{$questionnaireQuestionsWeight}{$openQuestionsWeight}{${f.questionnaireQuestions.size}}"
+    val firstPage = s"\\FirstPage{$questionnaireQuestionsWeight}{$openQuestionsWeight}{${f.questionnaireQuestions.size}{$horizontal}{$ticked}}"
     val questions = generateLatexForQuestions(f)
     val solutionIndexes = generateSolutionIndexes(f)
     val solutions = solutionIndexes.map(i => (i.toChar + 'a').toChar).mkString(",")
@@ -199,7 +199,7 @@ object GiftToLatex extends LazyLogging{
   }
 
 
-  def apply(f: File, version: Byte, headerText: String = "", questionnaireQuestionsWeight: Int = 60, imagePath: Seq[String] = Seq() ): String = {
+  def apply(f: File, version: Byte, headerText: String = "", questionnaireQuestionsWeight: Int = 60, horizontal: Boolean = true, ticked: Boolean = false, imagePath: Seq[String] = Seq() ): String = {
     GiftParser.parse(f) match {
       case GiftError(msg, line, column, lineContents) =>
         throw new IllegalArgumentException(s"Error:$msg, at $line,$column\n$lineContents")
@@ -208,7 +208,7 @@ object GiftToLatex extends LazyLogging{
         val additionalImagePath = f.getAbsoluteFile.getParent
         val ip = additionalImagePath +: imagePath
         logger.debug( ip.toString )
-        generateLatex(g, version, headerText, questionnaireQuestionsWeight, ip )
+        generateLatex(g, version, headerText, questionnaireQuestionsWeight, horizontal, ticked, ip )
     }
 
   }
