@@ -247,8 +247,6 @@
 
 \newcommand{\TickedHorizontalAnswerTable}[1]
 {
-  \vspace{0.5cm}
-
   \newcounter{AnswerTableC}
   \setcounter{AnswerTableC}{1}
   \newcounter{DummyAnswerCounter}
@@ -325,22 +323,49 @@
 {
   \vspace{0.5cm}
   \newcounter{AnswerTableC}
+  \setcounter{AnswerTableC}{1}
+  \newcounter{DummyAnswerCounter}
+
+
+  \newcommand{\AnswerCell}
+  {
+    \ifthenelse{\value{AnswerTableC}>#1}{\LetterAnswerCellTemplate{}}{\LetterAnswerCellTemplate{\arabic{AnswerTableC}}}
+    \hspace{0mm}
+    \addtocounter{AnswerTableC}{1}
+  }
+
   \begin{multicols}{5}%
-    \forloop{AnswerTableC}{1}{\value{AnswerTableC}<#1 \OR \value{AnswerTableC}=#1}%
-    {      \LetterAnswerCellTemplate{\arabic{AnswerTableC}}    }%
+
+  \forloop[5]{DummyAnswerCounter}{1}{\value{DummyAnswerCounter}<#1 \OR \value{AnswerTableC}=#1}
+  {
+    \AnswerCell
+    \AnswerCell
+    \AnswerCell
+    \AnswerCell
+    \AnswerCell
+
+  }
   \end{multicols}%
+
 }
 
 \newcommand{\TickedVerticalAnswerTable}[1]
 {
-  \vspace{0.5cm}
-  \newcounter{AnswerTableC}
 
+  \newcounter{AnswerTableC}
+  \newcounter{DummyAnswerCounter}
+  \setcounter{AnswerTableC}{1}
   \newcommand{\HeaderCell}
   {
     \TickedAnswerCellTemplate{}{a}{b}{c}{d}
     \hspace{0mm}
     \addtocounter{AnswerTableC}{0}
+  }
+
+  \newcommand{\AnswerCell}
+  {
+    \ifthenelse{\value{AnswerTableC}>#1}{\TickedAnswerCellTemplate{}{}{}{}{}}{\TickedAnswerCellTemplate{\arabic{AnswerTableC}}{}{}{}{}}
+    \addtocounter{AnswerTableC}{1}
   }
 
 
@@ -353,8 +378,10 @@
   \end{multicols}
 
   \begin{multicols}{5}%
-    \forloop{AnswerTableC}{1}{\value{AnswerTableC}<#1 \OR \value{AnswerTableC}=#1}%
-    {      \TickedAnswerCellTemplate{\arabic{AnswerTableC}}{}{}{}{}    }%
+    \forloop[5]{DummyAnswerCounter}{1}{\value{DummyAnswerCounter}<#1 \OR \value{AnswerTableC}=#1}%
+    {      
+      \AnswerCell     \AnswerCell     \AnswerCell     \AnswerCell     \AnswerCell
+     }%
   \end{multicols}%
 }
 
@@ -403,13 +430,9 @@
 \IndentOff
 
 
-
-
-
-
 $GeneratedContent$
 
-\FirstPage{30}{70}{49}{false}{true}% horizontal ticked
+\FirstPage{30}{70}{51}{false}{true}% horizontal ticked
 
 
 

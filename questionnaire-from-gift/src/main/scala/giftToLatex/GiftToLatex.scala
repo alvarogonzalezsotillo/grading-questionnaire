@@ -3,7 +3,7 @@ package giftToLatex
 import java.io.{OutputStream, ByteArrayOutputStream, File, InputStream}
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
-import common.BinaryConverter
+import common.{QuestionnaireVersion, BinaryConverter}
 import giftParser.GiftParser
 import giftParser.GiftParser.GiftFile._
 import giftParser.GiftParser._
@@ -166,12 +166,10 @@ object GiftToLatex extends LazyLogging{
   private val latexTemplate = resourceToString("giftToLatex/QuestionnaireGradingTest.template.tex")
 
 
-  val versions = Map[Byte,String](
-    0.toByte -> "Free hand letter answers",
-    1.toByte -> "Ticked answers"
-  )
 
-  def generateLatex(f: GiftFile, version: Byte, headerText: String = "", questionnaireQuestionsWeight: Int = 60, horizontal: Boolean = true, ticked: Boolean = false, imagePath: Seq[String] = Seq() ): String = {
+  def generateLatex(f: GiftFile, headerText: String = "", questionnaireQuestionsWeight: Int = 60, horizontal: Boolean = true, ticked: Boolean = false, imagePath: Seq[String] = Seq() ): String = {
+
+    val version = QuestionnaireVersion.version(horizontal,ticked)
 
     val openQuestionsWeight = 100 - questionnaireQuestionsWeight
     val firstPage = s"\\FirstPage{$questionnaireQuestionsWeight}{$openQuestionsWeight}{${f.questionnaireQuestions.size}{$horizontal}{$ticked}}"
@@ -199,7 +197,7 @@ object GiftToLatex extends LazyLogging{
   }
 
 
-  def apply(f: File, version: Byte, headerText: String = "", questionnaireQuestionsWeight: Int = 60, horizontal: Boolean = true, ticked: Boolean = false, imagePath: Seq[String] = Seq() ): String = {
+  def apply(f: File, headerText: String = "", questionnaireQuestionsWeight: Int = 60, horizontal: Boolean = true, ticked: Boolean = false, imagePath: Seq[String] = Seq() ): String = {
     GiftParser.parse(f) match {
       case GiftError(msg, line, column, lineContents) =>
         throw new IllegalArgumentException(s"Error:$msg, at $line,$column\n$lineContents")
@@ -208,7 +206,7 @@ object GiftToLatex extends LazyLogging{
         val additionalImagePath = f.getAbsoluteFile.getParent
         val ip = additionalImagePath +: imagePath
         logger.debug( ip.toString )
-        generateLatex(g, version, headerText, questionnaireQuestionsWeight, horizontal, ticked, ip )
+        generateLatex(g, headerText, questionnaireQuestionsWeight, horizontal, ticked, ip )
     }
 
   }

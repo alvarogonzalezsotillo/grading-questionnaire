@@ -1,15 +1,21 @@
 package imgproc
 
+import common.QuestionnaireVersion
 import org.opencv.core._
 
 object AnswerMatrixMeasures {
-  def apply(version: Int) = version match{
-    case 0 => new AnswerMatrixMeasures()
-    case 1 => new AnswerMatrixMeasures( 0.25, 0.25 )
+  def apply(version: Int) = {
+    val vertical = QuestionnaireVersion.isVerticalVersion(version.toByte)
+    val ticked = QuestionnaireVersion.isTickedVersion(version.toByte)
+    if (ticked)
+      new AnswerMatrixMeasures(vertical)
+    else
+      new AnswerMatrixMeasures(vertical, 0.25, 0.25)
   }
 }
 
-class AnswerMatrixMeasures(val matrixWithToTopOfQRRatio : Double = 0.20, val matrixWithToQRWidthRatio: Double = 0.18 ){
+class AnswerMatrixMeasures(val vertical: Boolean, val matrixWithToTopOfQRRatio: Double = 0.20, val matrixWithToQRWidthRatio: Double = 0.18) {
+
   import imgproc.Implicits._
 
   val columns = 5
@@ -41,14 +47,14 @@ class AnswerMatrixMeasures(val matrixWithToTopOfQRRatio : Double = 0.20, val mat
     new MatOfPoint((0.0, 0.0), (w, 0.0), (w, h), (0.0, h))
   }
 
-  def fromMatrixToStudentInfoLocation( matrixLocation: MatOfPoint ) : MatOfPoint = {
+  def fromMatrixToStudentInfoLocation(matrixLocation: MatOfPoint): MatOfPoint = {
     val points = matrixLocation.toArray
     val tl = points(0)
     val tr = points(1)
     val bl = points(3)
     val br = points(2)
 
-    val matrixHeight = (bl - tl).withModulus( (bl - tl).modulus*(1 + matrixWithToQRWidthRatio) )
+    val matrixHeight = (bl - tl).withModulus((bl - tl).modulus * (1 + matrixWithToQRWidthRatio))
 
     val xAxis = (tr - tl)
     val yAxis = new Point(-xAxis.y, xAxis.x)
@@ -56,15 +62,15 @@ class AnswerMatrixMeasures(val matrixWithToTopOfQRRatio : Double = 0.20, val mat
     val topLeft = tl -
       (yAxis * matrixWithToTopOfQRRatio) -
       (xAxis * matrixWithToLeftOfQRRatio)
-    val topRight = topLeft + (xAxis * (1+2*matrixWithToLeftOfQRRatio ) )
+    val topRight = topLeft + (xAxis * (1 + 2 * matrixWithToLeftOfQRRatio))
     val bottomLeft = topLeft + (yAxis * matrixWithToQRWidthRatio) + matrixHeight
     val bottomRight = topRight + (yAxis * matrixWithToQRWidthRatio) + matrixHeight
 
     new MatOfPoint(topLeft, topRight, bottomRight, bottomLeft)
   }
 
-  def studentInfoDestinationContour(questions: Int) : MatOfPoint = {
-    val sidc = fromMatrixToStudentInfoLocation(destinationContour(questions) ).toArray
+  def studentInfoDestinationContour(questions: Int): MatOfPoint = {
+    val sidc = fromMatrixToStudentInfoLocation(destinationContour(questions)).toArray
     val topLeft = sidc(0)
     val topRight = sidc(1)
     val bottomRight = sidc(2)
@@ -72,7 +78,7 @@ class AnswerMatrixMeasures(val matrixWithToTopOfQRRatio : Double = 0.20, val mat
 
     val origin = topLeft
 
-    new MatOfPoint(topLeft-origin, topRight-origin, bottomRight-origin, bottomLeft-origin)
+    new MatOfPoint(topLeft - origin, topRight - origin, bottomRight - origin, bottomLeft - origin)
   }
 
 
@@ -89,20 +95,29 @@ class AnswerMatrixMeasures(val matrixWithToTopOfQRRatio : Double = 0.20, val mat
   }
 
 
-    def cells(questions: Int): Seq[Rect] = {
+  def cells(questions: Int): Seq[Rect] = {
     def xPositionOfCellColumn(column: Int) = column * (cellWidth + columnSpaceWidth)
     def yPositionOfCellRow(row: Int) = row * cellHeight
 
-    for (c <- 0 until columns; r <- 0 until rows(questions)) yield {
+    def cell(c: Int, r: Int) = {
       val x = xPositionOfCellColumn(c) + cellHeaderWidth
       val h = cellHeight
       val y = yPositionOfCellRow(r)
       val w = cellWidth - cellHeaderWidth
       new Rect(x.toInt, y.toInt, w.toInt, h.toInt)
     }
+
+    val ret = if (!vertical) {
+      for (c <- 0 until columns; r <- 0 until rows(questions)) yield cell(c, r)
+    }
+    else {
+      for ( r <- 0 until rows(questions); c <- 0 until columns) yield cell(c, r)
+    }
+
+    ret.take(questions)
   }
 
   val cellHeight = destinationHeight(20) / rows(20)
-  
+
   val cellArea = cells(1)(0).area()
 }

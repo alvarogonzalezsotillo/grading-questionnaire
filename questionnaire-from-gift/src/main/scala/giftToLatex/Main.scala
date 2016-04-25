@@ -22,7 +22,6 @@ object Main extends App with LazyLogging {
                     numberOfVariations: Int = 2,
                     horizontalTable: Boolean = true,
                     tickedTable: Boolean = false,
-                    version : Byte = 1,
                     questionnaireQuestionsWeight: Int = 60)
   realMain
 
@@ -47,19 +46,15 @@ object Main extends App with LazyLogging {
         c.copy(numberOfVariations = n)
       }
 
-      opt[Int]('v', "version") text ("Version of generated questionnaire " + GiftToLatex.versions.mkString(",")  + " . Defaults to 1.") action { (v, c) =>
-        c.copy(version = v.toByte)
-      }
-
       opt[String]('t',"header-text") text ("Header text") required() action{ (t,c) =>
         c.copy(headerText = t)
       }
 
-      opt[Boolean]('x', "ticked-table") text ("Check box answer table instead of letters") action{ (x,c) =>
+      opt[Boolean]('x', "ticked-table") text ("Check box answer table instead of letters. Defaults to letters.") action{ (x,c) =>
         c.copy( tickedTable = x )
       }
 
-      opt[Boolean]('h', "horizontal-table") text ("Horizontal answer table") action{ (h,c) =>
+      opt[Boolean]('h', "horizontal-table") text ("Horizontal answer table. Defaults to horizontal") action{ (h,c) =>
         c.copy( horizontalTable = h )
       }
 
@@ -78,7 +73,7 @@ object Main extends App with LazyLogging {
     }
 
     def generateQuestionnarieVersion(c: Config, version: Option[String]) = {
-      val latex = GiftToLatex(c.giftFile, c.version, c.headerText, c.questionnaireQuestionsWeight)
+      val latex = GiftToLatex(c.giftFile,  c.headerText, c.questionnaireQuestionsWeight)
       def computeOutFile: File = {
         val name = if( c.giftFile == invalidFile ){
           "stdin"
@@ -113,7 +108,7 @@ object Main extends App with LazyLogging {
 
     implicit def toFile(s: String) = new File(s)
 
-    val latex = GiftToLatex("/home/alvaro/SincronizadoCloud/copy/2014-2015-Alonso de Avellaneda/aplicaciones-web-ampliada/Examenes/AW-A-EvaluacionExtraordinaria.gift", 0,"Aplicaciones Web - Evaluacion Extraordinaria", 50)
+    val latex = GiftToLatex("/home/alvaro/SincronizadoCloud/copy/2014-2015-Alonso de Avellaneda/aplicaciones-web-ampliada/Examenes/AW-A-EvaluacionExtraordinaria.gift", "Aplicaciones Web - Evaluacion Extraordinaria", 50)
     LatexCompiler(latex, "AW-A-EvaluacionExtraordinaria.pdf", true)
   }
 }
