@@ -5,7 +5,7 @@ import org.opencv.core._
 object AnswerMatrixMeasures {
   def apply(version: Int) = version match{
     case 0 => new AnswerMatrixMeasures()
-    case 1 => new AnswerMatrixMeasures( 0.25, 0.25 )
+    case 1 => new AnswerMatrixMeasures()
   }
 }
 

@@ -30,6 +30,16 @@ class ProcessingStepTest extends FlatSpec {
 
 
 
+  val positiveMatchImages = Seq(
+    "2016-01-26-101322.jpg",
+    "2016-01-26-101343.jpg",
+    "2016-01-26-101403.jpg",
+    "2016-01-26-101423.jpg",
+    "2016-01-26-101448.jpg",
+    "2016-01-26-101502.jpg",
+    "2016-01-26-101516.jpg",
+    "generated.png"
+  )
 
 
   "Initial step " should "do nothing" in {
