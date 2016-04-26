@@ -171,7 +171,6 @@ class ProcessingStepTest extends FlatSpec {
         val m = readImageFromResources(imageLocation)
         val extracted = processMat(studentInfoStep, m)
         val extracted2 = processMat(studentInfoStep, extracted)
-        println(imageLocation)
         saveTestImage("11-studentinfoagain-" + imageLocation, extracted2)
       }
 

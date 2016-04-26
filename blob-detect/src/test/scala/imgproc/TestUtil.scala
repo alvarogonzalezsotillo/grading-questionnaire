@@ -46,7 +46,7 @@ object TestUtil {
 
   def saveTestImage(name: String, m: Mat) = {
     import imgproc.Implicits._
-    println( s"saving ${testImgPath(name).getAbsolutePath}")
+    //println( s"saving ${testImgPath(name).getAbsolutePath}")
     // IT IS NOT A GOOD IDEA TO USE OPENCV, SINCE THE VERSION OF LIBPNG SHOULD MATCH
     //Highgui.imwrite(testImgPath(name).toString, m)
     val format = name.takeRight(3).toLowerCase
@@ -57,7 +57,7 @@ object TestUtil {
 
   case class SomeTestsResult( allowedFailureRatio: Double, total: Int, failures: Int )
 
-  def runSomeTestAndFailIfSoMuchFailures[I,T](files: Seq[I], allowedFailureRatio: Double = 0.2, showFailures : Boolean = false)(test: I => T): SomeTestsResult = {
+  def runSomeTestAndFailIfSoMuchFailures[I,T](files: Seq[I], allowedFailureRatio: Double = 0.2, showFailures : Boolean = true)(test: I => T): SomeTestsResult = {
 
     def runSomeTestAndCollectFailures[T](files: Seq[I])(test: I => T) = {
       val results = for (f <- files) yield (f, Try(test(f)))
