@@ -98,8 +98,6 @@ object GUI extends App {
     biggestQuadrilateralsStep.withDrawContours(i=>Some(i.biggestQuadrilaterals)),
     answerMatrixLocationStep.withDrawContours( i=> i.location.map( c => Seq(c) ) ),
     locateQRStep.withDrawContours( i=> i.qrLocation.map( c => Seq(c) )),
-
-
     extractQRStep,
     decodeQRStep.withDrawString( _.qrText ),
     answerMatrixStep,
