@@ -19,7 +19,7 @@ object ImageProcessing {
       val url = clazz.
         getResource(f).
         getPath
-      println("readImageFromResources:" + f + " --> " + url)
+      
       Highgui.imread(url)
     }
 

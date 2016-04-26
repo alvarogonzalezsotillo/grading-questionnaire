@@ -46,7 +46,7 @@ object TestUtil {
 
   def saveTestImage(name: String, m: Mat) = {
     import imgproc.Implicits._
-    println( s"saving ${testImgPath(name).getAbsolutePath}")
+    //println( s"saving ${testImgPath(name).getAbsolutePath}")
     // IT IS NOT A GOOD IDEA TO USE OPENCV, SINCE THE VERSION OF LIBPNG SHOULD MATCH
     //Highgui.imwrite(testImgPath(name).toString, m)
     val format = name.takeRight(3).toLowerCase

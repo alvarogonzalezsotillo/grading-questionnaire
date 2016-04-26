@@ -30,6 +30,16 @@ class ProcessingStepTest extends FlatSpec {
 
 
 
+  val positiveMatchImages = Seq(
+    "2016-01-26-101322.jpg",
+    "2016-01-26-101343.jpg",
+    "2016-01-26-101403.jpg",
+    "2016-01-26-101423.jpg",
+    "2016-01-26-101448.jpg",
+    "2016-01-26-101502.jpg",
+    "2016-01-26-101516.jpg",
+    "generated.png"
+  )
 
 
   "Initial step " should "do nothing" in {
@@ -102,11 +112,31 @@ class ProcessingStepTest extends FlatSpec {
     }
   }
 
-  "Answer matrix extraction step" should "extract matrix" in {
-    runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
-      val m = readImageFromResources(imageLocation)
-      val extracted = processMat(answerMatrixStep, m)
-      saveTestImage("08-extracted-" + imageLocation, extracted)
+  {
+    behavior of "Answer matrix extraction step"
+
+    it should "locate QR" in{
+      runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
+        val m = readImageFromResources(imageLocation)
+        val extracted = processMat(locateQRStep.withDrawContours( i=> i.qrLocation.map( c => Seq(c) )), m)
+        saveTestImage("08-qrlocation-" + imageLocation, extracted)
+      }
+    }
+
+    it should "decode QR" in{
+      runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
+        val m = readImageFromResources(imageLocation)
+        processMat(decodeQRStep, m)
+      }
+    }
+
+
+    it should "extract matrix" in {
+      runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
+        val m = readImageFromResources(imageLocation)
+        val extracted = processMat(answerMatrixStep, m)
+        saveTestImage("08-extracted-" + imageLocation, extracted)
+      }
     }
   }
 
@@ -151,7 +181,6 @@ class ProcessingStepTest extends FlatSpec {
         val m = readImageFromResources(imageLocation)
         val extracted = processMat(studentInfoStep, m)
         val extracted2 = processMat(studentInfoStep, extracted)
-        println(imageLocation)
         saveTestImage("11-studentinfoagain-" + imageLocation, extracted2)
       }
 

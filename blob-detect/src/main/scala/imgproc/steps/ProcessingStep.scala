@@ -195,7 +195,10 @@ object ProcessingStep {
       val widthOK = w > imageWidth * 0.60
 
       val ret = contoursSizeOK && insideImageOK && insideContourOK && widthOK
-      println(s"$contoursSizeOK  $insideImageOK $insideContourOK $widthOK $w $imageWidth")
+
+      if(false){
+        println(s"$contoursSizeOK  $insideImageOK $insideContourOK $widthOK $w $imageWidth")
+      }
 
       ret
     }
