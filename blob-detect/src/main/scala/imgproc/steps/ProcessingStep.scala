@@ -231,7 +231,7 @@ object ProcessingStep {
 
   val biggestQuadrilateralsStep = quadrilateralStep.extend("Los mayores cinco cuadriláteros") { csi =>
     val quadrilaterals = findBiggestAlignedQuadrilaterals()(csi.quadrilaterals)
-    csi.copy(biggestQuadrilaterals = quadrilaterals)
+    csi.copy(biggestQuadrilaterals = quadrilaterals.get)
   }
 
   val answerMatrixLocationStep = biggestQuadrilateralsStep.extend("Localización de la tabla de respuestas") { lsi =>
