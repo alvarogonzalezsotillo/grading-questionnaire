@@ -35,7 +35,6 @@ class ProcessingStepTest extends FlatSpec {
     "2016-01-26-101343.jpg",
     "2016-01-26-101403.jpg",
     "2016-01-26-101423.jpg",
-    "2016-01-26-101448.jpg",
     "2016-01-26-101502.jpg",
     "2016-01-26-101516.jpg",
     "generated.png"
@@ -180,6 +179,7 @@ class ProcessingStepTest extends FlatSpec {
       runSomeTestAndFailIfSoMuchFailures(positiveMatchImages, 0.3) { imageLocation =>
         val m = readImageFromResources(imageLocation)
         val extracted = processMat(studentInfoStep, m)
+        saveTestImage("11-studentinfoagain-qr-" + imageLocation, processMat(locateQRStep.withDrawContours( i=> i.qrLocation.map( c => Seq(c) )),extracted) )
         val extracted2 = processMat(studentInfoStep, extracted)
         saveTestImage("11-studentinfoagain-" + imageLocation, extracted2)
       }
