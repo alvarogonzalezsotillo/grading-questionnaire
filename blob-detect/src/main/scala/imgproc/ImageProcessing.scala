@@ -162,11 +162,16 @@ object ImageProcessing {
   }
 
   def findBiggestAlignedQuadrilaterals(number: Int = 5)(contours: Seq[MatOfPoint]): Option[Seq[MatOfPoint]] = {
-    val ordered = contours.sortBy(_.area).reverse.take(number)
-    
-    def similarQuadrilaterals(quad: MatOfPoint) = {
-      implicit val epsilon = Epsilon(quad.area*0.10)
+    val ordered = contours.sortBy(_.area).reverse
+
+    def similarQuadrilaterals(quad: MatOfPoint) =  {
+      implicit val epsilon = Epsilon(quad.area*0.25)
       contours.filter(_.area ~= quad.area )
+    }
+
+    if(false){
+      println("Similar quadrilaterals:")
+      println(" area:" + ordered.map(_.area).mkString(", "))
     }
 
     ordered.view.map(similarQuadrilaterals).filter(_.size==number).headOption
