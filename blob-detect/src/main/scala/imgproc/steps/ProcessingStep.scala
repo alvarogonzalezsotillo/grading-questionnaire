@@ -195,7 +195,10 @@ object ProcessingStep {
       val widthOK = w > imageWidth * 0.60
 
       val ret = contoursSizeOK && insideImageOK && insideContourOK && widthOK
-      println(s"$contoursSizeOK  $insideImageOK $insideContourOK $widthOK $w $imageWidth")
+
+      if(false){
+        println(s"$contoursSizeOK  $insideImageOK $insideContourOK $widthOK $w $imageWidth")
+      }
 
       ret
     }
@@ -228,7 +231,7 @@ object ProcessingStep {
 
   val biggestQuadrilateralsStep = quadrilateralStep.extend("Los mayores cinco cuadriláteros") { csi =>
     val quadrilaterals = findBiggestAlignedQuadrilaterals()(csi.quadrilaterals)
-    csi.copy(biggestQuadrilaterals = quadrilaterals)
+    csi.copy(biggestQuadrilaterals = quadrilaterals.get)
   }
 
   val answerMatrixLocationStep = biggestQuadrilateralsStep.extend("Localización de la tabla de respuestas") { lsi =>

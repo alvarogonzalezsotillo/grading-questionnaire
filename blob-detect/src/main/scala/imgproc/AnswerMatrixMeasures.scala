@@ -1,20 +1,15 @@
 package imgproc
 
-import common.QuestionnaireVersion
 import org.opencv.core._
 
 object AnswerMatrixMeasures {
-  def apply(version: Int) = {
-    val vertical = QuestionnaireVersion.isVerticalVersion(version.toByte)
-    val ticked = QuestionnaireVersion.isTickedVersion(version.toByte)
-    if (ticked)
-      new AnswerMatrixMeasures(vertical)
-    else
-      new AnswerMatrixMeasures(vertical, 0.25, 0.25)
+  def apply(version: Int) = version match {
+    case 0 => new AnswerMatrixMeasures()
+    case 1 => new AnswerMatrixMeasures()
   }
 }
 
-class AnswerMatrixMeasures(val vertical: Boolean, val matrixWithToTopOfQRRatio: Double = 0.20, val matrixWithToQRWidthRatio: Double = 0.18) {
+class AnswerMatrixMeasures(vertical: Boolean = false, val matrixWithToTopOfQRRatio: Double = 0.20, val matrixWithToQRWidthRatio: Double = 0.18) {
 
   import imgproc.Implicits._
 
@@ -111,7 +106,7 @@ class AnswerMatrixMeasures(val vertical: Boolean, val matrixWithToTopOfQRRatio: 
       for (c <- 0 until columns; r <- 0 until rows(questions)) yield cell(c, r)
     }
     else {
-      for ( r <- 0 until rows(questions); c <- 0 until columns) yield cell(c, r)
+      for (r <- 0 until rows(questions); c <- 0 until columns) yield cell(c, r)
     }
 
     ret.take(questions)

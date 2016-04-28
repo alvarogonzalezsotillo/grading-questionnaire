@@ -19,7 +19,7 @@ object ImageProcessing {
       val url = clazz.
         getResource(f).
         getPath
-      println("readImageFromResources:" + f + " --> " + url)
+      
       Highgui.imread(url)
     }
 
@@ -161,8 +161,15 @@ object ImageProcessing {
     dst
   }
 
-  def findBiggestAlignedQuadrilaterals(number: Int = 5)(contours: Seq[MatOfPoint]): Seq[MatOfPoint] = {
-    contours.sortBy(_.area).reverse.take(number)
+  def findBiggestAlignedQuadrilaterals(number: Int = 5)(contours: Seq[MatOfPoint]): Option[Seq[MatOfPoint]] = {
+    val ordered = contours.sortBy(_.area).reverse.take(number)
+    
+    def similarQuadrilaterals(quad: MatOfPoint) = {
+      implicit val epsilon = Epsilon(quad.area*0.10)
+      contours.filter(_.area ~= quad.area )
+    }
+
+    ordered.view.map(similarQuadrilaterals).filter(_.size==number).headOption
   }
 
 
