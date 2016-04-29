@@ -218,7 +218,5 @@ object Implicits {
     def ~=(d:Double)(implicit epsilon: Epsilon) = Math.abs(this.value - d) < epsilon.epsilon
   }
 
-  implicit def rectToMatOfPoint( r: Rect ) : MatOfPoint = {
-    new MatOfPoint( new Point(r.x,r.y), new Point(r.x+r.width, r.y), new Point(r.x+r.width, r.y + r.height), new Point(r.x,r.y+r.height) )
-  }
+  implicit def rectToMatOfPoint( r: Rect ) : MatOfPoint = r.asShape
 }

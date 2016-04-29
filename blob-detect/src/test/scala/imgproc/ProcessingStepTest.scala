@@ -145,7 +145,7 @@ class ProcessingStepTest extends FlatSpec {
     it should "extract cells" in {
       runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
         val m = readImageFromResources(imageLocation)
-        val extracted = processMat(cellsOfAnswerMatrix.withDrawContours(_.cellsRect.map(s => s.map(rectToMatOfPoint))), m)
+        val extracted = processMat(cellsOfAnswerMatrix.withDrawContours(_.cellsRect), m)
         saveTestImage("09-cells-" + imageLocation, extracted)
       }
     }
@@ -188,8 +188,6 @@ class ProcessingStepTest extends FlatSpec {
   }
 
 
-  class MoreThanOneException(throwables: Seq[Throwable]) extends RuntimeException("More than one exception:" + throwables.mkString("\n")) {
-  }
 
 }
 

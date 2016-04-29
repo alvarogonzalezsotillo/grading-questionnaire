@@ -198,6 +198,12 @@ object ImageProcessing {
     new Mat(m,rect).clone()
   }
 
+  def submatrix(mat: Mat, points: MatOfPoint, w: Double, h: Double) : Mat = {
+    val dstPoints = new Rect(0,0,w.toInt,h.toInt).asShape
+    val H = findHomography(points,dstPoints)
+    warpImage()(mat, H, new Size(w, h))
+  }
+
   def stretchImage(dst: Mat = null)(m:Mat, w:Int, h:Int) = {
     val ret = newMatrixIfNull(dst)
     Imgproc.resize(m, ret, new Size(w, h))

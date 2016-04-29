@@ -102,7 +102,7 @@ object GUI extends App {
     decodeQRStep.withDrawString( _.qrText ),
     answerMatrixStep,
     studentInfoStep,
-    cellsOfAnswerMatrix.withDrawContours( _.cellsRect.map( s => s.map(rectToMatOfPoint) ) ),
+    cellsOfAnswerMatrix.withDrawContours( _.cellsRect ),
     studentInfoStep.withFilter()(_.mat.isDefined).withSaveMatrix()
   ))
 

@@ -90,7 +90,7 @@ class AnswerMatrixMeasures(vertical: Boolean = false, val matrixWithToTopOfQRRat
   }
 
 
-  def cells(questions: Int): Seq[Rect] = {
+  def cells(questions: Int): Seq[MatOfPoint] = {
     def xPositionOfCellColumn(column: Int) = column * (cellWidth + columnSpaceWidth)
     def yPositionOfCellRow(row: Int) = row * cellHeight
 
@@ -99,7 +99,7 @@ class AnswerMatrixMeasures(vertical: Boolean = false, val matrixWithToTopOfQRRat
       val h = cellHeight
       val y = yPositionOfCellRow(r)
       val w = cellWidth - cellHeaderWidth
-      new Rect(x.toInt, y.toInt, w.toInt, h.toInt)
+      new Rect(x.toInt, y.toInt, w.toInt, h.toInt).asShape
     }
 
     val ret = if (!vertical) {
@@ -114,5 +114,5 @@ class AnswerMatrixMeasures(vertical: Boolean = false, val matrixWithToTopOfQRRat
 
   val cellHeight = destinationHeight(20) / rows(20)
 
-  val cellArea = cells(1)(0).area()
+  val cellArea = cellWidth * cellHeight
 }

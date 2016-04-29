@@ -309,10 +309,11 @@ object ProcessingStep {
 
   }
 
+
   val cellsOfAnswerMatrix = answerMatrixStep.extend("Localización de celdas") { psi =>
     val ret = for (m <- psi.locatedMat; a <- psi.answers) yield {
       val cr = AnswerMatrixMeasures(1).cells(a.size)
-      val c = for (r <- cr) yield submatrix(m, r)
+      val c = for (r <- cr) yield submatrix(m, r, AnswerMatrixMeasures(1).cellWidth, AnswerMatrixMeasures(1).cellHeight)
       psi.copy(cellsRect = Some(cr), cells = Some(c))
     }
     ret.getOrElse(psi)
