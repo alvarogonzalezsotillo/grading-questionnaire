@@ -8,18 +8,24 @@ import java.util.Date
  */
 
 trait StringFromObjectInObjectName{
-  override def toString = getClass().getName().dropWhile(_ != '$').drop(1).takeWhile(_ != '$')
+  override def toString = getClass().
+    getName().
+    reverse.
+    dropWhile(_ != '$').
+    drop(1).
+    takeWhile(_ != '$').
+    reverse
 }
 
 trait HKey[T] extends StringFromObjectInObjectName{
   def apply(hmap: HMap): T = hmap(this).get
 
-  def apply(__ : Int = 0)(implicit hmap: HMap): T = hmap(this).get
+  def apply(__ : Int = 0)(implicit hmap: HMap): T = apply(hmap)
 
   def <--(v: T)(implicit hmap: HMap): HMap = hmap.updated(this, v)
 }
 
-trait HMap {
+sealed trait HMap {
   protected val map: Map[HKey[_], Any]
 
   def apply[T](key: HKey[T]): Option[T] = map.get(key).asInstanceOf[Option[T]]
@@ -30,7 +36,7 @@ trait HMap {
 
   def ++( hmap: HMap ) : HMap
 
-  override def toString = map.toString
+  override def toString = s"HMap(${map.mkString(",")})"
 }
 
 object HMap {
@@ -46,29 +52,39 @@ object HMap {
 
 object HMapSample extends App {
 
-  object importance extends HKey[Int]
+  object Keys {
+
+    object importance extends HKey[Int]
+
+    object name extends HKey[String]
+
+    object address extends HKey[String]
+
+    object dob extends HKey[Date]
+
+    object emails extends HKey[List[String]]
+
+  }
+
+  import Keys._
 
   implicit val hmap = HMap()
 
   val plantilla = HMap().updated(importance,1)
 
-  object name extends HKey[String]
-
-  object address extends HKey[String]
-
-  object dob extends HKey[Date]
-
-  object emails extends HKey[List[String]]
 
 
-  val hmap2 = (address <-- "a")(dob <-- new Date)(name <-- "pepe" )(emails <-- "a@a.com" :: "b@b.com" :: Nil )
+
+  val hmap2 = (address <-- "a")(dob <-- new Date)(name <-- "pepe" )(emails <-- "a@a.com" :: "b@b.com" :: Nil )(plantilla)
+  val hmap3 = (address <-- "b") ++ (dob <-- new Date) ++ (name <-- "juan" )
 
   println(hmap)
   println(hmap2)
+  println(hmap3)
 
   println(hmap(name))
   println(hmap(address))
-  println(address(hmap))
+  println(address(hmap2))
   println(address())
   println(dob())
 
