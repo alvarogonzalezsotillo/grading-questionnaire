@@ -95,7 +95,7 @@ object GUI extends App {
     noiseReductionStep,
     contourStep.withDrawContours(i=>Some(i.contours)),
     quadrilateralStep.withDrawContours(i=>Some(i.quadrilaterals)),
-    biggestQuadrilateralsStep.withDrawContours(i=>Some(i.biggestQuadrilaterals)),
+    biggestQuadrilateralsStep.withDrawContours(_.biggestQuadrilaterals),
     answerMatrixLocationStep.withDrawContours( i=> i.location.map( c => Seq(c) ) ),
     locateQRStep.withDrawContours( i=> i.qrLocation.map( c => Seq(c) )),
     extractQRStep,

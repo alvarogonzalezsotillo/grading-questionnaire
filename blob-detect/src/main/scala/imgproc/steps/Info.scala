@@ -12,12 +12,13 @@ trait OriginalMatInfo {
 trait LocationInfo {
   val location: Option[MatOfPoint]
   val locatedMat: Option[Mat]
+  val locatedCellHeaders : Option[IndexedSeq[MatOfPoint]]
 }
 
 trait ContoursInfo {
   val contours: Seq[MatOfPoint]
   val quadrilaterals: Seq[MatOfPoint]
-  val biggestQuadrilaterals: Seq[MatOfPoint]
+  val biggestQuadrilaterals: Option[IndexedSeq[MatOfPoint]]
 }
 
 trait QRLocationInfo {
@@ -42,8 +43,9 @@ trait StudentInfo{
 }
 
 case class Info(mat: Option[Mat], originalMat: Mat = null, cleanedMat: Mat = null, thresholdMat: Mat = null, contours: Seq[MatOfPoint] = null,
-                quadrilaterals: Seq[MatOfPoint] = null, biggestQuadrilaterals: Seq[MatOfPoint] = null,
-                location: Option[MatOfPoint] = None, locatedMat: Option[Mat] = None, qrLocatedMat: Option[Mat] = None, qrLocation: Option[MatOfPoint] = None,
+                quadrilaterals: Seq[MatOfPoint] = null, biggestQuadrilaterals: Option[IndexedSeq[MatOfPoint]] = None,
+                location: Option[MatOfPoint] = None, locatedMat: Option[Mat] = None, locatedCellHeaders : Option[IndexedSeq[MatOfPoint]] = None,
+                qrLocatedMat: Option[Mat] = None, qrLocation: Option[MatOfPoint] = None,
                 qrText: Option[String] = None, answers: Option[Seq[Int]] = None, cellsRect: Option[Seq[MatOfPoint]] = None, cells: Option[Seq[Mat]] = None,
                  cleanedCells: Option[Seq[Mat]] = None,  studentInfoLocation: Option[MatOfPoint] = None, studentInfoMat: Option[Mat] = None)
   extends OriginalMatInfo with LocationInfo with ContoursInfo with QRLocationInfo with QRInfo with AnswersInfo with StudentInfo{

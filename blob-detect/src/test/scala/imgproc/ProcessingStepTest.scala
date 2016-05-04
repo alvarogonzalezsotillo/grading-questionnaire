@@ -86,7 +86,7 @@ class ProcessingStepTest extends FlatSpec {
   "Biggest quadrilaterals step" should "find quadrilaterals" in {
     runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
       val m = readImageFromResources(imageLocation)
-      val m2 = processMat(biggestQuadrilateralsStep.withDrawContours(i => Some(i.biggestQuadrilaterals)), m)
+      val m2 = processMat(biggestQuadrilateralsStep.withDrawContours(_.biggestQuadrilaterals), m)
       saveTestImage("06-bigquads-" + imageLocation, m2)
     }
   }

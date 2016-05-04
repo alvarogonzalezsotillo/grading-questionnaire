@@ -6,6 +6,9 @@ import org.opencv.core._
 import org.opencv.highgui.Highgui
 import org.opencv.imgproc.Imgproc
 
+import scala.collection.TraversableLike
+import scala.collection.generic.CanBuildFrom
+
 /**
  * Created by alvaro on 29/10/15.
  */
@@ -161,21 +164,6 @@ object ImageProcessing {
     dst
   }
 
-  def findBiggestAlignedQuadrilaterals(number: Int = 5)(contours: Seq[MatOfPoint]): Option[Seq[MatOfPoint]] = {
-    val ordered = contours.sortBy(_.area).reverse
-
-    def similarQuadrilaterals(quad: MatOfPoint) =  {
-      implicit val epsilon = Epsilon(quad.area*0.25)
-      contours.filter(_.area ~= quad.area )
-    }
-
-    if(false){
-      println("Similar quadrilaterals:")
-      println(" area:" + ordered.map(_.area).mkString(", "))
-    }
-
-    ordered.view.map(similarQuadrilaterals).filter(_.size==number).headOption
-  }
 
 
 
@@ -191,6 +179,15 @@ object ImageProcessing {
     val ret = newMatrixIfNull(dst)
     val s = if (size == null) m.size() else size
     Imgproc.warpPerspective(m, ret, H, s)
+    ret
+  }
+
+  def warpContours[C<:Traversable[MatOfPoint]]( contours: C with TraversableLike[MatOfPoint,C], H: Mat )(implicit cbf: CanBuildFrom[C, MatOfPoint, C]) : C = {
+    val ret = contours.map { c =>
+      val dst = new MatOfPoint()
+      Core.perspectiveTransform(c,dst,H)
+      dst
+    }
     ret
   }
 

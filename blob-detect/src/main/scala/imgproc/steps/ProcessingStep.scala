@@ -131,6 +131,24 @@ object ProcessingStep {
   }
 
 
+  def findBiggestAlignedQuadrilaterals(number: Int = 5)(contours: Seq[MatOfPoint]): Option[IndexedSeq[MatOfPoint]] = {
+    val ordered = contours.sortBy(_.area).reverse
+
+    def similarQuadrilaterals(quad: MatOfPoint) =  {
+      implicit val epsilon = Epsilon(quad.area*0.25)
+      contours.filter(_.area ~= quad.area )
+    }
+
+    if(false){
+      println("Similar quadrilaterals:")
+      println(" area:" + ordered.map(_.area).mkString(", "))
+    }
+
+    val ret = ordered.view.map(similarQuadrilaterals).filter(_.size==number).headOption
+    ret.map( _.sortBy( _.boundingBox.minX).toIndexedSeq )
+  }
+
+
   private def locateAnswerMatrix(imageWidth: Int, imageHeight: Int, number: Int = 5, insideLimit: Int = -8)(contours: Seq[MatOfPoint]): Option[MatOfPoint] = {
     import scala.collection.JavaConverters._
 
@@ -231,11 +249,14 @@ object ProcessingStep {
 
   val biggestQuadrilateralsStep = quadrilateralStep.extend("Los mayores cinco cuadriláteros") { csi =>
     val quadrilaterals = findBiggestAlignedQuadrilaterals()(csi.quadrilaterals)
-    csi.copy(biggestQuadrilaterals = quadrilaterals.get)
+    csi.copy(biggestQuadrilaterals = quadrilaterals)
   }
 
   val answerMatrixLocationStep = biggestQuadrilateralsStep.extend("Localización de la tabla de respuestas") { lsi =>
-    val location = locateAnswerMatrix(lsi.originalMat.width(), lsi.originalMat.height())(lsi.biggestQuadrilaterals)
+    val location = lsi.biggestQuadrilaterals.flatMap { biggestQuadrilaterals =>
+      locateAnswerMatrix(lsi.originalMat.width(), lsi.originalMat.height())(biggestQuadrilaterals)
+    }
+
     lsi.copy(location = location)
   }
 
@@ -275,15 +296,21 @@ object ProcessingStep {
 
   val answerMatrixStep = informationOfQRStep.extend("Extracción de la tabla de respuestas") { psi =>
 
-    val am = for (rect <- psi.location; answers <- psi.answers) yield {
+    val loc = for (rect <- psi.location; answers <- psi.answers ; biggestQuadrilaterals <- psi.biggestQuadrilaterals) yield {
 
       val dstPoints = AnswerMatrixMeasures(1).destinationContour(answers.size)
 
       val h = findHomography(rect, dstPoints)
-      warpImage()(psi.originalMat, h, AnswerMatrixMeasures(1).destinationSize(answers.size))
+      val locatedMat = warpImage()(psi.originalMat, h, AnswerMatrixMeasures(1).destinationSize(answers.size))
+      val locatedCellHeaders = warpContours(biggestQuadrilaterals,h)
+
+      (locatedMat,locatedCellHeaders)
     }
 
-    psi.copy(mat = am, locatedMat = am)
+    val am = loc.map( _._1 )
+    val lch = loc.map( _._2 )
+
+    psi.copy(mat = am, locatedMat = am, locatedCellHeaders = lch)
 
   }
 
