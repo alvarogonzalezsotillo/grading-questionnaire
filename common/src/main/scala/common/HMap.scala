@@ -22,6 +22,7 @@ trait HKey[T] extends StringFromObjectInObjectName{
 
   def apply(__ : Int = 0)(implicit hmap: HMap): T = apply(hmap)
 
+  def <--(v: Option[T])(implicit hmap: HMap): HMap = hmap.updated(this,v)
   def <--(v: T)(implicit hmap: HMap): HMap = hmap.updated(this, v)
 }
 
@@ -34,6 +35,14 @@ sealed trait HMap {
 
   def updated[T](k: HKey[T], v: T): HMap
 
+  def deleted[T](k: HKey[T]): HMap
+
+  def updated[T](k: HKey[T], ov: Option[T] ) : HMap = ov match{
+    case Some(v) => updated(k,v)
+    case None => deleted(k)
+  }
+
+
   def ++( hmap: HMap ) : HMap
 
   override def toString = s"HMap(${map.mkString(",")})"
@@ -44,6 +53,7 @@ object HMap {
   private class HMapI(val map: Map[HKey[_], Any]) extends HMap {
     def updated[T](k: HKey[T], v: T): HMap = new HMapI(map.updated(k, v))
     def ++( hmap: HMap ) = new HMapI( map ++ hmap.asInstanceOf[HMapI].map )
+    def deleted[T](k: HKey[T]): HMap = new HMapI( map - k )
   }
 
   def apply(): HMap = new HMapI(Map())

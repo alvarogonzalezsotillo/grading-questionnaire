@@ -1,52 +1,43 @@
 package imgproc.steps
 
 import org.opencv.core.{Rect, MatOfPoint, Mat}
+import common.HMap
 
 
-trait OriginalMatInfo {
-  val originalMat: Mat
-  val thresholdMat: Mat
-  val cleanedMat: Mat
+
+
+object GrayscaleInfo{
+  object thresholdMat  extends HKey[Mat]
+  object cleanedMat  extends HKey[Mat]
 }
 
-trait LocationInfo {
-  val location: Option[MatOfPoint]
-  val locatedMat: Option[Mat]
-  val locatedCellHeaders : Option[IndexedSeq[MatOfPoint]]
+object LocationInfo {
+  object location extends HKey[MatOfPoint]
+  object locatedMat extends HKey[Mat]
+  object locatedCellHeaders 
 }
 
-trait ContoursInfo {
-  val contours: Seq[MatOfPoint]
-  val quadrilaterals: Seq[MatOfPoint]
-  val biggestQuadrilaterals: Option[IndexedSeq[MatOfPoint]]
+object ContoursInfo {
+  object contours extends HKey[MatOfPoint]
+  object quadrilaterals extends HKeySeq[Seq[MatOfPoint]]
+  object biggestQuadrilaterals extends HKey[IndexedSeq[MatOfPoint]]
 }
 
-trait QRLocationInfo {
-  val qrLocation: Option[MatOfPoint]
-  val qrLocatedMat: Option[Mat]
+object QRInfo {
+  object qrLocation extends HKey[MatOfPoint]
+  object qrLocatedMat extends HKey[Mat]
+  object qrText extends HKey[String]
 }
 
-trait QRInfo {
-  val qrText: Option[String]
+object AnswersInfo {
+  object answers extends HKey[Seq[Int]]
+  object cellsRect extends HKey[Seq[MatOfPoint]]
+  object cells extends HKey[Seq[Mat]]
+  object cleanedCells extends HKey[Seq[Mat]]
 }
 
-trait AnswersInfo {
-  val answers: Option[Seq[Int]]
-  val cellsRect: Option[Seq[MatOfPoint]]
-  val cells: Option[Seq[Mat]]
-  val cleanedCells: Option[Seq[Mat]]
+object StudentInfo{
+  object studentInfoLocation extends HKey[MatOfPoint]
+  object studentInfoMat extends HKey[Mat]
 }
 
-trait StudentInfo{
-  val studentInfoLocation : Option[MatOfPoint]
-  val studentInfoMat : Option[Mat]
-}
-
-case class Info(mat: Option[Mat], originalMat: Mat = null, cleanedMat: Mat = null, thresholdMat: Mat = null, contours: Seq[MatOfPoint] = null,
-                quadrilaterals: Seq[MatOfPoint] = null, biggestQuadrilaterals: Option[IndexedSeq[MatOfPoint]] = None,
-                location: Option[MatOfPoint] = None, locatedMat: Option[Mat] = None, locatedCellHeaders : Option[IndexedSeq[MatOfPoint]] = None,
-                qrLocatedMat: Option[Mat] = None, qrLocation: Option[MatOfPoint] = None,
-                qrText: Option[String] = None, answers: Option[Seq[Int]] = None, cellsRect: Option[Seq[MatOfPoint]] = None, cells: Option[Seq[Mat]] = None,
-                 cleanedCells: Option[Seq[Mat]] = None,  studentInfoLocation: Option[MatOfPoint] = None, studentInfoMat: Option[Mat] = None)
-  extends OriginalMatInfo with LocationInfo with ContoursInfo with QRLocationInfo with QRInfo with AnswersInfo with StudentInfo{
-}
