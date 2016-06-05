@@ -1,10 +1,13 @@
 package imgproc.steps
 
-import org.opencv.core.{Rect, MatOfPoint, Mat}
-import common.HMap
+import org.opencv.core.{Mat, MatOfPoint, Rect}
+import common.{HKey, HMap}
 
 
-
+object MainInfo{
+  object mat extends HKey[Mat]
+  object originalMat  extends HKey[Mat]
+}
 
 object GrayscaleInfo{
   object thresholdMat  extends HKey[Mat]
@@ -14,12 +17,12 @@ object GrayscaleInfo{
 object LocationInfo {
   object location extends HKey[MatOfPoint]
   object locatedMat extends HKey[Mat]
-  object locatedCellHeaders 
+  object locatedCellHeaders extends HKey[IndexedSeq[MatOfPoint]]
 }
 
 object ContoursInfo {
-  object contours extends HKey[MatOfPoint]
-  object quadrilaterals extends HKeySeq[Seq[MatOfPoint]]
+  object contours extends HKey[Seq[MatOfPoint]]
+  object quadrilaterals extends HKey[Seq[MatOfPoint]]
   object biggestQuadrilaterals extends HKey[IndexedSeq[MatOfPoint]]
 }
 

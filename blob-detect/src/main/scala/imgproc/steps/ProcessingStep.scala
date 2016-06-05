@@ -4,8 +4,10 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import common.{BinaryConverter, Sounds}
-import imgproc.steps.ProcessingStep.ExtendedStep
+import common.{BinaryConverter, HKey, HMap, Sounds}
+import imgproc.steps.LocationInfo.location
+import imgproc.steps.MainInfo._
+import imgproc.steps.ProcessingStep.{ExtendedStep, Info}
 import imgproc.{AnswerMatrixMeasures, ImageProcessing, QRScanner}
 import org.opencv.core._
 import org.opencv.highgui.Highgui
@@ -21,14 +23,10 @@ import scala.util.Try
 
 trait ProcessingStep {
 
-  import common.HMap
-
-  type Info = HMap
 
   def process( implicit i: Info ) : Info
   val stepName: String
 
-  import initialStep._
 
 
   def extend[T](name: String)(p: Info => Info): ProcessingStep = ExtendedStep(this, name, p)
@@ -59,7 +57,13 @@ object ProcessingStep {
   import imgproc.Implicits._
 
 
-  private case class Step(override val stepName: String)(override val process: Info => Info) extends ProcessingStep
+  type Info = HMap
+
+
+
+  private case class Step(override val stepName: String)(val proc: Info => Info) extends ProcessingStep{
+    override def process(implicit i: Info): Info = proc(i)
+  }
 
   private case class ExtendedStep(previous: ProcessingStep, override val stepName: String, extendedProcess: Info => Info) extends ProcessingStep {
     def process(implicit src: Info) = extendedProcess(previous.process(src))
@@ -68,8 +72,10 @@ object ProcessingStep {
 
   object Implicits {
 
-    import OriginalMatInfo._
-
+    implicit def infoFromMat(m: Mat) : Info = {
+      implicit val h = HMap()
+      (mat <-- m)(originalMat <-- m)
+    }
 
     implicit class AcceptStep(step: ProcessingStep) {
 
@@ -92,8 +98,12 @@ object ProcessingStep {
         step.extend(name) { psi =>
           if (!(psi eq lastInfo)) {
             lastInfo = psi
-            lastInfo(mat).map(saveMatrix(_))
-            saveMatrix(lastInfo.originalMat, "-original")
+            for( m <- lastInfo(mat) ) {
+              saveMatrix(m)
+            }
+            for( m <- lastInfo(originalMat) ){
+              saveMatrix(m, "-original")
+            }
             Sounds.beep()
           }
           psi
@@ -228,9 +238,6 @@ object ProcessingStep {
   }
 
 
-  object mat extends HKey[Mat]
-  object originalMat  extends HKey[Mat]
-  implicit def infoFromMat(m: Mat) : Info = (mat <-- m)(originalMat <-- m)(HMap())
 
   object initialStep extends ProcessingStep {
     override def process(implicit m: Info) = m
@@ -264,8 +271,8 @@ object ProcessingStep {
 
   val biggestQuadrilateralsStep = quadrilateralStep.extend("Los mayores cinco cuadriláteros") { implicit csi =>
     import ContoursInfo._
-    val quadrilaterals = findBiggestAlignedQuadrilaterals()(quadrilaterals())
-    (biggestQuadrilaterals <-- quadrilaterals)
+    val quads = findBiggestAlignedQuadrilaterals()(quadrilaterals())
+    (biggestQuadrilaterals <-- quads)
   }
 
   val answerMatrixLocationStep = biggestQuadrilateralsStep.extend("Localización de la tabla de respuestas") { implicit lsi =>
@@ -308,7 +315,7 @@ object ProcessingStep {
     import QRInfo._
     def compute(s: String) = {
       val data = BinaryConverter.fromBase64(s)
-      BinaryConverter.fromBinarySolutions(data)
+      BinaryConverter.fromBinarySolutions(data).toSeq
     }
     (answers <-- psi(qrText).map(compute))
   }
@@ -316,12 +323,17 @@ object ProcessingStep {
 
   val answerMatrixStep = informationOfQRStep.extend("Extracción de la tabla de respuestas") { implicit psi =>
 
-    val loc = for (rect <- psi(location); answers <- psi(answers) ; biggestQuadrilaterals <- psi(biggestQuadrilaterals)) yield {
+    import imgproc.steps.AnswersInfo._
+    import imgproc.steps.ContoursInfo._
+    import imgproc.steps.MainInfo._
+    import imgproc.steps.LocationInfo._
 
-      val dstPoints = AnswerMatrixMeasures(1).destinationContour(answers.size)
+    val loc = for (rect <- psi(location); ans <- psi(answers) ; biggestQuadrilaterals <- psi(biggestQuadrilaterals)) yield {
+
+      val dstPoints = AnswerMatrixMeasures(1).destinationContour(ans.size)
 
       val h = findHomography(rect, dstPoints)
-      val locatedMat = warpImage()(psi.originalMat, h, AnswerMatrixMeasures(1).destinationSize(answers.size))
+      val locatedMat = warpImage()(psi(originalMat).get, h, AnswerMatrixMeasures(1).destinationSize(ans.size))
       val locatedCellHeaders = warpContours(biggestQuadrilaterals,h)
 
       (locatedMat,locatedCellHeaders)
@@ -333,34 +345,43 @@ object ProcessingStep {
     (mat <-- am)( locatedMat <-- am)(locatedCellHeaders <-- lch)
   }
 
-  val studentInfoStep = answerMatrixStep.extend("Información del alumno") { psi =>
+  val studentInfoStep = answerMatrixStep.extend("Información del alumno") { implicit psi =>
 
+    import imgproc.steps.MainInfo._
+    import imgproc.steps.QRInfo._
+    import imgproc.steps.StudentInfo._
+    import imgproc.steps.AnswersInfo._
 
     def studentInfoRect(qrLocation: MatOfPoint, matrixLocation: MatOfPoint): MatOfPoint = {
       AnswerMatrixMeasures(1).fromMatrixToStudentInfoLocation(matrixLocation)
     }
 
-    val sm: Option[(Some[MatOfPoint], Mat)] = for (qrLocation <- psi.qrLocation; matrixLocation <- psi.location; answers <- psi.answers) yield {
+    val sm: Option[(Some[MatOfPoint], Mat)] = for (qrLocation <- psi(qrLocation); matrixLocation <- psi(location); answers <- psi(answers) ) yield {
       val rect = studentInfoRect(qrLocation, matrixLocation)
       val dstPoints = AnswerMatrixMeasures(1).studentInfoDestinationContour(answers.size)
       val h = findHomography(rect, dstPoints)
-      (Some(rect), warpImage()(psi.originalMat, h, AnswerMatrixMeasures(1).studentInfoDestinationSize(answers.size)))
+      (Some(rect), warpImage()(psi(originalMat).get, h, AnswerMatrixMeasures(1).studentInfoDestinationSize(answers.size)))
     }
 
     sm match {
       case Some((sil, sim)) =>
-        psi.copy(mat = Some(sim), studentInfoMat = Some(sim), studentInfoLocation = sil)
+        (mat <-- sim)( studentInfoMat <-- sim)( studentInfoLocation <-- sil)
       case None => psi
     }
-
   }
 
 
-  val cellsOfAnswerMatrix = answerMatrixStep.extend("Localización de celdas") { psi =>
-    val ret = for (m <- psi.locatedMat; a <- psi.answers) yield {
+  val cellsOfAnswerMatrix = answerMatrixStep.extend("Localización de celdas") { implicit psi =>
+    import imgproc.steps.MainInfo._
+    import imgproc.steps.QRInfo._
+    import imgproc.steps.StudentInfo._
+    import imgproc.steps.AnswersInfo._
+    import imgproc.steps.LocationInfo._
+
+    val ret = for (m <- psi(locatedMat); a <- psi(answers) ) yield {
       val cr = AnswerMatrixMeasures(1).cells(a.size)
       val c = for (r <- cr) yield submatrix(m, r, AnswerMatrixMeasures(1).cellWidth, AnswerMatrixMeasures(1).cellHeight)
-      psi.copy(cellsRect = Some(cr), cells = Some(c))
+      (cellsRect <-- cr)( cells <-- c)
     }
     ret.getOrElse(psi)
   }

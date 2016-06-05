@@ -4,6 +4,7 @@ import java.io.File
 import javax.imageio.ImageIO
 
 import imgproc.ocr.OneLetterOCR._
+import imgproc.steps.AnswersInfo.cells
 import imgproc.steps.ProcessingStep
 import org.opencv.core.Mat
 
@@ -29,11 +30,11 @@ object ExtractPatternsFromStudentInfo extends App{
     val img : Mat = ImageIO.read(f)
     val info = ProcessingStep.cellsOfAnswerMatrix.process(img)
 
-    if( info.cells.isEmpty ){
+    if( info(cells).isEmpty ){
       println( s"Not valid: $f")
     }
 
-    info.cells
+    info(cells)
   }
 
   def saveImage(name: String, m: Mat) = {

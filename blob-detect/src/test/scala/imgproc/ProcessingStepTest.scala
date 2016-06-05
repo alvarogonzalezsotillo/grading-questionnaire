@@ -4,7 +4,8 @@ package imgproc
  * Created by alvaro on 8/07/15.
  */
 
-import java.io.{PrintStream, File}
+import java.io.{File, PrintStream}
+
 import imgproc.steps.ProcessingStep
 import org.junit.runner.RunWith
 import org.opencv.highgui.Highgui
@@ -16,6 +17,11 @@ import imgproc.Implicits._
 import TestUtil._
 import ProcessingStep._
 import ProcessingStep.Implicits._
+import imgproc.steps.AnswersInfo.{cells, cellsRect}
+import imgproc.steps.ContoursInfo.{biggestQuadrilaterals, contours, quadrilaterals}
+import imgproc.steps.LocationInfo.location
+import imgproc.steps.MainInfo.mat
+import imgproc.steps.QRInfo.qrLocation
 
 
 
@@ -24,9 +30,9 @@ class ProcessingStepTest extends FlatSpec {
 
   nu.pattern.OpenCV.loadLibrary()
 
+  import imgproc.steps.ProcessingStep.Implicits._
 
-
-  private def processMat(step: ProcessingStep, m: Mat) = step.process(m).mat.get
+  private def processMat(step: ProcessingStep, m: Mat) = step.process(m)(mat).get
 
 
 
@@ -70,7 +76,7 @@ class ProcessingStepTest extends FlatSpec {
   "Contour extraction step" should "extract contours" in {
     for (imageLocation <- positiveMatchImages) {
       val m = readImageFromResources(imageLocation)
-      val m2 = processMat(contourStep.withDrawContours(i => Some(i.contours)), m)
+      val m2 = processMat(contourStep.withDrawContours(_(contours)), m)
       saveTestImage("04-contours-" + imageLocation, m2)
     }
   }
@@ -78,7 +84,7 @@ class ProcessingStepTest extends FlatSpec {
   "Quadrilateral filter step" should "extract quadrilaterals" in {
     for (imageLocation <- positiveMatchImages) {
       val m = readImageFromResources(imageLocation)
-      val m2 = processMat(quadrilateralStep.withDrawContours(i => Some(i.quadrilaterals)), m)
+      val m2 = processMat(quadrilateralStep.withDrawContours(_(quadrilaterals)), m)
       saveTestImage("05-quads-" + imageLocation, m2)
     }
   }
@@ -86,7 +92,7 @@ class ProcessingStepTest extends FlatSpec {
   "Biggest quadrilaterals step" should "find quadrilaterals" in {
     runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
       val m = readImageFromResources(imageLocation)
-      val m2 = processMat(biggestQuadrilateralsStep.withDrawContours(_.biggestQuadrilaterals), m)
+      val m2 = processMat(biggestQuadrilateralsStep.withDrawContours(_(biggestQuadrilaterals)), m)
       saveTestImage("06-bigquads-" + imageLocation, m2)
     }
   }
@@ -97,15 +103,15 @@ class ProcessingStepTest extends FlatSpec {
     it should "find a location" in {
       runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
         val m = readImageFromResources(imageLocation)
-        val location = answerMatrixLocationStep.process(m).location
-        assert(location.isDefined, imageLocation)
+        val loc = answerMatrixLocationStep.process(m)(location)
+        assert(loc.isDefined, imageLocation)
       }
     }
 
     it should "find a location and save image" in {
       runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
         val m = readImageFromResources(imageLocation)
-        val m2 = processMat(answerMatrixLocationStep.withDrawContours(i => i.location.map(r => Seq(r))), m)
+        val m2 = processMat(answerMatrixLocationStep.withDrawContours(_(location).map(r => Seq(r))), m)
         saveTestImage("07-answerlocation-" + imageLocation, m2)
       }
     }
@@ -117,7 +123,7 @@ class ProcessingStepTest extends FlatSpec {
     it should "locate QR" in{
       runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
         val m = readImageFromResources(imageLocation)
-        val extracted = processMat(locateQRStep.withDrawContours( i=> i.qrLocation.map( c => Seq(c) )), m)
+        val extracted = processMat(locateQRStep.withDrawContours( _(qrLocation).map( c => Seq(c) )), m)
         saveTestImage("08-qrlocation-" + imageLocation, extracted)
       }
     }
@@ -145,7 +151,7 @@ class ProcessingStepTest extends FlatSpec {
     it should "extract cells" in {
       runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
         val m = readImageFromResources(imageLocation)
-        val extracted = processMat(cellsOfAnswerMatrix.withDrawContours(_.cellsRect), m)
+        val extracted = processMat(cellsOfAnswerMatrix.withDrawContours(_(cellsRect)), m)
         saveTestImage("09-cells-" + imageLocation, extracted)
       }
     }
@@ -154,8 +160,8 @@ class ProcessingStepTest extends FlatSpec {
       runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
         val m = readImageFromResources(imageLocation)
         val info = cellsOfAnswerMatrix.process(m)
-        val cells = info.cells.get.zipWithIndex
-        for ((cell, index) <- cells) {
+        val cellsOfInfo = info(cells).get.zipWithIndex
+        for ((cell, index) <- cellsOfInfo) {
           saveTestImage(s"09-cell-${index+1}-" + imageLocation, cell)
         }
       }
@@ -179,7 +185,7 @@ class ProcessingStepTest extends FlatSpec {
       runSomeTestAndFailIfSoMuchFailures(positiveMatchImages, 0.3) { imageLocation =>
         val m = readImageFromResources(imageLocation)
         val extracted = processMat(studentInfoStep, m)
-        saveTestImage("11-studentinfoagain-qr-" + imageLocation, processMat(locateQRStep.withDrawContours( i=> i.qrLocation.map( c => Seq(c) )),extracted) )
+        saveTestImage("11-studentinfoagain-qr-" + imageLocation, processMat(locateQRStep.withDrawContours( _(qrLocation).map( c => Seq(c) )),extracted) )
         val extracted2 = processMat(studentInfoStep, extracted)
         saveTestImage("11-studentinfoagain-" + imageLocation, extracted2)
       }

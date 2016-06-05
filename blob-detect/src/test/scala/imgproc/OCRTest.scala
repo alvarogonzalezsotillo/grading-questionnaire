@@ -8,7 +8,7 @@ import imgproc.ImageProcessing._
 import imgproc.TestUtil._
 import imgproc.ocr.OneLetterOCR._
 import imgproc.ocr.Pattern.TrainingPatterns
-import imgproc.ocr.{TrainedOneLetterOCR, Pattern}
+import imgproc.ocr.{Pattern, TrainedOneLetterOCR}
 import imgproc.steps.ProcessingStep
 import imgproc.steps.ProcessingStep.Implicits._
 import org.junit.runner.RunWith
@@ -16,10 +16,10 @@ import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner
 import java.io.File
 import javax.imageio.ImageIO
+
 import org.opencv.core._
-
-
 import Implicits._
+import imgproc.steps.AnswersInfo.cells
 
 import scala.util.Random
 
@@ -33,7 +33,7 @@ class OCRTest extends FlatSpec {
   private def cellsOfTestImage(f: String) = {
     val img = readImageFromResources(f)
     val info = ProcessingStep.cellsOfAnswerMatrix.process(img)
-    info.cells.get
+    info(cells).get
   }
 
 

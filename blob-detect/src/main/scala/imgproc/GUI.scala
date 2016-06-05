@@ -4,8 +4,13 @@ import java.awt.{Graphics, Image}
 import javax.swing._
 import javax.swing.event.{ChangeEvent, ChangeListener}
 
-import common.{Sounds, Logging}
+import common.{Logging, Sounds}
+import imgproc.steps.AnswersInfo.cellsRect
+import imgproc.steps.ContoursInfo.{biggestQuadrilaterals, contours, quadrilaterals}
+import imgproc.steps.LocationInfo.location
+import imgproc.steps.MainInfo.mat
 import imgproc.steps.ProcessingStep
+import imgproc.steps.QRInfo.{qrLocation, qrText}
 import org.opencv.core._
 import org.opencv.imgproc.Imgproc
 
@@ -32,9 +37,11 @@ object GUI extends App {
     def processMat(m: Mat) = {
       import imgproc.Implicits._
       import imgproc.steps.ProcessingStep.Implicits._
+      import imgproc.steps.MainInfo._
+
       setOverlayImage(m)
       val ret = step.process(m)
-      image = ret.mat.getOrElse(null)
+      image = ret(mat).getOrElse(null)
       ret
     }
 
@@ -93,17 +100,17 @@ object GUI extends App {
     initialStep,
     thresholdStep,
     noiseReductionStep,
-    contourStep.withDrawContours(i=>Some(i.contours)),
-    quadrilateralStep.withDrawContours(i=>Some(i.quadrilaterals)),
-    biggestQuadrilateralsStep.withDrawContours(_.biggestQuadrilaterals),
-    answerMatrixLocationStep.withDrawContours( i=> i.location.map( c => Seq(c) ) ),
-    locateQRStep.withDrawContours( i=> i.qrLocation.map( c => Seq(c) )),
+    contourStep.withDrawContours(_(contours)),
+    quadrilateralStep.withDrawContours(_(quadrilaterals)),
+    biggestQuadrilateralsStep.withDrawContours(_(biggestQuadrilaterals)),
+    answerMatrixLocationStep.withDrawContours( i=> i(location).map( c => Seq(c) ) ),
+    locateQRStep.withDrawContours( i=> i(qrLocation).map( c => Seq(c) )),
     extractQRStep,
-    decodeQRStep.withDrawString( _.qrText ),
+    decodeQRStep.withDrawString( _(qrText) ),
     answerMatrixStep,
     studentInfoStep,
-    cellsOfAnswerMatrix.withDrawContours( _.cellsRect ),
-    studentInfoStep.withFilter()(_.mat.isDefined).withSaveMatrix()
+    cellsOfAnswerMatrix.withDrawContours( _(cellsRect) ),
+    studentInfoStep.withFilter()(_(mat).isDefined).withSaveMatrix()
   ))
 
   frame.setSize(640, 480)
