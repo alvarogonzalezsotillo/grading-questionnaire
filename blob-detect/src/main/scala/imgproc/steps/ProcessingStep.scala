@@ -37,7 +37,7 @@ trait ProcessingStep {
       val newM = m.clone
       ImageProcessing.drawContours(newM, contours)
     }
-    (mat <-- matWithContours)(p)
+    p(mat, matWithContours)
   }
 
   def withDrawString(extractString: Info => Option[String]): ProcessingStep = extend(stepName) { p =>
@@ -46,7 +46,7 @@ trait ProcessingStep {
       val newM = m.clone()
       ImageProcessing.drawString(newM, s, new Point(10, 10))
     }
-    (mat <-- matWithString)(p)
+    p(mat, matWithString)
   }
 }
 
@@ -72,10 +72,7 @@ object ProcessingStep {
 
   object Implicits {
 
-    implicit def infoFromMat(m: Mat) : Info = {
-      implicit val h = HMap()
-      (mat <-- m)(originalMat <-- m)
-    }
+    implicit def infoFromMat(m: Mat) : Info = HMap()(mat -> m)(originalMat -> m)
 
     implicit class AcceptStep(step: ProcessingStep) {
 
@@ -247,32 +244,33 @@ object ProcessingStep {
   val thresholdStep = initialStep.extend("Umbral adaptativo") { implicit psi =>
     import GrayscaleInfo._
     val t = threshold()(originalMat())
-    (thresholdMat <-- t)(mat <-- t)
+    psi(thresholdMat -> t)(mat -> t)
   }
 
   val noiseReductionStep = thresholdStep.extend("Eliminación de ruido (open-close)") { implicit psi =>
     import GrayscaleInfo._
     val cleaned = clean()()(thresholdMat())
-    (cleanedMat <-- cleaned)(mat <-- cleaned)
+    psi(cleanedMat -> cleaned)(mat -> cleaned)
   }
 
   val contourStep = noiseReductionStep.extend("Búsqueda de contornos") { implicit psi =>
     import GrayscaleInfo._
     import ContoursInfo._
     val c = findContours(cleanedMat())
-    (contours <-- c)(mat <-- originalMat())
+    psi(contours -> c)(mat -> originalMat())
   }
 
   val quadrilateralStep = contourStep.extend("Filtro de contronos no cuadriláteros") { implicit csi =>
     import ContoursInfo._
     val newContours = approximateContoursToQuadrilaterals()(contours())
-    (quadrilaterals <-- newContours)
+    csi(quadrilaterals -> newContours)
   }
 
   val biggestQuadrilateralsStep = quadrilateralStep.extend("Los mayores cinco cuadriláteros") { implicit csi =>
     import ContoursInfo._
+
     val quads = findBiggestAlignedQuadrilaterals()(quadrilaterals())
-    (biggestQuadrilaterals <-- quads)
+    csi(biggestQuadrilaterals, quads)
   }
 
   val answerMatrixLocationStep = biggestQuadrilateralsStep.extend("Localización de la tabla de respuestas") { implicit lsi =>
@@ -281,14 +279,14 @@ object ProcessingStep {
     val l = lsi(biggestQuadrilaterals).flatMap { biggestQuadrilaterals =>
       locateAnswerMatrix(originalMat().width(), originalMat().height())(biggestQuadrilaterals)
     }
-    (location <-- l)
+    lsi(location, l)
   }
 
 
-  val locateQRStep = answerMatrixLocationStep.extend("Localización del código QR") { implicit psi =>
+  val locateQRStep = answerMatrixLocationStep.extend("Localización del código QR") { psi =>
     import LocationInfo._
     import QRInfo._
-    (qrLocation <-- psi(location).map(locateQR))
+    psi(qrLocation, psi(location).map(locateQR))
   }
 
   val extractQRStep = locateQRStep.extend("Extracción del código QR") { implicit psi =>
@@ -301,23 +299,23 @@ object ProcessingStep {
     }
 
     val m = psi(qrLocation).map(compute)
-    (mat <-- m)(qrLocatedMat <-- m)
+    psi(mat, m)(qrLocatedMat, m)
   }
 
 
-  val decodeQRStep = extractQRStep.extend("Decodificación del código QR") { implicit psi =>
+  val decodeQRStep = extractQRStep.extend("Decodificación del código QR") { psi =>
     import QRInfo._
-    (qrText <-- psi(qrLocatedMat).flatMap(QRScanner.decode))
+    psi(qrText, psi(qrLocatedMat).flatMap(QRScanner.decode))
   }
 
-  val informationOfQRStep = decodeQRStep.extend("Información del código QR") { implicit psi =>
+  val informationOfQRStep = decodeQRStep.extend("Información del código QR") { psi =>
     import AnswersInfo._
     import QRInfo._
     def compute(s: String) = {
       val data = BinaryConverter.fromBase64(s)
       BinaryConverter.fromBinarySolutions(data).toSeq
     }
-    (answers <-- psi(qrText).map(compute))
+    psi(answers, psi(qrText).map(compute))
   }
 
 
@@ -333,7 +331,7 @@ object ProcessingStep {
       val dstPoints = AnswerMatrixMeasures(1).destinationContour(ans.size)
 
       val h = findHomography(rect, dstPoints)
-      val locatedMat = warpImage()(psi(originalMat).get, h, AnswerMatrixMeasures(1).destinationSize(ans.size))
+      val locatedMat = warpImage()(originalMat(), h, AnswerMatrixMeasures(1).destinationSize(ans.size))
       val locatedCellHeaders = warpContours(biggestQuadrilaterals,h)
 
       (locatedMat,locatedCellHeaders)
@@ -342,10 +340,14 @@ object ProcessingStep {
     val am = loc.map( _._1 )
     val lch = loc.map( _._2 )
 
-    (mat <-- am)( locatedMat <-- am)(locatedCellHeaders <-- lch)
+    println( "AnswerMatrixStep: am:" + am )
+
+    val ret = psi(mat, am)( locatedMat, am)(locatedCellHeaders, lch)
+    println( "  " + ret )
+    ret
   }
 
-  val studentInfoStep = answerMatrixStep.extend("Información del alumno") { implicit psi =>
+  val studentInfoStep = answerMatrixStep.extend("Información del alumno") { psi =>
 
     import imgproc.steps.MainInfo._
     import imgproc.steps.QRInfo._
@@ -365,13 +367,13 @@ object ProcessingStep {
 
     sm match {
       case Some((sil, sim)) =>
-        (mat <-- sim)( studentInfoMat <-- sim)( studentInfoLocation <-- sil)
+        psi(mat -> sim)(studentInfoMat -> sim)( studentInfoLocation, sil)
       case None => psi
     }
   }
 
 
-  val cellsOfAnswerMatrix = answerMatrixStep.extend("Localización de celdas") { implicit psi =>
+  val cellsOfAnswerMatrix = answerMatrixStep.extend("Localización de celdas") { psi =>
     import imgproc.steps.MainInfo._
     import imgproc.steps.QRInfo._
     import imgproc.steps.StudentInfo._
@@ -381,7 +383,7 @@ object ProcessingStep {
     val ret = for (m <- psi(locatedMat); a <- psi(answers) ) yield {
       val cr = AnswerMatrixMeasures(1).cells(a.size)
       val c = for (r <- cr) yield submatrix(m, r, AnswerMatrixMeasures(1).cellWidth, AnswerMatrixMeasures(1).cellHeight)
-      (cellsRect <-- cr)( cells <-- c)
+      psi(cellsRect -> cr)( cells -> c)
     }
     ret.getOrElse(psi)
   }
