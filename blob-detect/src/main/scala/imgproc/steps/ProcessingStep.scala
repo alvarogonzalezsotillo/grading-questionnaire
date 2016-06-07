@@ -72,7 +72,7 @@ object ProcessingStep {
 
   object Implicits {
 
-    implicit def infoFromMat(m: Mat) : Info = HMap()(mat -> m)(originalMat -> m)
+    implicit def infoFromMat(m: Mat) : Info = HMap()(mat , m)(originalMat , m)
 
     implicit class AcceptStep(step: ProcessingStep) {
 
@@ -244,26 +244,26 @@ object ProcessingStep {
   val thresholdStep = initialStep.extend("Umbral adaptativo") { implicit psi =>
     import GrayscaleInfo._
     val t = threshold()(originalMat())
-    psi(thresholdMat -> t)(mat -> t)
+    psi(thresholdMat , t)(mat ,t)
   }
 
   val noiseReductionStep = thresholdStep.extend("Eliminación de ruido (open-close)") { implicit psi =>
     import GrayscaleInfo._
     val cleaned = clean()()(thresholdMat())
-    psi(cleanedMat -> cleaned)(mat -> cleaned)
+    psi(cleanedMat , cleaned)(mat , cleaned)
   }
 
   val contourStep = noiseReductionStep.extend("Búsqueda de contornos") { implicit psi =>
     import GrayscaleInfo._
     import ContoursInfo._
     val c = findContours(cleanedMat())
-    psi(contours -> c)(mat -> originalMat())
+    psi(contours , c)(mat , originalMat())
   }
 
   val quadrilateralStep = contourStep.extend("Filtro de contronos no cuadriláteros") { implicit csi =>
     import ContoursInfo._
     val newContours = approximateContoursToQuadrilaterals()(contours())
-    csi(quadrilaterals -> newContours)
+    csi(quadrilaterals , newContours)
   }
 
   val biggestQuadrilateralsStep = quadrilateralStep.extend("Los mayores cinco cuadriláteros") { implicit csi =>
@@ -367,7 +367,7 @@ object ProcessingStep {
 
     sm match {
       case Some((sil, sim)) =>
-        psi(mat -> sim)(studentInfoMat -> sim)( studentInfoLocation, sil)
+        psi(mat , sim)(studentInfoMat , sim)( studentInfoLocation, sil)
       case None => psi
     }
   }
@@ -383,7 +383,7 @@ object ProcessingStep {
     val ret = for (m <- psi(locatedMat); a <- psi(answers) ) yield {
       val cr = AnswerMatrixMeasures(1).cells(a.size)
       val c = for (r <- cr) yield submatrix(m, r, AnswerMatrixMeasures(1).cellWidth, AnswerMatrixMeasures(1).cellHeight)
-      psi(cellsRect -> cr)( cells -> c)
+      psi(cellsRect , cr)( cells , c)
     }
     ret.getOrElse(psi)
   }

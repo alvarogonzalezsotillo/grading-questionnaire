@@ -42,10 +42,6 @@ sealed trait HMap {
   def apply[T]( k: HKey[T], v: T ) = updated(k,v)
   def apply[T]( k: HKey[T], v: Option[T] ) = updated(k,v)
 
-  def apply[T]( pair: (HKey[T], T) ) : HMap = pair match {
-    case (k,v) => updated(k,v)
-  }
-
   def ++( hmap: HMap ) : HMap
 
 }
