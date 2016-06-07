@@ -192,4 +192,14 @@ class GiftParserTest extends FlatSpec {
     }
   }
 
+  "A question with table" should "be a full page question" in {
+    val s = "Diseña la siguiente red para que los ordenadores blancos tengan un dominio de broadcast distinto de los ordenadores oscuros, pero que todos puedan comunicarse a nivel de red.\n<img width=\"8cm\" src=\"ejercicio-vlan-1.png\">\n<font size=\"+1\">\n<table columns=\"6\">\n<tr>\n\t<td>Equipo</td>\t<td>Interfaz</td>\t<td>Vlan (access/trunk)</td>\t<td>Puerta de enlace</td>\t<td>Dirección IP y Máscara</td>\n</tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n<tr><td></td><td></td><td></td><td></td><td></td></tr>\n</table>\n</font>\n{\n}"
+    GiftParser.parse(s) match{
+      case GiftFile(questions) =>
+        assert( questions(0).asInstanceOf[OpenQuestion].fullPageQuestion )
+    }
+  }
+
+
+
 }

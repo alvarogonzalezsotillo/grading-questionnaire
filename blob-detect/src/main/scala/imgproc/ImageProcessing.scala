@@ -183,8 +183,18 @@ object ImageProcessing {
   }
 
   def warpContours[C<:Traversable[MatOfPoint]]( contours: C with TraversableLike[MatOfPoint,C], H: Mat )(implicit cbf: CanBuildFrom[C, MatOfPoint, C]) : C = {
-    val ret = contours.map { c =>
+    val ret = contours.map { integerContours =>
       val dst = new MatOfPoint()
+      val c = new MatOfPoint2f()
+      integerContours.convertTo(c,CvType.CV_32F)
+
+      if( false ) {
+        System.out.println("H:" + H)
+        System.out.println("c.channels:" + c.channels())
+        System.out.println("H.cols:" + H.cols())
+        System.out.println("c.depth:" + c.depth())
+        System.out.println("c:" + c.toArray.mkString(","))
+      }
       Core.perspectiveTransform(c,dst,H)
       dst
     }

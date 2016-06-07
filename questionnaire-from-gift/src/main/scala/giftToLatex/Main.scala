@@ -54,8 +54,8 @@ object Main extends App with LazyLogging {
         c.copy( tickedTable = x )
       }
 
-      opt[Boolean]('h', "horizontal-table") text ("Horizontal answer table. Defaults to horizontal") action{ (h,c) =>
-        c.copy( horizontalTable = h )
+      opt[Boolean]('v', "vertical-table") text ("Horizontal answer table. Defaults to horizontal") action{ (v,c) =>
+        c.copy( horizontalTable = !v )
       }
 
       opt[Unit]('h',"help") text("Shows this help") action { (_,c) =>

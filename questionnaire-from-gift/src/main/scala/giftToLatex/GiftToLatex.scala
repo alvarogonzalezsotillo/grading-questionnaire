@@ -172,7 +172,7 @@ object GiftToLatex extends LazyLogging{
     val version = QuestionnaireVersion.version(horizontal,ticked)
 
     val openQuestionsWeight = 100 - questionnaireQuestionsWeight
-    val firstPage = s"\\FirstPage{$questionnaireQuestionsWeight}{$openQuestionsWeight}{${f.questionnaireQuestions.size}{$horizontal}{$ticked}}"
+    val firstPage = s"\\FirstPage{$questionnaireQuestionsWeight}{$openQuestionsWeight}{${f.questionnaireQuestions.size}}{$horizontal}{$ticked}"
     val questions = generateLatexForQuestions(f)
     val solutionIndexes = generateSolutionIndexes(f)
     val solutions = solutionIndexes.map(i => (i.toChar + 'a').toChar).mkString(",")

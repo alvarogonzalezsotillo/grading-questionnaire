@@ -72,7 +72,7 @@ object GiftParser {
     }
 
     case class OpenQuestion(text: String) extends Question{
-      private val fullPageHTMLTags = Seq( "table", "li" ).map( "<" + _ + ">")
+      private val fullPageHTMLTags = Seq( "table", "li" ).map( "</" + _ + ">")
       def fullPageQuestion = fullPageHTMLTags.exists( text.contains )
     }
 
