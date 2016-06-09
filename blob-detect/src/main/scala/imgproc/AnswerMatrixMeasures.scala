@@ -11,7 +11,104 @@ object AnswerMatrixMeasures {
   val matrixWithToLeftOfQRRatio = 0.02
   val matrixWithToTopOfQRRatio: Double = 0.20
   val matrixWithToQRWidthRatio: Double = 0.18
+
+
 }
+
+class AnswerMatrixMeasuresHorizontalLetter(val columns: Int = 5) {
+
+  def rows(questions: Int) = (1.0 * questions / columns).ceil.toInt
+
+  object TypeSafeWidthHeight {
+
+    case class X(x: Double) {
+      def +(ox: X) = X(x + ox.x)
+
+      def *(r: Double) = X(x * r)
+    }
+
+    case class Y(y: Double) {
+      def +(oy: Y) = Y(y + oy.y)
+
+      def *(r: Double) = Y(y * r)
+    }
+
+    case class Point(x: X, y: Y) {
+      def +(p: Point) = Point(x + p.x, y + p.y)
+
+      def *(d: Double) = Point(x * d, y * d)
+    }
+
+    case class Width(w: Double) {
+      def *(r: WidthToHeightRatio): Height = Height(w * r.r)
+
+      def *(r: Double) = Width(w * r)
+
+      def +(wi: Width) = Width(w + wi.w)
+
+      def toX = X(w)
+    }
+
+    case class Height(h: Double) {
+      def *(r: HeightToWidthRatio) = Width(h * r.r)
+
+      def *(r: Double) = Height(h * r)
+
+      def +(he: Height) = Height(h + he.h)
+
+      def toY = Y(h)
+    }
+
+    case class Size(w: Width, h: Height) {
+      def on(o: Point) = Rect(o, w, h)
+    }
+
+    case class Rect(o: Point, w: Width, h: Height)
+
+    case class WidthToHeightRatio(r: Double)
+
+    case class HeightToWidthRatio(r: Double)
+
+  }
+  import TypeSafeWidthHeight._
+
+
+  object Params {
+    val cellHeaderSize = Size(Width(60), Height(20))
+    val answerCellAvailableWidth = Width(180)
+    val cellHeaderToCellWidthGap = Width(5)
+    val cellSize = Size(Width(150), cellHeaderSize.h)
+    val answerTableOrigin = Point(X(0), Y(0))
+  }
+
+  import Params._
+
+  val answerTableWidth = (cellHeaderSize.w + answerCellAvailableWidth) * columns
+
+  def answerTableSize(questions: Int) = Size(answerTableWidth, cellHeaderSize.h * rows(questions))
+
+  def answerCell(question: Int, questions: Int) = {
+    assert(question >= 0 && question < questions)
+
+    val rowOfQuestion = question / questions
+    val columnOfQuestion = question % columns
+
+    object LocalComputedAndCacheableValues {
+      val basePointForCells = answerTableOrigin + Point((cellHeaderSize.w + cellHeaderToCellWidthGap).toX, Y(0))
+      val columnOffset = Point((answerCellAvailableWidth + cellHeaderSize.w).toX, Y(0))
+      val rowOffset = Point(X(0), cellSize.h.toY)
+    }
+
+    import LocalComputedAndCacheableValues._
+
+    cellSize.on(basePointForCells + rowOffset * rowOfQuestion + columnOffset * columnOfQuestion)
+  }
+
+  def answerCells(questions: Int) = for (q <- 0 until questions) yield answerCell(q, questions)
+
+
+}
+
 
 class AnswerMatrixMeasures(vertical: Boolean = false) {
 
