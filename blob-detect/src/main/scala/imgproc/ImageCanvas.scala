@@ -72,6 +72,8 @@ class ImageCanvas( img: Image = ImageCanvas.defaultImage ) extends JPanel{
   override def paintComponent(g: Graphics) = {
     import scala.collection.JavaConversions._
     val r = computeBestFit
+    g.setColor(getBackground())
+    g.fillRect(0,0,getWidth(),getHeight())
     g.drawImage(_image,r.x,r.y,r.width,r.height,null)
     for( p <- puntosDeCirculos ) drawCircles(p,g)
   }

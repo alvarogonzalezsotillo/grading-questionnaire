@@ -336,10 +336,7 @@ object ProcessingStep {
     val am = loc.map(_._1)
     val lch = loc.map(_._2)
 
-    println("AnswerMatrixStep: am:" + am)
-
     val ret = psi(mat, am)(locatedMat, am)(locatedCellHeaders, lch)
-    println("  " + ret)
     ret
   }
 
