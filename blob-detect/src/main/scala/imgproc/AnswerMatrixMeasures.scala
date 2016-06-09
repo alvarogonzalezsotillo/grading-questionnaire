@@ -87,24 +87,28 @@ class AnswerMatrixMeasuresHorizontalLetter(val columns: Int = 5) {
 
   def answerTableSize(questions: Int) = Size(answerTableWidth, cellHeaderSize.h * rows(questions))
 
-  def answerCell(question: Int, questions: Int) = {
-    assert(question >= 0 && question < questions)
 
-    val rowOfQuestion = question / questions
-    val columnOfQuestion = question % columns
+  def answerCells(questions: Int) = {
 
-    object LocalComputedAndCacheableValues {
-      val basePointForCells = answerTableOrigin + Point((cellHeaderSize.w + cellHeaderToCellWidthGap).toX, Y(0))
-      val columnOffset = Point((answerCellAvailableWidth + cellHeaderSize.w).toX, Y(0))
-      val rowOffset = Point(X(0), cellSize.h.toY)
+    def answerCell(question: Int) = {
+      assert(question >= 0 && question < questions)
+
+      val rowOfQuestion = question / questions
+      val columnOfQuestion = question % columns
+
+      object LocalComputedAndCacheableValues {
+        val basePointForCells = answerTableOrigin + Point((cellHeaderSize.w + cellHeaderToCellWidthGap).toX, Y(0))
+        val columnOffset = Point((answerCellAvailableWidth + cellHeaderSize.w).toX, Y(0))
+        val rowOffset = Point(X(0), cellSize.h.toY)
+      }
+
+      import LocalComputedAndCacheableValues._
+
+      cellSize.on(basePointForCells + rowOffset * rowOfQuestion + columnOffset * columnOfQuestion)
     }
 
-    import LocalComputedAndCacheableValues._
-
-    cellSize.on(basePointForCells + rowOffset * rowOfQuestion + columnOffset * columnOfQuestion)
+    (0 until questions).map(answerCell)
   }
-
-  def answerCells(questions: Int) = for (q <- 0 until questions) yield answerCell(q, questions)
 
 
 }
