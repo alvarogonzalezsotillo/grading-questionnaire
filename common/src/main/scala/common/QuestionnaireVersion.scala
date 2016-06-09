@@ -4,6 +4,7 @@ package common
  * Created by alvaro on 25/04/16.
  */
 object QuestionnaireVersion {
+
   val versions = Map[Byte, String](
     0.toByte -> "Horizontal free hand letter answers",
     1.toByte -> "Vertical free hand letter answers",

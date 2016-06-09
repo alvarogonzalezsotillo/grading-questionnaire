@@ -7,17 +7,21 @@ object AnswerMatrixMeasures {
     case 0 => new AnswerMatrixMeasures()
     case 1 => new AnswerMatrixMeasures()
   }
+
+  val matrixWithToLeftOfQRRatio = 0.02
+  val matrixWithToTopOfQRRatio: Double = 0.20
+  val matrixWithToQRWidthRatio: Double = 0.18
 }
 
-class AnswerMatrixMeasures(vertical: Boolean = false, val matrixWithToTopOfQRRatio: Double = 0.20, val matrixWithToQRWidthRatio: Double = 0.18) {
+class AnswerMatrixMeasures(vertical: Boolean = false) {
 
   import imgproc.Implicits._
+  import AnswerMatrixMeasures._
 
   val columns = 5
   val destinationWidth = 800.0
   val cellHeaderToHeaderWidthRatio = (0.7 + 0.3) / (0.7 + 1.3)
   val columnSpaceToCellWidthRatio = 0.15
-  val matrixWithToLeftOfQRRatio = 0.02
 
 
   val answerHeightRatio = 5.5 * columns

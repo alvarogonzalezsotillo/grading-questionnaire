@@ -21,12 +21,13 @@ object BinaryConverter {
     (Seq(version, bitsPerIndex.toByte, solutionIndexes.size.toByte) ++ solutions).toArray
   }
 
-  def fromBinarySolutions(solutions: Array[Byte] ) = {
+  def fromBinarySolutions(solutions: Array[Byte] ) : (Seq[Int], Byte) = {
 
     val bitsPerIndex = solutions(1)
     val valuesPerByte = 8 / bitsPerIndex
     val n = solutions(2)
     val solutionIndexes = new Array[Int](n)
+    val version = solutions(0)
     val data = solutions.drop(3)
     for (i <- 0 until n) {
       val indexInByte = valuesPerByte - 1 - (i % valuesPerByte)
@@ -36,7 +37,7 @@ object BinaryConverter {
       solutionIndexes(i) = sol >> (bitsPerIndex * indexInByte)
       //println(s"i:$i indexInByte:$indexInByte mask:$mask data():${data(i / valuesPerByte)} sol:$sol solutionIndexes:${solutionIndexes(i)}")
     }
-    solutionIndexes
+    (solutionIndexes,version)
   }
 
   def toBase64(buffer: Array[Byte]): String = {

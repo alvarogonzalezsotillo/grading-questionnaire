@@ -30,6 +30,7 @@ object QRInfo {
   object qrLocation extends HKey[MatOfPoint]
   object qrLocatedMat extends HKey[Mat]
   object qrText extends HKey[String]
+  object qrVersion extends HKey[Byte]
 }
 
 object AnswersInfo {
