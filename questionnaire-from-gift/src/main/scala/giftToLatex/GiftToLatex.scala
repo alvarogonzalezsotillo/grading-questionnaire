@@ -197,7 +197,7 @@ object GiftToLatex extends LazyLogging{
   }
 
 
-  def apply(f: File, headerText: String = "", questionnaireQuestionsWeight: Int = 60, horizontal: Boolean = true, ticked: Boolean = false, imagePath: Seq[String] = Seq() ): String = {
+  def apply(f: File, headerText: String = "", questionnaireQuestionsWeight: Int = 60, maxQuestionnaireQuestions: Int = Integer.MAX_VALUE, horizontal: Boolean = true, ticked: Boolean = false, imagePath: Seq[String] = Seq() ): String = {
     GiftParser.parse(f) match {
       case GiftError(msg, line, column, lineContents) =>
         throw new IllegalArgumentException(s"Error:$msg, at $line,$column\n$lineContents")
@@ -206,7 +206,7 @@ object GiftToLatex extends LazyLogging{
         val additionalImagePath = f.getAbsoluteFile.getParent
         val ip = additionalImagePath +: imagePath
         logger.debug( ip.toString )
-        generateLatex(g, headerText, questionnaireQuestionsWeight, horizontal, ticked, ip )
+        generateLatex( g.reduce(maxQuestionnaireQuestions), headerText, questionnaireQuestionsWeight, horizontal, ticked, ip )
     }
 
   }

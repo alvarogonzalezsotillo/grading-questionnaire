@@ -40,6 +40,21 @@ trait ProcessingStep {
     p(mat, matWithContours)
   }
 
+  def withDrawNumberedContours(extractContours: Info => Option[Seq[MatOfPoint]]): ProcessingStep = extend(stepName) { p =>
+
+    import imgproc.Implicits._
+
+    val matWithContours = for (m <- p(mat); contours <- extractContours(p)) yield {
+      val newM = m.clone
+      for( (c,i)<-contours.zipWithIndex ) {
+        ImageProcessing.drawString(newM, s"$i", c.center )
+      }
+      ImageProcessing.drawContours(newM, contours)
+    }
+    p(mat, matWithContours)
+  }
+
+
   def withDrawString(extractString: Info => Option[String]): ProcessingStep = extend(stepName) { p =>
 
     val matWithString = for (m <- p(mat); s <- extractString(p)) yield {
@@ -204,8 +219,16 @@ object ProcessingStep {
           (lowerPoints.minBy(_.normalize * unit), lowerPoints.maxBy(_.normalize * unit))
         }
 
-        val lowerExtension = (lowerRight - lowerLeft) * AnswerMatrixMeasures(version).extensionFactor
-        val upperExtension = (upperRight - upperLeft) * AnswerMatrixMeasures(version).extensionFactor
+        val extensionFactor = {
+          val amm = AnswerMatrixMeasures(version)
+          import amm.Params._
+          val extension = answerCellAvailableWidth.w
+          val cellHeaders = (cellHeaderSize.w.w + extension)*amm.columns
+          cellHeaders/extension
+        }
+
+        val lowerExtension = (lowerRight - lowerLeft) * extensionFactor
+        val upperExtension = (upperRight - upperLeft) * extensionFactor
 
         new MatOfPoint(
           upperLeft + center,

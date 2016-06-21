@@ -122,6 +122,23 @@ object GiftParser {
       GiftFile(qQuestions ++ oQuestions, file)
     }
 
+    def reduce( questionnaireQuestionsNumber: Int = Int.MaxValue, openQuestionsNumber: Int = Int.MaxValue ) = {
+
+      def reduceNumber( number: Int, q: Questions ): Questions ={
+        if( q.size > number ){
+          val i = Random.nextInt(q.size )
+          reduceNumber( number, q.take(i-1) ++ q.drop(i) )
+        }
+        else{
+          q
+        }
+      }
+
+      val newQQ = reduceNumber(questionnaireQuestionsNumber, questionnaireQuestions)
+      val newOQ = reduceNumber(openQuestionsNumber, openQuestions)
+      GiftFile(newQQ ++ newOQ, file )
+    }
+
   }
 
   case class GiftError(msg: String, line: Int, column: Int, lineContents: String) extends GiftParserResult

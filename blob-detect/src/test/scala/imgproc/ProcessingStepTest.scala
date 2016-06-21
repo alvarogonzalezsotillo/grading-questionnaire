@@ -43,7 +43,7 @@ class ProcessingStepTest extends FlatSpec {
     "2016-01-26-101423.jpg",
     "2016-01-26-101502.jpg",
     "2016-01-26-101516.jpg",
-    "generated.png"
+    "horizontal-ticked.png"
   )
 
 
@@ -92,7 +92,7 @@ class ProcessingStepTest extends FlatSpec {
   "Biggest quadrilaterals step" should "find quadrilaterals" in {
     runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
       val m = readImageFromResources(imageLocation)
-      val m2 = processMat(biggestQuadrilateralsStep.withDrawContours(_(biggestQuadrilaterals)), m)
+      val m2 = processMat(biggestQuadrilateralsStep.withDrawNumberedContours(_(biggestQuadrilaterals)), m)
       saveTestImage("06-bigquads-" + imageLocation, m2)
     }
   }

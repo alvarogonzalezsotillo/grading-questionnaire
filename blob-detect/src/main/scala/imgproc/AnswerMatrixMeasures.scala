@@ -2,22 +2,18 @@ package imgproc
 
 import org.opencv.core._
 
+
+
 object AnswerMatrixMeasures {
   def apply(version: Int) = version match {
-    case 0 => new AnswerMatrixMeasures()
-    case 1 => new AnswerMatrixMeasures()
+    case 0 => new AnswerMatrixMeasuresHorizontalLetter()
+    case 1 => new AnswerMatrixMeasuresHorizontalLetter()
   }
 
   val matrixWithToLeftOfQRRatio = 0.02
   val matrixWithToTopOfQRRatio: Double = 0.20
   val matrixWithToQRWidthRatio: Double = 0.18
 
-
-}
-
-class AnswerMatrixMeasuresHorizontalLetter(val columns: Int = 5) {
-
-  def rows(questions: Int) = (1.0 * questions / columns).ceil.toInt
 
   object TypeSafeWidthHeight {
 
@@ -37,6 +33,8 @@ class AnswerMatrixMeasuresHorizontalLetter(val columns: Int = 5) {
       def +(p: Point) = Point(x + p.x, y + p.y)
 
       def *(d: Double) = Point(x * d, y * d)
+
+      def toOpenCV = new org.opencv.core.Point(x.x,y.y)
     }
 
     case class Width(w: Double) {
@@ -46,7 +44,9 @@ class AnswerMatrixMeasuresHorizontalLetter(val columns: Int = 5) {
 
       def +(wi: Width) = Width(w + wi.w)
 
-      def toX = X(w)
+      lazy val toX = X(w)
+
+      lazy val toPoint = Point( toX, Y(0) )
     }
 
     case class Height(h: Double) {
@@ -57,25 +57,62 @@ class AnswerMatrixMeasuresHorizontalLetter(val columns: Int = 5) {
       def +(he: Height) = Height(h + he.h)
 
       def toY = Y(h)
+
+      lazy val toPoint = Point( X(0), toY )
     }
 
-    case class Size(w: Width, h: Height) {
+    trait Area{
+      val w: Width
+      val h: Height
+      def area = w.w * h.h
+    }
+
+    case class Size(w: Width, h: Height) extends Area{
       def on(o: Point) = Rect(o, w, h)
+      lazy val toOpenCV = new org.opencv.core.Size(w.w,h.h)
     }
 
-    case class Rect(o: Point, w: Width, h: Height)
+    case class Rect(o: Point, w: Width, h: Height) extends Area{
+      lazy val corners = Seq(
+        o,
+        o + w.toPoint,
+        o + w.toPoint + h.toPoint,
+        o + h.toPoint
+      )
+      lazy val toOpenCV = new MatOfPoint( corners.map(_.toOpenCV):_* )
+    }
 
     case class WidthToHeightRatio(r: Double)
 
     case class HeightToWidthRatio(r: Double)
 
   }
+
   import TypeSafeWidthHeight._
+
+  object MeasuresToOpenCV{
+    def fromMeasures( src: Seq[Rect], anchorInMeasures: Rect, anchorInOpenCV: MatOfPoint ) : Seq[MatOfPoint] = {
+      import ImageProcessing._
+      assert( anchorInOpenCV.size == 4)
+      val H = findHomography(anchorInMeasures.toOpenCV, anchorInOpenCV)
+      warpContours( src.map(_.toOpenCV), H)
+    }
+  }
+
+}
+
+
+
+class AnswerMatrixMeasuresHorizontalLetter(val columns: Int = 5) {
+
+  def rows(questions: Int) = (1.0 * questions / columns).ceil.toInt
+
+  import AnswerMatrixMeasures.TypeSafeWidthHeight._
 
 
   object Params {
     val cellHeaderSize = Size(Width(60), Height(20))
-    val answerCellAvailableWidth = Width(180)
+    val answerCellAvailableWidth = Width(180) // INCLUDING cellHeaderToCellWidthGap, cellSize AND THE FOLLOWING SPACE
     val cellHeaderToCellWidthGap = Width(5)
     val cellSize = Size(Width(150), cellHeaderSize.h)
     val answerTableOrigin = Point(X(0), Y(0))
@@ -83,10 +120,14 @@ class AnswerMatrixMeasuresHorizontalLetter(val columns: Int = 5) {
 
   import Params._
 
-  val answerTableWidth = (cellHeaderSize.w + answerCellAvailableWidth) * columns
+  private val answerTableWidth = (cellHeaderSize.w + answerCellAvailableWidth) * columns
+  private def answerTableHeight(questions:Int) = cellHeaderSize.h * rows(questions)
 
-  def answerTableSize(questions: Int) = Size(answerTableWidth, cellHeaderSize.h * rows(questions))
+  private def answerTableSize(questions: Int) = Size(answerTableWidth, answerTableHeight(questions))
 
+  def cellArea = cellSize.area
+
+  def qrLocation = ???
 
   def answerCells(questions: Int) = {
 
@@ -119,35 +160,35 @@ class AnswerMatrixMeasures(vertical: Boolean = false) {
   import imgproc.Implicits._
   import AnswerMatrixMeasures._
 
-  val columns = 5
-  val destinationWidth = 800.0
-  val cellHeaderToHeaderWidthRatio = (0.7 + 0.3) / (0.7 + 1.3)
-  val columnSpaceToCellWidthRatio = 0.15
+  private val columns = 5
+  private val destinationWidth = 800.0
+  private val cellHeaderToHeaderWidthRatio = (0.7 + 0.3) / (0.7 + 1.3)
+  private val columnSpaceToCellWidthRatio = 0.15
 
 
-  val answerHeightRatio = 5.5 * columns
-  val cellWidth = destinationWidth / (5 + 4 * columnSpaceToCellWidthRatio)
-  val cellHeaderWidth = cellWidth * cellHeaderToHeaderWidthRatio
-  val columnSpaceWidth = cellWidth * columnSpaceToCellWidthRatio
+  private val answerHeightRatio = 5.5 * columns
+  private val cellWidth = destinationWidth / (5 + 4 * columnSpaceToCellWidthRatio)
+  private val cellHeaderWidth = cellWidth * cellHeaderToHeaderWidthRatio
+  private val columnSpaceWidth = cellWidth * columnSpaceToCellWidthRatio
 
   // TODO: EXTRACT THIS FACTOR FROM OTHER FACTORS
-  val extensionFactor = 1.6 / 12.6
+  private val extensionFactor = 1.6 / 12.6
 
 
-  def rows(questions: Int) = (1.0 * questions / columns).ceil.toInt
+  private def rows(questions: Int) = (1.0 * questions / columns).ceil.toInt
 
-  def destinationHeight(questions: Int) = {
+  private def destinationHeight(questions: Int) = {
     destinationWidth * rows(questions) / answerHeightRatio
   }
 
 
-  def destinationContour(questions: Int) = {
+  private def destinationContour(questions: Int) = {
     val w = destinationWidth
     val h = destinationHeight(questions)
     new MatOfPoint((0.0, 0.0), (w, 0.0), (w, h), (0.0, h))
   }
 
-  def fromMatrixToStudentInfoLocation(matrixLocation: MatOfPoint): MatOfPoint = {
+  private def fromMatrixToStudentInfoLocation(matrixLocation: MatOfPoint): MatOfPoint = {
     val points = matrixLocation.toArray
     val tl = points(0)
     val tr = points(1)
@@ -169,7 +210,7 @@ class AnswerMatrixMeasures(vertical: Boolean = false) {
     new MatOfPoint(topLeft, topRight, bottomRight, bottomLeft)
   }
 
-  def studentInfoDestinationContour(questions: Int): MatOfPoint = {
+  private def studentInfoDestinationContour(questions: Int): MatOfPoint = {
     val sidc = fromMatrixToStudentInfoLocation(destinationContour(questions)).toArray
     val topLeft = sidc(0)
     val topRight = sidc(1)
@@ -182,13 +223,13 @@ class AnswerMatrixMeasures(vertical: Boolean = false) {
   }
 
 
-  def destinationSize(questions: Int) = {
+  private def destinationSize(questions: Int) = {
     val contour = destinationContour(questions)
     val thirdCorner = contour.toArray()(2)
     new Size(thirdCorner.x, thirdCorner.y)
   }
 
-  def studentInfoDestinationSize(questions: Int) = {
+  private def studentInfoDestinationSize(questions: Int) = {
     val contour = studentInfoDestinationContour(questions)
     val thirdCorner = contour.toArray()(2)
     new Size(thirdCorner.x, thirdCorner.y)
@@ -217,7 +258,7 @@ class AnswerMatrixMeasures(vertical: Boolean = false) {
     ret.take(questions)
   }
 
-  val cellHeight = destinationHeight(20) / rows(20)
+  private val cellHeight = destinationHeight(20) / rows(20)
 
   val cellArea = cellWidth * cellHeight
 }

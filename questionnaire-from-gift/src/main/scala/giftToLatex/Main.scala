@@ -19,6 +19,7 @@ object Main extends App with LazyLogging {
                     keepTexFile: Boolean = false,
                     help :Boolean = false,
                     headerText: String = "",
+                    maxQuestionnaireQuestions: Int = Integer.MAX_VALUE,
                     numberOfVariations: Int = 2,
                     horizontalTable: Boolean = true,
                     tickedTable: Boolean = false,
@@ -40,6 +41,10 @@ object Main extends App with LazyLogging {
 
       opt[Int]('q', "questionnaire-weight") text ("Percentage of questionnaire questions. Defaults to 60%.") action { (q, c) =>
         c.copy(questionnaireQuestionsWeight = q)
+      }
+
+      opt[Int]('m', "max-questionnaire-questions") text ("maximum number of questionnaire questions") action { (m,c) =>
+        c.copy(maxQuestionnaireQuestions = m)
       }
 
       opt[Int]('n', "number-of-variations") text ("Number of variations of the questionnarie, with permuted answers. Defaults to 2.") action { (n, c) =>
@@ -70,13 +75,14 @@ object Main extends App with LazyLogging {
       val out = new FileOutputStream(file)
       out.getChannel().transferFrom(Channels.newChannel(in), 0, Long.MaxValue )
       out.close()
+      file.getAbsolutePath
     }
 
     def generateQuestionnarieVersion(c: Config, version: Option[String]) = {
-      val latex = GiftToLatex(c.giftFile,  c.headerText, c.questionnaireQuestionsWeight)
+      val latex = GiftToLatex(c.giftFile, c.headerText, c.questionnaireQuestionsWeight, c.maxQuestionnaireQuestions, c.horizontalTable, c.tickedTable )
       def computeOutFile: File = {
         val name = if( c.giftFile == invalidFile ){
-          "stdin"
+          createTempFileFrom(System.in)
         }
         else {
           val gift = c.giftFile.toString
