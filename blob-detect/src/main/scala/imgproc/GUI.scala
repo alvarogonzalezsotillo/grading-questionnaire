@@ -108,9 +108,8 @@ object GUI extends App {
     extractQRStep,
     decodeQRStep.withDrawString( _(qrText) ),
     answerMatrixStep,
-    studentInfoStep,
     cellsOfAnswerMatrix.withDrawContours( _(cellsRect) ),
-    studentInfoStep.withFilter()(_(mat).isDefined).withSaveMatrix()
+    answerMatrixStep.withFilter()(_(mat).isDefined).withSaveMatrix()
   ))
 
   frame.setSize(640, 480)

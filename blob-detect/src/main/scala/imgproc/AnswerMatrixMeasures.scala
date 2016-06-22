@@ -35,6 +35,8 @@ object AnswerMatrixMeasures {
       def *(d: Double) = Point(x * d, y * d)
 
       def toOpenCV = new org.opencv.core.Point(x.x,y.y)
+
+      def toRect( s: Size ) = Rect( this, s.w, s.h )
     }
 
     case class Width(w: Double) {
@@ -80,6 +82,7 @@ object AnswerMatrixMeasures {
         o + h.toPoint
       )
       lazy val toOpenCV = new MatOfPoint( corners.map(_.toOpenCV):_* )
+      lazy val size = new Size(w,h)
     }
 
     case class WidthToHeightRatio(r: Double)
@@ -124,6 +127,8 @@ class AnswerMatrixMeasuresHorizontalLetter(val columns: Int = 5) {
   private def answerTableHeight(questions:Int) = cellHeaderSize.h * rows(questions)
 
   private def answerTableSize(questions: Int) = Size(answerTableWidth, answerTableHeight(questions))
+
+  def answerTableRect(questions: Int) = answerTableOrigin.toRect(answerTableSize(questions))
 
   def cellArea = cellSize.area
 

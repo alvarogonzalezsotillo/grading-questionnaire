@@ -347,10 +347,10 @@ object ProcessingStep {
 
     val loc = for (rect <- psi(location); ans <- psi(answers); biggestQuadrilaterals <- psi(biggestQuadrilaterals); version <- psi(qrVersion) ) yield {
 
-      val dstPoints = AnswerMatrixMeasures(version).destinationContour(ans.size)
+      val dstPoints = AnswerMatrixMeasures(version).answerTableRect(ans.size).toOpenCV
 
       val h = findHomography(rect, dstPoints)
-      val locatedMat = warpImage()(originalMat(), h, AnswerMatrixMeasures(version).destinationSize(ans.size))
+      val locatedMat = warpImage()(originalMat(), h, AnswerMatrixMeasures(version).answerTableRect(ans.size).size.toOpenCV)
       val locatedCellHeaders = warpContours(biggestQuadrilaterals, h)
 
       (locatedMat, locatedCellHeaders)
@@ -363,30 +363,6 @@ object ProcessingStep {
     ret
   }
 
-  val studentInfoStep = answerMatrixStep.extend("Información del alumno") { psi =>
-
-    import imgproc.steps.AnswersInfo._
-    import imgproc.steps.MainInfo._
-    import imgproc.steps.QRInfo._
-    import imgproc.steps.StudentInfo._
-
-    def studentInfoRect(qrLocation: MatOfPoint, matrixLocation: MatOfPoint, version: Byte ): MatOfPoint = {
-      AnswerMatrixMeasures(version).fromMatrixToStudentInfoLocation(matrixLocation)
-    }
-
-    val sm: Option[(Some[MatOfPoint], Mat)] = for (qrLocation <- psi(qrLocation); matrixLocation <- psi(location); answers <- psi(answers) ; version <- psi(qrVersion) ) yield {
-      val rect = studentInfoRect(qrLocation, matrixLocation, version)
-      val dstPoints = AnswerMatrixMeasures(version).studentInfoDestinationContour(answers.size)
-      val h = findHomography(rect, dstPoints)
-      (Some(rect), warpImage()(psi(originalMat).get, h, AnswerMatrixMeasures(version).studentInfoDestinationSize(answers.size)))
-    }
-
-    sm match {
-      case Some((sil, sim)) =>
-        psi(mat, sim)(studentInfoMat, sim)(studentInfoLocation, sil)
-      case None => psi
-    }
-  }
 
 
   val cellsOfAnswerMatrix = answerMatrixStep.extend("Localización de celdas") { psi =>
@@ -394,9 +370,9 @@ object ProcessingStep {
     import imgproc.steps.LocationInfo._
 
     val ret = for (m <- psi(locatedMat); a <- psi(answers); version <- psi(qrVersion) ) yield {
-      val cr = AnswerMatrixMeasures(version).cells(a.size)
-      val c = for (r <- cr) yield submatrix(m, r, AnswerMatrixMeasures(1).cellWidth, AnswerMatrixMeasures(1).cellHeight)
-      psi(cellsRect, cr)(cells, c)
+      val cr = AnswerMatrixMeasures(version).answerCells(a.size)
+      val c = for (r <- cr) yield submatrix(m, r.toOpenCV, AnswerMatrixMeasures(1).Params.cellSize.w.w, AnswerMatrixMeasures(1).Params.cellSize.h.h)
+      psi(cellsRect, cr.map(_.toOpenCV))(cells, c)
     }
     ret.getOrElse(psi)
   }

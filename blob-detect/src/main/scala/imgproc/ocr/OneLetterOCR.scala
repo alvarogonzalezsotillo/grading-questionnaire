@@ -83,12 +83,12 @@ object OneLetterOCR {
 
 
     val amm = AnswerMatrixMeasures(1)
-    import amm._
+    import amm.Params._
 
     val filters : Seq[ Rect => Boolean ] = Seq(
-      _.width > (cellWidth - cellHeaderWidth)/10,
-      _.width < (cellWidth - cellHeaderWidth)/3,
-      _.height > cellHeight/2
+      _.width > cellSize.w.w/10,
+      _.width < cellSize.w.w/3,
+      _.height > cellSize.h.h/2
     )
 
     filters.foldLeft(bboxes)( (b,f) => b.filter(f) )

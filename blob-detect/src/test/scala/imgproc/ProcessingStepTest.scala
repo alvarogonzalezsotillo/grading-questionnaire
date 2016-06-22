@@ -169,29 +169,6 @@ class ProcessingStepTest extends FlatSpec {
 
   }
 
-  {
-    behavior of "Student info step"
-
-    it should "extract QR, student info and answer matrix" in {
-      runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
-        val m = readImageFromResources(imageLocation)
-        val extracted = processMat(studentInfoStep, m)
-        saveTestImage("10-studentinfo-" + imageLocation, extracted)
-      }
-
-    }
-
-    it should "be enough to parse again" in {
-      runSomeTestAndFailIfSoMuchFailures(positiveMatchImages, 0.3) { imageLocation =>
-        val m = readImageFromResources(imageLocation)
-        val extracted = processMat(studentInfoStep, m)
-        saveTestImage("11-studentinfoagain-qr-" + imageLocation, processMat(locateQRStep.withDrawContours( _(qrLocation).map( c => Seq(c) )),extracted) )
-        val extracted2 = processMat(studentInfoStep, extracted)
-        saveTestImage("11-studentinfoagain-" + imageLocation, extracted2)
-      }
-
-    }
-  }
 
 
 
