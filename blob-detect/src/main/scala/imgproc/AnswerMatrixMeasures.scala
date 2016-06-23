@@ -1,13 +1,14 @@
 package imgproc
 
+import com.typesafe.scalalogging.slf4j.LazyLogging
 import org.opencv.core._
 
 
 
 object AnswerMatrixMeasures {
   def apply(version: Int) = version match {
-    case 0 => new AnswerMatrixMeasuresHorizontalLetter()
-    case 1 => new AnswerMatrixMeasuresHorizontalLetter()
+    case 0 => new AnswerMatrixMeasuresHorizontalTicked()
+    case 1 => new AnswerMatrixMeasuresHorizontalTicked()
   }
 
   val matrixWithToLeftOfQRRatio = 0.02
@@ -106,7 +107,7 @@ object AnswerMatrixMeasures {
 
 
 
-class AnswerMatrixMeasuresHorizontalLetter(val columns: Int = 5) {
+class AnswerMatrixMeasuresHorizontalTicked(val columns: Int = 5) extends LazyLogging{
 
   def rows(questions: Int) = (1.0 * questions / columns).ceil.toInt
 
@@ -114,16 +115,18 @@ class AnswerMatrixMeasuresHorizontalLetter(val columns: Int = 5) {
 
 
   object Params {
-    val cellHeaderSize = Size(Width(60), Height(20))
-    val answerCellAvailableWidth = Width(180) // INCLUDING cellHeaderToCellWidthGap, cellSize AND THE FOLLOWING SPACE
-    val cellHeaderToCellWidthGap = Width(5)
-    val cellSize = Size(Width(150), cellHeaderSize.h)
+    private val f = 3
+    val cellHeaderSize = Size(Width(24*f), Height(14*f))
+    val answerCellAvailableWidth = Width(67*f) // INCLUDING cellHeaderToCellWidthGap, cellSize AND THE FOLLOWING SPACE
+    val cellHeaderToCellWidthGap = Width(2*f)
+    val cellSize = Size(Width(52*f), cellHeaderSize.h)
     val answerTableOrigin = Point(X(0), Y(0))
   }
 
   import Params._
 
-  private val answerTableWidth = (cellHeaderSize.w + answerCellAvailableWidth) * columns
+  private val columnWidth = cellHeaderSize.w + answerCellAvailableWidth
+  private val answerTableWidth = columnWidth * columns
   private def answerTableHeight(questions:Int) = cellHeaderSize.h * rows(questions)
 
   private def answerTableSize(questions: Int) = Size(answerTableWidth, answerTableHeight(questions))
@@ -134,21 +137,24 @@ class AnswerMatrixMeasuresHorizontalLetter(val columns: Int = 5) {
 
   def qrLocation = ???
 
+  private object ValuesForAnswerCell {
+    val basePointForCells = answerTableOrigin + Point((cellHeaderSize.w + cellHeaderToCellWidthGap ).toX, Y(0))
+    val columnOffset = Point((answerCellAvailableWidth + cellHeaderSize.w).toX, Y(0))
+    val rowOffset = Point(X(0), cellSize.h.toY)
+    logger.error( s"rowOffset:$rowOffset")
+  }
+
+
   def answerCells(questions: Int) = {
 
     def answerCell(question: Int) = {
       assert(question >= 0 && question < questions)
 
-      val rowOfQuestion = question / questions
+      val rowOfQuestion = question / columns
       val columnOfQuestion = question % columns
 
-      object LocalComputedAndCacheableValues {
-        val basePointForCells = answerTableOrigin + Point((cellHeaderSize.w + cellHeaderToCellWidthGap).toX, Y(0))
-        val columnOffset = Point((answerCellAvailableWidth + cellHeaderSize.w).toX, Y(0))
-        val rowOffset = Point(X(0), cellSize.h.toY)
-      }
 
-      import LocalComputedAndCacheableValues._
+      import ValuesForAnswerCell._
 
       cellSize.on(basePointForCells + rowOffset * rowOfQuestion + columnOffset * columnOfQuestion)
     }

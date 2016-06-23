@@ -4,6 +4,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 
+import com.typesafe.scalalogging.slf4j.LazyLogging
 import common.{BinaryConverter, HMap, Sounds}
 import imgproc.steps.LocationInfo.location
 import imgproc.steps.MainInfo._
@@ -46,10 +47,17 @@ trait ProcessingStep {
 
     val matWithContours = for (m <- p(mat); contours <- extractContours(p)) yield {
       val newM = m.clone
+      ImageProcessing.drawContours(newM, contours)
+
       for( (c,i)<-contours.zipWithIndex ) {
         ImageProcessing.drawString(newM, s"$i", c.center )
+        for( pairs <- c.toArray.grouped(2) ){
+          val p = pairs.head
+          ImageProcessing.drawString(newM,s"$p", p, new Scalar(255,0,0) )
+        }
       }
-      ImageProcessing.drawContours(newM, contours)
+
+      newM
     }
     p(mat, matWithContours)
   }
@@ -96,7 +104,7 @@ trait ProcessingStep {
 }
 
 
-object ProcessingStep {
+object ProcessingStep extends LazyLogging{
 
   import imgproc.ImageProcessing._
   import imgproc.Implicits._
@@ -202,8 +210,11 @@ object ProcessingStep {
           val leftmostCenter = shapes.map(_.center).minBy(_.x)
           val rightmostCenter = shapes.map(_.center).maxBy(_.x)
 
+          logger.debug( s" leftmostCenter:$leftmostCenter rightmostCenter: $rightmostCenter")
+
           ((leftmostCenter + rightmostCenter) * 0.5, (rightmostCenter - leftmostCenter))
         }
+        logger.debug( s" center:$center orientation: $orientation")
 
         val diffs = allPoints.map(_ - center)
 
@@ -213,29 +224,36 @@ object ProcessingStep {
           val upperPoints = diffs.filter(_.crossProductZ(unit) > 0)
           (upperPoints.minBy(_.normalize * unit), upperPoints.maxBy(_.normalize * unit))
         }
+        logger.debug( s"upperLeft: ${upperLeft+center} upperRight:${upperRight+center}")
 
         val (lowerLeft, lowerRight) = {
           val lowerPoints = diffs.filter(_.crossProductZ(unit) < 0)
           (lowerPoints.minBy(_.normalize * unit), lowerPoints.maxBy(_.normalize * unit))
         }
+        logger.debug( s"lowerLeft: ${lowerLeft+center} lowerRight:${lowerRight+center}")
 
         val extensionFactor = {
           val amm = AnswerMatrixMeasures(version)
           import amm.Params._
           val extension = answerCellAvailableWidth.w
-          val cellHeaders = (cellHeaderSize.w.w + extension)*amm.columns
-          cellHeaders/extension
+          val cellHeaders = (cellHeaderSize.w.w)*(amm.columns) + extension*(amm.columns-1)
+          extension/cellHeaders
+
         }
 
         val lowerExtension = (lowerRight - lowerLeft) * extensionFactor
         val upperExtension = (upperRight - upperLeft) * extensionFactor
 
-        new MatOfPoint(
+        val ret = new MatOfPoint(
           upperLeft + center,
           upperRight + center + upperExtension,
           lowerRight + center + lowerExtension,
           lowerLeft + center
         )
+
+        logger.debug( s"doit: $ret")
+
+        ret
       }
 
       def checkIt(contour: MatOfPoint) = {
@@ -263,9 +281,7 @@ object ProcessingStep {
 
         val ret = contoursSizeOK && insideImageOK && insideContourOK && widthOK
 
-        if (false) {
-          println(s"$contoursSizeOK  $insideImageOK $insideContourOK $widthOK $w $imageWidth")
-        }
+        logger.debug(s"$contoursSizeOK  $insideImageOK $insideContourOK $widthOK $w $imageWidth")
 
         ret
       }

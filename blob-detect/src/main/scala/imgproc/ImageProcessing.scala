@@ -158,7 +158,7 @@ object ImageProcessing {
 
 
   def drawString(dst: Mat, string: String, point: Point, color: Scalar = defaultColor): Mat = {
-    val fontFace = Core.FONT_HERSHEY_SIMPLEX
+    val fontFace = Core.FONT_HERSHEY_PLAIN
     val fontScale = 0.6
     Core.putText(dst,string,point,fontFace,fontScale,color)
     dst
