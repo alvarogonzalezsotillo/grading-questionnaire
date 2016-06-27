@@ -36,13 +36,13 @@ class ProcessingStepTest extends FlatSpec {
 
 
 
-  val positiveMatchImages = /*Seq(
+  val positiveMatchImages = Seq(
     "2016-01-26-101322.jpg",
     "2016-01-26-101343.jpg",
     "2016-01-26-101403.jpg",
     "2016-01-26-101423.jpg",
     "2016-01-26-101502.jpg",
-    "2016-01-26-101516.jpg",*/Seq(
+    "2016-01-26-101516.jpg",
     "horizontal-ticked.png"
   )
 
