@@ -6,7 +6,7 @@ package imgproc
 
 import java.io.{File, PrintStream}
 
-import imgproc.steps.ProcessingStep
+import imgproc.steps.{AnswersInfo, ProcessingStep}
 import org.junit.runner.RunWith
 import org.opencv.highgui.Highgui
 import imgproc.ImageProcessing._
@@ -36,13 +36,13 @@ class ProcessingStepTest extends FlatSpec {
 
 
 
-  val positiveMatchImages = Seq(
+  val positiveMatchImages = /*Seq(
     "2016-01-26-101322.jpg",
     "2016-01-26-101343.jpg",
     "2016-01-26-101403.jpg",
     "2016-01-26-101423.jpg",
     "2016-01-26-101502.jpg",
-    "2016-01-26-101516.jpg",
+    "2016-01-26-101516.jpg",*/ Seq(
     "horizontal-ticked.png"
   )
 
@@ -152,6 +152,16 @@ class ProcessingStepTest extends FlatSpec {
       runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
         val m = readImageFromResources(imageLocation)
         val extracted = processMat(cellsOfAnswerMatrix.withDrawContours(_(cellsRect)), m)
+
+        {
+          // DRAWING MATRIX RECT
+          val ammht = new AnswerMatrixMeasuresHorizontalTicked
+          val info = cellsOfAnswerMatrix.process(m)
+          val ans = info(AnswersInfo.answers)
+
+          val rect = ammht.answerTableRect(ans.get.size)
+          ImageProcessing.drawContours(extracted, Seq(rect.toOpenCV) )
+        }
         saveTestImage("09-cells-" + imageLocation, extracted)
       }
     }

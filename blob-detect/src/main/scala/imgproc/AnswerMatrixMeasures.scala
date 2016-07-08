@@ -47,6 +47,8 @@ object AnswerMatrixMeasures {
 
       def +(wi: Width) = Width(w + wi.w)
 
+      def -(wi: Width) = this + (wi * -1.0)
+
       lazy val toX = X(w)
 
       lazy val toPoint = Point( toX, Y(0) )
@@ -115,7 +117,7 @@ class AnswerMatrixMeasuresHorizontalTicked(val columns: Int = 5) extends LazyLog
 
 
   object Params {
-    private val f = 3
+    private val f = 1
     val cellHeaderSize = Size(Width(24*f), Height(14*f))
     val answerCellAvailableWidth = Width(67*f) // INCLUDING cellHeaderToCellWidthGap, cellSize AND THE FOLLOWING SPACE
     val cellHeaderToCellWidthGap = Width(2*f)

@@ -97,17 +97,15 @@ object Implicits {
     }
   }
 
+  implicit def toMatOfPoint( points: Seq[Point] ) = new MatOfPoint(points:_*)
+
   implicit class Shape(contour: MatOfPoint){
     lazy val points = contour.toArray
     lazy val center = {
-      val c = points.foldLeft( new Point(0,0) ) { (p, center) =>
-        center.x += p.x
-        center.y += p.y
-        center
+      val c = points.foldLeft( new Point(0,0) ) {
+        (p, center) => p+center
       }
-      c.x /= points.size
-      c.y /= points.size
-      c
+      c / points.size
     }
 
     lazy val boundingBox = {
@@ -201,6 +199,7 @@ object Implicits {
 
     def *(p:Point) : Double = dotProduct(p)
     def *(d:Double) = product(d)
+    def /(d:Double) = product(1/d)
     def -(p:Point) = minus( p )
     def +(p:Point) = plus( p )
 

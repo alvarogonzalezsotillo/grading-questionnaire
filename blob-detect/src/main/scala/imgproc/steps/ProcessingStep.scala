@@ -189,9 +189,31 @@ object ProcessingStep extends LazyLogging{
     }
 
 
-    val quads = findBiggestAlignedQuadrilaterals()(quadrilaterals())
+    val quads = findBiggestAlignedQuadrilaterals()(quadrilaterals()).map{ quads =>
+        val sortedQuads = quads.sortBy(_.center.x)
+        val orientation = sortedQuads.last.center - sortedQuads.head.center
+        sortedQuads.map( q => toMatOfPoint(findProbableQuadrilateral(q.points,orientation)) )
+    }
+
+
     csi(biggestQuadrilaterals, quads)
   }
+
+  private def findProbableQuadrilateral( points: Seq[Point], orientation: Point ) : Seq[Point]= {
+    val center = new Shape(points).center
+    val unit = orientation.normalize
+    val diffs = points.map( _ - center )
+    val (upperLeft, upperRight) = {
+      val upperPoints = diffs.filter(_.crossProductZ(unit) > 0)
+      (upperPoints.minBy(_.normalize * unit), upperPoints.maxBy(_.normalize * unit))
+    }
+    val (lowerLeft, lowerRight) = {
+      val lowerPoints = diffs.filter(_.crossProductZ(unit) < 0)
+      (lowerPoints.minBy(_.normalize * unit), lowerPoints.maxBy(_.normalize * unit))
+    }
+    Seq(upperLeft,upperRight,lowerRight,lowerLeft).map(_ + center)
+  }
+
 
   val answerMatrixLocationStep = biggestQuadrilateralsStep.extend("Localización de la tabla de respuestas") { implicit lsi =>
     import ContoursInfo._
@@ -210,27 +232,13 @@ object ProcessingStep extends LazyLogging{
           val leftmostCenter = shapes.map(_.center).minBy(_.x)
           val rightmostCenter = shapes.map(_.center).maxBy(_.x)
 
-          logger.debug( s" leftmostCenter:$leftmostCenter rightmostCenter: $rightmostCenter")
+          logger.error( s" leftmostCenter:$leftmostCenter rightmostCenter: $rightmostCenter")
 
           ((leftmostCenter + rightmostCenter) * 0.5, (rightmostCenter - leftmostCenter))
         }
-        logger.debug( s" center:$center orientation: $orientation")
+        logger.error( s" center:$center orientation: $orientation")
 
-        val diffs = allPoints.map(_ - center)
-
-        val unit = orientation.normalize
-
-        val (upperLeft, upperRight) = {
-          val upperPoints = diffs.filter(_.crossProductZ(unit) > 0)
-          (upperPoints.minBy(_.normalize * unit), upperPoints.maxBy(_.normalize * unit))
-        }
-        logger.debug( s"upperLeft: ${upperLeft+center} upperRight:${upperRight+center}")
-
-        val (lowerLeft, lowerRight) = {
-          val lowerPoints = diffs.filter(_.crossProductZ(unit) < 0)
-          (lowerPoints.minBy(_.normalize * unit), lowerPoints.maxBy(_.normalize * unit))
-        }
-        logger.debug( s"lowerLeft: ${lowerLeft+center} lowerRight:${lowerRight+center}")
+        val Seq(upperLeft, upperRight, lowerRight,lowerLeft) = findProbableQuadrilateral(allPoints,orientation)
 
         val extensionFactor = {
           val amm = AnswerMatrixMeasures(version)
@@ -245,13 +253,13 @@ object ProcessingStep extends LazyLogging{
         val upperExtension = (upperRight - upperLeft) * extensionFactor
 
         val ret = new MatOfPoint(
-          upperLeft + center,
-          upperRight + center + upperExtension,
-          lowerRight + center + lowerExtension,
-          lowerLeft + center
+          upperLeft,
+          upperRight + upperExtension,
+          lowerRight + lowerExtension,
+          lowerLeft
         )
 
-        logger.debug( s"doit: $ret")
+        logger.error( s"doit: ${ret.points.mkString(",")}")
 
         ret
       }
@@ -281,12 +289,12 @@ object ProcessingStep extends LazyLogging{
 
         val ret = contoursSizeOK && insideImageOK && insideContourOK && widthOK
 
-        logger.debug(s"$contoursSizeOK  $insideImageOK $insideContourOK $widthOK $w $imageWidth")
+        logger.error(s"$contoursSizeOK  $insideImageOK $insideContourOK $widthOK $w $imageWidth")
 
         ret
       }
 
-      Try(doIt).filter(checkIt).toOption
+      Try(doIt)./*filter(checkIt).*/toOption
     }
 
     val l = lsi(biggestQuadrilaterals).flatMap { biggestQuadrilaterals =>
