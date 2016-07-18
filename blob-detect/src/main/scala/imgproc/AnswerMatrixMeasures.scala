@@ -12,8 +12,8 @@ object AnswerMatrixMeasures {
   }
 
   val matrixWithToLeftOfQRRatio = 0.02
-  val matrixWithToTopOfQRRatio: Double = 0.20
-  val matrixWithToQRWidthRatio: Double = 0.18
+  val matrixWithToTopOfQRRatio: Double = 0.23
+  val matrixWithToQRWidthRatio: Double = 0.20
 
 
   object TypeSafeWidthHeight {

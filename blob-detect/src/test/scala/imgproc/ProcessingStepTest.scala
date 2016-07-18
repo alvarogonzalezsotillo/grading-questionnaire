@@ -18,7 +18,7 @@ import TestUtil._
 import ProcessingStep._
 import ProcessingStep.Implicits._
 import imgproc.steps.AnswersInfo.{cells, cellsRect}
-import imgproc.steps.ContoursInfo.{biggestQuadrilaterals, contours, quadrilaterals}
+import imgproc.steps.ContoursInfo.{answerColumns, biggestQuadrilaterals, contours, quadrilaterals}
 import imgproc.steps.LocationInfo.location
 import imgproc.steps.MainInfo.mat
 import imgproc.steps.QRInfo.qrLocation
@@ -36,13 +36,13 @@ class ProcessingStepTest extends FlatSpec {
 
 
 
-  val positiveMatchImages = /*Seq(
+  val positiveMatchImages = Seq(
     "2016-01-26-101322.jpg",
     "2016-01-26-101343.jpg",
     "2016-01-26-101403.jpg",
     "2016-01-26-101423.jpg",
     "2016-01-26-101502.jpg",
-    "2016-01-26-101516.jpg",*/ Seq(
+    "2016-01-26-101516.jpg",
     "horizontal-ticked.png"
   )
 
@@ -179,6 +179,13 @@ class ProcessingStepTest extends FlatSpec {
 
   }
 
+  "Answer columns step" should "find the columns of answers" in{
+    runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
+      val m = readImageFromResources(imageLocation)
+      val m2 = processMat(answerColumnsStep.withDrawNumberedContours(_(answerColumns)), m)
+      saveTestImage("10-columns-" + imageLocation, m2)
+    }
+  }
 
 
 

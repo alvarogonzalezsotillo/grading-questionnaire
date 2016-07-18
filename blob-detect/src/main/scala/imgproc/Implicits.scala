@@ -101,6 +101,7 @@ object Implicits {
 
   implicit class Shape(contour: MatOfPoint){
     lazy val points = contour.toArray
+    def apply(index:Int) = points(index)
     lazy val center = {
       val c = points.foldLeft( new Point(0,0) ) {
         (p, center) => p+center

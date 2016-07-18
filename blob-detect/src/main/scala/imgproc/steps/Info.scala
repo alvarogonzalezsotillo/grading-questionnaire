@@ -2,6 +2,7 @@ package imgproc.steps
 
 import org.opencv.core.{Mat, MatOfPoint, Rect}
 import common.{HKey, HMap}
+import imgproc.{AnswerMatrixMeasures, AnswerMatrixMeasuresHorizontalTicked}
 
 
 object MainInfo{
@@ -24,6 +25,7 @@ object ContoursInfo {
   object contours extends HKey[Seq[MatOfPoint]]
   object quadrilaterals extends HKey[Seq[MatOfPoint]]
   object biggestQuadrilaterals extends HKey[IndexedSeq[MatOfPoint]]
+  object answerColumns extends HKey[IndexedSeq[MatOfPoint]]
 }
 
 object QRInfo {
@@ -31,6 +33,7 @@ object QRInfo {
   object qrLocatedMat extends HKey[Mat]
   object qrText extends HKey[String]
   object qrVersion extends HKey[Byte]
+  object answerMatrixMeasures extends HKey[AnswerMatrixMeasuresHorizontalTicked]
 }
 
 object AnswersInfo {
