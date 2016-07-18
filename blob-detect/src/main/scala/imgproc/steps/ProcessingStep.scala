@@ -6,7 +6,7 @@ import java.util.Date
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import common.{BinaryConverter, HMap, Sounds}
-import imgproc.steps.ContoursInfo.biggestQuadrilaterals
+import imgproc.steps.ContoursInfo.{answerColumns, biggestQuadrilaterals, cellsLocation}
 import imgproc.steps.LocationInfo.location
 import imgproc.steps.MainInfo._
 import imgproc.steps.ProcessingStep.{ExtendedStep, Info}
@@ -16,6 +16,7 @@ import org.opencv.core._
 import org.opencv.highgui.Highgui
 import org.opencv.imgproc.Imgproc
 
+import scala.collection.immutable.IndexedSeq
 import scala.util.Try
 
 
@@ -50,11 +51,11 @@ trait ProcessingStep {
       val newM = m.clone
       ImageProcessing.drawContours(newM, contours)
 
-      for( (c,i)<-contours.zipWithIndex ) {
-        ImageProcessing.drawString(newM, s"$i", c.center )
-        for( pairs <- c.toArray.grouped(2) ){
+      for ((c, i) <- contours.zipWithIndex) {
+        ImageProcessing.drawString(newM, s"$i", c.center)
+        for (pairs <- c.toArray.grouped(2)) {
           val p = pairs.head
-          ImageProcessing.drawString(newM,s"$p", p, new Scalar(255,0,0) )
+          ImageProcessing.drawString(newM, s"$p", p, new Scalar(255, 0, 0))
         }
       }
 
@@ -105,7 +106,7 @@ trait ProcessingStep {
 }
 
 
-object ProcessingStep extends LazyLogging{
+object ProcessingStep extends LazyLogging {
 
   import imgproc.ImageProcessing._
   import imgproc.Implicits._
@@ -114,8 +115,8 @@ object ProcessingStep extends LazyLogging{
   type Info = HMap
 
 
-  private def combined( steps: ProcessingStep* ) = {
-    steps.tail.foldLeft(steps.head)( (ret,step) => ret.extend(ret.stepName + " - " + step.stepName )(step.process(_)))
+  private def combined(steps: ProcessingStep*) = {
+    steps.tail.foldLeft(steps.head)((ret, step) => ret.extend(ret.stepName + " - " + step.stepName)(step.process(_)))
   }
 
   private case class Step(override val stepName: String)(val proc: Info => Info) extends ProcessingStep {
@@ -145,6 +146,7 @@ object ProcessingStep extends LazyLogging{
 
   object initialStep extends ProcessingStep {
     override def process(implicit m: Info) = m
+
     override val stepName = "Imagen original"
   }
 
@@ -196,20 +198,20 @@ object ProcessingStep extends LazyLogging{
     }
 
 
-    val quads = findBiggestAlignedQuadrilaterals()(quadrilaterals()).map{ quads =>
-        val sortedQuads = quads.sortBy(_.center.x)
-        val orientation = sortedQuads.last.center - sortedQuads.head.center
-        sortedQuads.map( q => toMatOfPoint(findProbableQuadrilateral(q.points,orientation)) )
+    val quads = findBiggestAlignedQuadrilaterals()(quadrilaterals()).map { quads =>
+      val sortedQuads = quads.sortBy(_.center.x)
+      val orientation = sortedQuads.last.center - sortedQuads.head.center
+      sortedQuads.map(q => toMatOfPoint(findProbableQuadrilateral(q.points, orientation)))
     }
 
 
     csi(biggestQuadrilaterals, quads)
   }
 
-  private def findProbableQuadrilateral( points: Seq[Point], orientation: Point ) : Seq[Point]= {
+  private def findProbableQuadrilateral(points: Seq[Point], orientation: Point): Seq[Point] = {
     val center = new Shape(points).center
     val unit = orientation.normalize
-    val diffs = points.map( _ - center )
+    val diffs = points.map(_ - center)
     val (upperLeft, upperRight) = {
       val upperPoints = diffs.filter(_.crossProductZ(unit) > 0)
       (upperPoints.minBy(_.normalize * unit), upperPoints.maxBy(_.normalize * unit))
@@ -218,18 +220,15 @@ object ProcessingStep extends LazyLogging{
       val lowerPoints = diffs.filter(_.crossProductZ(unit) < 0)
       (lowerPoints.minBy(_.normalize * unit), lowerPoints.maxBy(_.normalize * unit))
     }
-    Seq(upperLeft,upperRight,lowerRight,lowerLeft).map(_ + center)
+    Seq(upperLeft, upperRight, lowerRight, lowerLeft).map(_ + center)
   }
-
-
 
 
   val answerMatrixLocationStep = biggestQuadrilateralsStep.extend("Localización de la tabla de respuestas") { implicit lsi =>
     import ContoursInfo._
     import LocationInfo._
 
-    def locateAnswerMatrix(imageWidth: Int, imageHeight: Int, number: Int = COLUMNS, insideLimit: Int = -8)(contours: Seq[MatOfPoint], version: Byte): Option[MatOfPoint] =
-    {
+    def locateAnswerMatrix(imageWidth: Int, imageHeight: Int, number: Int = COLUMNS, insideLimit: Int = -8)(contours: Seq[MatOfPoint], version: Byte): Option[MatOfPoint] = {
       import scala.collection.JavaConverters._
 
       val allPoints = contours.map(_.toList.asScala).flatten
@@ -241,20 +240,20 @@ object ProcessingStep extends LazyLogging{
           val leftmostCenter = shapes.map(_.center).minBy(_.x)
           val rightmostCenter = shapes.map(_.center).maxBy(_.x)
 
-          logger.error( s" leftmostCenter:$leftmostCenter rightmostCenter: $rightmostCenter")
+          logger.error(s" leftmostCenter:$leftmostCenter rightmostCenter: $rightmostCenter")
 
           ((leftmostCenter + rightmostCenter) * 0.5, (rightmostCenter - leftmostCenter))
         }
-        logger.error( s" center:$center orientation: $orientation")
+        logger.error(s" center:$center orientation: $orientation")
 
-        val Seq(upperLeft, upperRight, lowerRight,lowerLeft) = findProbableQuadrilateral(allPoints,orientation)
+        val Seq(upperLeft, upperRight, lowerRight, lowerLeft) = findProbableQuadrilateral(allPoints, orientation)
 
         val extensionFactor = {
           val amm = AnswerMatrixMeasures(version)
           import amm.Params._
           val extension = answerCellAvailableWidth.w
-          val cellHeaders = (cellHeaderSize.w.w)*(amm.columns) + extension*(amm.columns-1)
-          extension/cellHeaders
+          val cellHeaders = (cellHeaderSize.w.w) * (amm.columns) + extension * (amm.columns - 1)
+          extension / cellHeaders
 
         }
 
@@ -268,7 +267,7 @@ object ProcessingStep extends LazyLogging{
           lowerLeft
         )
 
-        logger.error( s"doit: ${ret.points.mkString(",")}")
+        logger.error(s"doit: ${ret.points.mkString(",")}")
 
         ret
       }
@@ -307,7 +306,7 @@ object ProcessingStep extends LazyLogging{
     }
 
     val l = lsi(biggestQuadrilaterals).flatMap { biggestQuadrilaterals =>
-      locateAnswerMatrix(originalMat().width(), originalMat().height())(biggestQuadrilaterals,1)
+      locateAnswerMatrix(originalMat().width(), originalMat().height())(biggestQuadrilaterals, 1)
     }
     lsi(location, l)
   }
@@ -318,7 +317,7 @@ object ProcessingStep extends LazyLogging{
     import QRInfo._
     def locateQR(cellHeaders: Seq[MatOfPoint]): MatOfPoint = {
       val tl = cellHeaders(0)(0)
-      val tr = cellHeaders(COLUMNS-1)(1)
+      val tr = cellHeaders(COLUMNS - 1)(1)
       val xAxis = (tr - tl)
       val yAxis = new Point(-xAxis.y, xAxis.x)
 
@@ -362,28 +361,30 @@ object ProcessingStep extends LazyLogging{
       BinaryConverter.fromBinarySolutions(data)
     }
 
-    psi(qrText).map{ s =>
-      val (ans,v) = compute(s)
+    psi(qrText).map { s =>
+      val (ans, v) = compute(s)
       val measures = AnswerMatrixMeasures(v)
-      psi(answers, ans)(qrVersion,v)(answerMatrixMeasures,measures)
+      psi(answers, ans)(qrVersion, v)(answerMatrixMeasures, measures)
     }.getOrElse(psi)
 
   }
 
-  val answerColumnsStep = informationOfQRStep.extend( "Localización de las columnas de respuestas") { implicit psi =>
+
+  def interpolateInLine(p1: Point, p2: Point, currentDistance: Double, requiredDistance: Double) = {
+    val vector = p2 - p1
+    val factor = vector.modulus * requiredDistance / currentDistance
+    p1 + (vector.normalize * factor)
+  }
+
+  val answerColumnsStep = informationOfQRStep.extend("Localización de las columnas de respuestas") { implicit psi =>
     import ContoursInfo._
 
-    def interpolateInLine( p1: Point, p2: Point, currentDistance: Double , requiredDistance: Double ) = {
-      val vector = p2 - p1
-      val factor = vector.modulus * requiredDistance / currentDistance
-      p1 + (vector.normalize * factor)
-    }
 
-    val columns = for( quads <- psi(biggestQuadrilaterals) ; measures <- psi(answerMatrixMeasures) ) yield{
+    val columns = for (quads <- psi(biggestQuadrilaterals); measures <- psi(answerMatrixMeasures)) yield {
       val nColumns = quads.size
-      val definedColumns = for( i <- 0 until nColumns-1 ) yield{
+      val definedColumns = for (i <- 0 until nColumns - 1) yield {
         val prev = quads(i)
-        val next = quads(i+1)
+        val next = quads(i + 1)
 
         val tl = prev(1)
         val tr = next(0)
@@ -391,26 +392,26 @@ object ProcessingStep extends LazyLogging{
         val bl = prev(2)
 
         import measures.Params._
-        val correctedTL = interpolateInLine(tl,tr,answerCellAvailableWidth.w, cellHeaderToCellWidthGap.w )
-        val correctedBL = interpolateInLine(bl,br,answerCellAvailableWidth.w, cellHeaderToCellWidthGap.w )
-        val correctedTR = interpolateInLine(tl,tr,answerCellAvailableWidth.w, cellHeaderToCellWidthGap.w + cellSize.w.w)
-        val correctedBR = interpolateInLine(bl,br,answerCellAvailableWidth.w, cellHeaderToCellWidthGap.w + cellSize.w.w)
+        val correctedTL = interpolateInLine(tl, tr, answerCellAvailableWidth.w, cellHeaderToCellWidthGap.w)
+        val correctedBL = interpolateInLine(bl, br, answerCellAvailableWidth.w, cellHeaderToCellWidthGap.w)
+        val correctedTR = interpolateInLine(tl, tr, answerCellAvailableWidth.w, cellHeaderToCellWidthGap.w + cellSize.w.w)
+        val correctedBR = interpolateInLine(bl, br, answerCellAvailableWidth.w, cellHeaderToCellWidthGap.w + cellSize.w.w)
 
         new MatOfPoint(correctedTL, correctedTR, correctedBR, correctedBL)
       }
 
       val lastColumn = {
-        val lastCellHeaders = quads(nColumns-1)
+        val lastCellHeaders = quads(nColumns - 1)
         val tl = lastCellHeaders(0)
         val tr = lastCellHeaders(1)
         val br = lastCellHeaders(2)
         val bl = lastCellHeaders(3)
 
         import measures.Params._
-        val correctedTL = interpolateInLine(tl,tr,cellHeaderSize.w.w, (cellHeaderSize.w + cellHeaderToCellWidthGap).w )
-        val correctedBL = interpolateInLine(bl,br,cellHeaderSize.w.w, (cellHeaderSize.w + cellHeaderToCellWidthGap).w )
-        val correctedTR = interpolateInLine(tl,tr,cellHeaderSize.w.w, (cellHeaderSize.w + cellHeaderToCellWidthGap + cellSize.w).w )
-        val correctedBR = interpolateInLine(bl,br,cellHeaderSize.w.w, (cellHeaderSize.w + cellHeaderToCellWidthGap + cellSize.w).w )
+        val correctedTL = interpolateInLine(tl, tr, cellHeaderSize.w.w, (cellHeaderSize.w + cellHeaderToCellWidthGap).w)
+        val correctedBL = interpolateInLine(bl, br, cellHeaderSize.w.w, (cellHeaderSize.w + cellHeaderToCellWidthGap).w)
+        val correctedTR = interpolateInLine(tl, tr, cellHeaderSize.w.w, (cellHeaderSize.w + cellHeaderToCellWidthGap + cellSize.w).w)
+        val correctedBR = interpolateInLine(bl, br, cellHeaderSize.w.w, (cellHeaderSize.w + cellHeaderToCellWidthGap + cellSize.w).w)
 
         new MatOfPoint(correctedTL, correctedTR, correctedBR, correctedBL)
       }
@@ -418,18 +419,44 @@ object ProcessingStep extends LazyLogging{
       definedColumns ++ Seq(lastColumn)
     }
 
-    psi(answerColumns, columns)(mat,psi(originalMat))
+    psi(answerColumns, columns)(mat, psi(originalMat))
   }
 
 
-  val answerMatrixStep = combined(answerMatrixLocationStep,informationOfQRStep).extend("Extracción de la tabla de respuestas") { implicit psi =>
+  val cellsOfAnswerMatrix = answerColumnsStep.extend("Localización de celdas (basada en columnas)") { psi =>
+    import imgproc.steps.AnswersInfo._
+
+    val ret: Option[IndexedSeq[MatOfPoint]] = for (cellHeaderColumns <- psi(answerColumns);
+                                                                                                                         measures <- psi(answerMatrixMeasures);
+                                                                                                                         version <- psi(qrVersion);
+                                                                                                                         answers <- psi(answers);
+                                                                                                                         questions = answers.size) yield {
+      for (question <- 0 until questions) yield {
+        val rows = measures.rowOfQuestion(questions - 1, questions)
+        val row = measures.rowOfQuestion(question, questions)
+        val column = measures.columnOfQuestion(question, questions)
+        val rect = cellHeaderColumns(column)
+        val tl = interpolateInLine(rect(0), rect(3), rows+1, row)
+        val tr = interpolateInLine(rect(1), rect(2), rows+1, row)
+        val bl = interpolateInLine(rect(0), rect(3), rows+1, row + 1)
+        val br = interpolateInLine(rect(1), rect(2), rows+1, row + 1)
+
+        new MatOfPoint(tl, tr, br, bl)
+
+      }
+    }
+
+    psi(cellsLocation, ret.get)
+  }
+
+  val answerMatrixStep = combined(answerMatrixLocationStep, informationOfQRStep).extend("Extracción de la tabla de respuestas") { implicit psi =>
 
     import imgproc.steps.AnswersInfo._
     import imgproc.steps.ContoursInfo._
     import imgproc.steps.LocationInfo._
     import imgproc.steps.MainInfo._
 
-    val loc = for (rect <- psi(location); ans <- psi(answers); biggestQuadrilaterals <- psi(biggestQuadrilaterals); version <- psi(qrVersion) ; measures <- psi(answerMatrixMeasures) ) yield {
+    val loc = for (rect <- psi(location); ans <- psi(answers); biggestQuadrilaterals <- psi(biggestQuadrilaterals); version <- psi(qrVersion); measures <- psi(answerMatrixMeasures)) yield {
 
       val dstPoints = measures.answerTableRect(ans.size).toOpenCV
 
@@ -448,12 +475,11 @@ object ProcessingStep extends LazyLogging{
   }
 
 
-
-  val cellsOfAnswerMatrix = answerMatrixStep.extend("Localización de celdas") { psi =>
+  val cellsOfAnswerMatrix_matrixBased = answerMatrixStep.extend("Localización de celdas (basada en matriz)") { psi =>
     import imgproc.steps.AnswersInfo._
     import imgproc.steps.LocationInfo._
 
-    val ret = for (m <- psi(locatedMat); a <- psi(answers); version <- psi(qrVersion) ) yield {
+    val ret = for (m <- psi(locatedMat); a <- psi(answers); version <- psi(qrVersion)) yield {
       val cr = AnswerMatrixMeasures(version).answerCells(a.size)
       val c = for (r <- cr) yield submatrix(m, r.toOpenCV, AnswerMatrixMeasures(1).Params.cellSize.w.w, AnswerMatrixMeasures(1).Params.cellSize.h.h)
       psi(cellsRect, cr.map(_.toOpenCV))(cells, c)

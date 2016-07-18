@@ -75,6 +75,7 @@ object AnswerMatrixMeasures {
     case class Size(w: Width, h: Height) extends Area{
       def on(o: Point) = Rect(o, w, h)
       lazy val toOpenCV = new org.opencv.core.Size(w.w,h.h)
+      def toRect = on( Point(X(0),Y(0)) )
     }
 
     case class Rect(o: Point, w: Width, h: Height) extends Area{
@@ -117,7 +118,7 @@ class AnswerMatrixMeasuresHorizontalTicked(val columns: Int = 5) extends LazyLog
 
 
   object Params {
-    private val f = 1
+    private val f = 5
     val cellHeaderSize = Size(Width(24*f), Height(14*f))
     val answerCellAvailableWidth = Width(67*f) // INCLUDING cellHeaderToCellWidthGap, cellSize AND THE FOLLOWING SPACE
     val cellHeaderToCellWidthGap = Width(2*f)
@@ -146,19 +147,20 @@ class AnswerMatrixMeasuresHorizontalTicked(val columns: Int = 5) extends LazyLog
     logger.error( s"rowOffset:$rowOffset")
   }
 
+  def rowOfQuestion(question: Int, questions: Int ) = question / columns
+  def columnOfQuestion(question: Int, questions: Int ) = question % columns
 
   def answerCells(questions: Int) = {
 
     def answerCell(question: Int) = {
       assert(question >= 0 && question < questions)
 
-      val rowOfQuestion = question / columns
-      val columnOfQuestion = question % columns
-
+      val row = rowOfQuestion(question,questions)
+      val column = columnOfQuestion(question,questions)
 
       import ValuesForAnswerCell._
 
-      cellSize.on(basePointForCells + rowOffset * rowOfQuestion + columnOffset * columnOfQuestion)
+      cellSize.on(basePointForCells + rowOffset * row + columnOffset * column)
     }
 
     (0 until questions).map(answerCell)

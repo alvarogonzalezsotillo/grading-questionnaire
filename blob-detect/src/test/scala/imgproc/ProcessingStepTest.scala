@@ -17,11 +17,11 @@ import imgproc.Implicits._
 import TestUtil._
 import ProcessingStep._
 import ProcessingStep.Implicits._
-import imgproc.steps.AnswersInfo.{cells, cellsRect}
-import imgproc.steps.ContoursInfo.{answerColumns, biggestQuadrilaterals, contours, quadrilaterals}
+import imgproc.steps.AnswersInfo.{answers, cells, cellsRect}
+import imgproc.steps.ContoursInfo._
 import imgproc.steps.LocationInfo.location
-import imgproc.steps.MainInfo.mat
-import imgproc.steps.QRInfo.qrLocation
+import imgproc.steps.MainInfo.{mat, originalMat}
+import imgproc.steps.QRInfo.{answerMatrixMeasures, qrLocation}
 
 
 
@@ -36,13 +36,13 @@ class ProcessingStepTest extends FlatSpec {
 
 
 
-  val positiveMatchImages = Seq(
+  val positiveMatchImages = /* Seq(
     "2016-01-26-101322.jpg",
     "2016-01-26-101343.jpg",
     "2016-01-26-101403.jpg",
     "2016-01-26-101423.jpg",
     "2016-01-26-101502.jpg",
-    "2016-01-26-101516.jpg",
+    "2016-01-26-101516.jpg", */ Seq(
     "horizontal-ticked.png"
   )
 
@@ -151,12 +151,12 @@ class ProcessingStepTest extends FlatSpec {
     it should "extract cells" in {
       runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
         val m = readImageFromResources(imageLocation)
-        val extracted = processMat(cellsOfAnswerMatrix.withDrawContours(_(cellsRect)), m)
+        val extracted = processMat(cellsOfAnswerMatrix_matrixBased.withDrawContours(_(cellsRect)), m)
 
         {
           // DRAWING MATRIX RECT
           val ammht = new AnswerMatrixMeasuresHorizontalTicked
-          val info = cellsOfAnswerMatrix.process(m)
+          val info = cellsOfAnswerMatrix_matrixBased.process(m)
           val ans = info(AnswersInfo.answers)
 
           val rect = ammht.answerTableRect(ans.get.size)
@@ -169,7 +169,7 @@ class ProcessingStepTest extends FlatSpec {
     it should "save extracted individual cells" in{
       runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
         val m = readImageFromResources(imageLocation)
-        val info = cellsOfAnswerMatrix.process(m)
+        val info = cellsOfAnswerMatrix_matrixBased.process(m)
         val cellsOfInfo = info(cells).get.zipWithIndex
         for ((cell, index) <- cellsOfInfo) {
           saveTestImage(s"09-cell-${index+1}-" + imageLocation, cell)
@@ -187,7 +187,34 @@ class ProcessingStepTest extends FlatSpec {
     }
   }
 
+  "Cells extraction (column based) step" should "find the cells" in{
+    runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
+      val m = readImageFromResources(imageLocation)
+      val m2 = processMat(cellsOfAnswerMatrix.withDrawNumberedContours(_(cellsLocation)), m)
+      saveTestImage("11-cells-" + imageLocation, m2)
+    }
+  }
 
+  "Cells extraction (column based) step" should "save all the individual cells" in{
+    runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
+      val m = readImageFromResources(imageLocation)
+      val info = cellsOfAnswerMatrix.process(m)
+      for( measures <- info(answerMatrixMeasures) ;
+           cells <- info(cellsLocation) ;
+           answers <- info(answers);
+           mat <- info(originalMat);
+           _ = saveTestImage("12-kk.png",mat);
+           questions = answers.size ;
+           ((cellInMatrix,cell),index) <- cells.zip(measures.answerCells(questions)).zipWithIndex ) {
+        val src = cellInMatrix
+        val dst = measures.Params.cellSize.toRect.toOpenCV // cell.toOpenCV
+        val h = ImageProcessing.findHomography(src,dst)
+        println( s"$imageLocation: $index src:${src.points.mkString(",")} dst:${dst.points.mkString(",")} " )
+        val cellM = ImageProcessing.warpImage()(mat,h,measures.Params.cellSize.toOpenCV)
+        saveTestImage("12-cell-" + imageLocation + "-" + index + ".png", cellM )
+      }
+    }
+  }
 
 }
 

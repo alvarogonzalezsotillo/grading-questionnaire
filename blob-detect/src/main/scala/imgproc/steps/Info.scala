@@ -26,6 +26,7 @@ object ContoursInfo {
   object quadrilaterals extends HKey[Seq[MatOfPoint]]
   object biggestQuadrilaterals extends HKey[IndexedSeq[MatOfPoint]]
   object answerColumns extends HKey[IndexedSeq[MatOfPoint]]
+  object cellsLocation extends HKey[IndexedSeq[MatOfPoint]]
 }
 
 object QRInfo {
