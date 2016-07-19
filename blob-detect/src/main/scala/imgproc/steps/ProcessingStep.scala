@@ -6,13 +6,13 @@ import java.util.Date
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import common.{BinaryConverter, HMap, Sounds}
-import imgproc.steps.ContoursInfo.{answerColumns, biggestQuadrilaterals, cellsLocation}
-import imgproc.steps.LocationInfo.location
+import imgproc.steps.AnswersInfo.cells
+import imgproc.steps.ContoursInfo.{answerColumns, biggestQuadrilaterals}
 import imgproc.steps.MainInfo._
 import imgproc.steps.ProcessingStep.{ExtendedStep, Info}
 import imgproc.steps.QRInfo.{answerMatrixMeasures, qrVersion}
 import imgproc.{AnswerMatrixMeasures, ImageProcessing, QRScanner}
-import org.opencv.core._
+import org.opencv.core.{MatOfPoint, _}
 import org.opencv.highgui.Highgui
 import org.opencv.imgproc.Imgproc
 
@@ -229,6 +229,7 @@ object ProcessingStep extends LazyLogging {
     import LocationInfo._
 
     def locateAnswerMatrix(imageWidth: Int, imageHeight: Int, number: Int = COLUMNS, insideLimit: Int = -8)(contours: Seq[MatOfPoint], version: Byte): Option[MatOfPoint] = {
+
       import scala.collection.JavaConverters._
 
       val allPoints = contours.map(_.toList.asScala).flatten
@@ -313,7 +314,6 @@ object ProcessingStep extends LazyLogging {
 
 
   val locateQRStep = biggestQuadrilateralsStep.extend("Localización del código QR") { psi =>
-    import LocationInfo._
     import QRInfo._
     def locateQR(cellHeaders: Seq[MatOfPoint]): MatOfPoint = {
       val tl = cellHeaders(0)(0)
@@ -423,23 +423,23 @@ object ProcessingStep extends LazyLogging {
   }
 
 
-  val cellsOfAnswerMatrix = answerColumnsStep.extend("Localización de celdas (basada en columnas)") { psi =>
+  val cellsLocationStep = answerColumnsStep.extend("Localización de celdas (basada en columnas)") { psi =>
     import imgproc.steps.AnswersInfo._
 
-    val ret: Option[IndexedSeq[MatOfPoint]] = for (cellHeaderColumns <- psi(answerColumns);
-                                                                                                                         measures <- psi(answerMatrixMeasures);
-                                                                                                                         version <- psi(qrVersion);
-                                                                                                                         answers <- psi(answers);
-                                                                                                                         questions = answers.size) yield {
+    val ret = for (cellHeaderColumns <- psi(answerColumns);
+                   measures <- psi(answerMatrixMeasures);
+                   version <- psi(qrVersion);
+                   answers <- psi(answers);
+                   questions = answers.size) yield {
       for (question <- 0 until questions) yield {
         val rows = measures.rowOfQuestion(questions - 1, questions)
         val row = measures.rowOfQuestion(question, questions)
         val column = measures.columnOfQuestion(question, questions)
         val rect = cellHeaderColumns(column)
-        val tl = interpolateInLine(rect(0), rect(3), rows+1, row)
-        val tr = interpolateInLine(rect(1), rect(2), rows+1, row)
-        val bl = interpolateInLine(rect(0), rect(3), rows+1, row + 1)
-        val br = interpolateInLine(rect(1), rect(2), rows+1, row + 1)
+        val tl = interpolateInLine(rect(0), rect(3), rows + 1, row)
+        val tr = interpolateInLine(rect(1), rect(2), rows + 1, row)
+        val bl = interpolateInLine(rect(0), rect(3), rows + 1, row + 1)
+        val br = interpolateInLine(rect(1), rect(2), rows + 1, row + 1)
 
         new MatOfPoint(tl, tr, br, bl)
 
@@ -449,43 +449,13 @@ object ProcessingStep extends LazyLogging {
     psi(cellsLocation, ret.get)
   }
 
-  val answerMatrixStep = combined(answerMatrixLocationStep, informationOfQRStep).extend("Extracción de la tabla de respuestas") { implicit psi =>
+  val cellsStep = cellsLocationStep.extend( "Celdas individuales" ) { psi =>
 
-    import imgproc.steps.AnswersInfo._
-    import imgproc.steps.ContoursInfo._
-    import imgproc.steps.LocationInfo._
-    import imgproc.steps.MainInfo._
+    val ret = ???
 
-    val loc = for (rect <- psi(location); ans <- psi(answers); biggestQuadrilaterals <- psi(biggestQuadrilaterals); version <- psi(qrVersion); measures <- psi(answerMatrixMeasures)) yield {
-
-      val dstPoints = measures.answerTableRect(ans.size).toOpenCV
-
-      val h = findHomography(rect, dstPoints)
-      val locatedMat = warpImage()(originalMat(), h, measures.answerTableRect(ans.size).size.toOpenCV)
-      val locatedCellHeaders = warpContours(biggestQuadrilaterals, h)
-
-      (locatedMat, locatedCellHeaders)
-    }
-
-    val am = loc.map(_._1)
-    val lch = loc.map(_._2)
-
-    val ret = psi(mat, am)(locatedMat, am)(locatedCellHeaders, lch)
-    ret
+    psi(cells,ret)
   }
 
-
-  val cellsOfAnswerMatrix_matrixBased = answerMatrixStep.extend("Localización de celdas (basada en matriz)") { psi =>
-    import imgproc.steps.AnswersInfo._
-    import imgproc.steps.LocationInfo._
-
-    val ret = for (m <- psi(locatedMat); a <- psi(answers); version <- psi(qrVersion)) yield {
-      val cr = AnswerMatrixMeasures(version).answerCells(a.size)
-      val c = for (r <- cr) yield submatrix(m, r.toOpenCV, AnswerMatrixMeasures(1).Params.cellSize.w.w, AnswerMatrixMeasures(1).Params.cellSize.h.h)
-      psi(cellsRect, cr.map(_.toOpenCV))(cells, c)
-    }
-    ret.getOrElse(psi)
-  }
 
 
 }

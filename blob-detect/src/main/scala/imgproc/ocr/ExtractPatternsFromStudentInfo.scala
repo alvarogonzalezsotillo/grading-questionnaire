@@ -28,7 +28,7 @@ object ExtractPatternsFromStudentInfo extends App{
     import imgproc.steps.ProcessingStep.Implicits._
 
     val img : Mat = ImageIO.read(f)
-    val info = ProcessingStep.cellsOfAnswerMatrix_matrixBased.process(img)
+    val info = ProcessingStep.cellsStep.process(img)
 
     if( info(cells).isEmpty ){
       println( s"Not valid: $f")

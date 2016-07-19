@@ -4,8 +4,8 @@ import java.awt.{Graphics, Image}
 import javax.swing._
 import javax.swing.event.{ChangeEvent, ChangeListener}
 
-import common.{Logging, Sounds}
-import imgproc.steps.AnswersInfo.cellsRect
+import common.Logging
+import imgproc.steps.AnswersInfo.cellsLocation
 import imgproc.steps.ContoursInfo.{biggestQuadrilaterals, contours, quadrilaterals}
 import imgproc.steps.LocationInfo.location
 import imgproc.steps.MainInfo.mat
@@ -36,8 +36,8 @@ object GUI extends App {
 
     def processMat(m: Mat) = {
       import imgproc.Implicits._
-      import imgproc.steps.ProcessingStep.Implicits._
       import imgproc.steps.MainInfo._
+      import imgproc.steps.ProcessingStep.Implicits._
 
       setOverlayImage(m)
       val ret = step.process(m)
@@ -88,8 +88,6 @@ object GUI extends App {
   nu.pattern.OpenCV.loadLibrary()
 
   import ProcessingStep._
-  import imgproc.steps.ProcessingStep.Implicits._
-  import imgproc.Implicits._
 
   UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
 
@@ -107,9 +105,8 @@ object GUI extends App {
     locateQRStep.withDrawContours( i=> i(qrLocation).map( c => Seq(c) )),
     extractQRStep,
     decodeQRStep.withDrawString( _(qrText) ),
-    answerMatrixStep,
-    cellsOfAnswerMatrix_matrixBased.withDrawContours( _(cellsRect) ),
-    answerMatrixStep.withFilter()(_(mat).isDefined).withSaveMatrix()
+    cellsLocationStep.withDrawContours( _(cellsLocation) ),
+    cellsLocationStep.withFilter()(_(mat).isDefined).withSaveMatrix()
   ))
 
   frame.setSize(640, 480)

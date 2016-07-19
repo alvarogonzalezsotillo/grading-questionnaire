@@ -32,7 +32,7 @@ class OCRTest extends FlatSpec {
 
   private def cellsOfTestImage(f: String) = {
     val img = readImageFromResources(f)
-    val info = ProcessingStep.cellsOfAnswerMatrix_matrixBased.process(img)
+    val info = ProcessingStep.cellsStep.process(img)
     info(cells).get
   }
 
