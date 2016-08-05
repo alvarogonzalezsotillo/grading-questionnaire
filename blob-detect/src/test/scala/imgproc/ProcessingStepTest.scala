@@ -135,18 +135,9 @@ class ProcessingStepTest extends FlatSpec {
   "Cells extraction (column based) step" should "save all the individual cells" in{
     runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
       val m = readImageFromResources(imageLocation)
-      val info = cellsLocationStep.process(m)
-      for( measures <- info(answerMatrixMeasures) ;
-           cells <- info(cellsLocation) ;
-           mat <- info(originalMat);
-           _ = saveTestImage("12-kk.png",mat);
-           (cellInMatrix,(cell,index)) <- cells.zip(measures.answerCells.zipWithIndex ) ) {
-        val src = cellInMatrix
-        val dst = measures.Params.cellSize.toRect.toOpenCV // cell.toOpenCV
-        val h = ImageProcessing.findHomography(src,dst)
-        println( s"$imageLocation: $index src:${src.points.mkString(",")} dst:${dst.points.mkString(",")} " )
-        val cellM = ImageProcessing.warpImage()(mat,h,measures.Params.cellSize.toOpenCV)
-        saveTestImage("12-cell-" + imageLocation + "-" + index + ".png", cellM )
+      val info = cellsStep.process(m)
+      for( cellsMat <- info(cells) ; (mat,index) <- cellsMat.zipWithIndex ){
+        saveTestImage("12-cell-" + imageLocation + "-" + index + ".png", mat )
       }
     }
   }

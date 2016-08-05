@@ -6,7 +6,7 @@ import java.util.Date
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import common.{BinaryConverter, HMap, Sounds}
-import imgproc.steps.AnswersInfo.cells
+import imgproc.steps.AnswersInfo.{cells, cellsLocation}
 import imgproc.steps.ContoursInfo.{answerColumns, biggestQuadrilaterals}
 import imgproc.steps.MainInfo._
 import imgproc.steps.ProcessingStep.{ExtendedStep, Info}
@@ -14,10 +14,6 @@ import imgproc.steps.QRInfo.{answerMatrixMeasures, qrVersion}
 import imgproc.{AnswerMatrixMeasures, ImageProcessing, QRScanner}
 import org.opencv.core.{MatOfPoint, _}
 import org.opencv.highgui.Highgui
-import org.opencv.imgproc.Imgproc
-
-import scala.collection.immutable.IndexedSeq
-import scala.util.Try
 
 
 /**
@@ -224,7 +220,6 @@ object ProcessingStep extends LazyLogging {
   }
 
 
-
   val locateQRStep = biggestQuadrilateralsStep.extend("Localización del código QR") { psi =>
     import QRInfo._
     def locateQR(cellHeaders: Seq[MatOfPoint]): MatOfPoint = {
@@ -361,13 +356,23 @@ object ProcessingStep extends LazyLogging {
     psi(cellsLocation, ret.get)
   }
 
-  val cellsStep = cellsLocationStep.extend( "Celdas individuales" ) { psi =>
+  val cellsStep = cellsLocationStep.extend("Celdas individuales") { info =>
 
-    val ret = ???
+    val ret = {
+      for (measures <- info(answerMatrixMeasures);
+           cellsLoc <- info(cellsLocation);
+           mat <- info(originalMat)) yield {
+        for ((cellInMatrix, cell) <- cellsLoc.zip(measures.answerCells)) yield {
+          val src = cellInMatrix
+          val dst = measures.Params.cellSize.toRect.toOpenCV // cell.toOpenCV
+          val h = ImageProcessing.findHomography(src, dst)
+          ImageProcessing.warpImage()(mat, h, measures.Params.cellSize.toOpenCV)
+        }
+      }
+    }
 
-    psi(cells,ret)
+    info(cells, ret)
   }
-
 
 
 }

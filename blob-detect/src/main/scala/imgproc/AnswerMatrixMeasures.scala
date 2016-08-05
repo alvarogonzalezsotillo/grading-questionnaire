@@ -117,7 +117,7 @@ class AnswerMatrixMeasuresHorizontalTicked(questionsO: Option[Int], val columns:
 
   lazy val questions = questionsO.getOrElse( throw new IllegalStateException("Number of questions not known") )
 
-  val rows = (1.0 * questions / columns).ceil.toInt
+  lazy val rows = (1.0 * questions / columns).ceil.toInt
 
   import AnswerMatrixMeasures.TypeSafeWidthHeight._
 
@@ -133,15 +133,15 @@ class AnswerMatrixMeasuresHorizontalTicked(questionsO: Option[Int], val columns:
 
   import Params._
 
-  private val columnWidth = cellHeaderSize.w + answerCellAvailableWidth
-  private val answerTableWidth = columnWidth * columns
-  private def answerTableHeight = cellHeaderSize.h * rows
+  private lazy val columnWidth = cellHeaderSize.w + answerCellAvailableWidth
+  private lazy val answerTableWidth = columnWidth * columns
+  private lazy val answerTableHeight = cellHeaderSize.h * rows
 
-  private val answerTableSize = Size(answerTableWidth, answerTableHeight)
+  private lazy val answerTableSize = Size(answerTableWidth, answerTableHeight)
 
-  val answerTableRect = answerTableOrigin.toRect(answerTableSize)
+  lazy val answerTableRect = answerTableOrigin.toRect(answerTableSize)
 
-  def cellArea = cellSize.area
+  lazy val cellArea = cellSize.area
 
   def qrLocation = ???
 
