@@ -6,9 +6,12 @@ import org.opencv.core._
 
 
 object AnswerMatrixMeasures {
-  def apply(version: Int) = version match {
-    case 0 => new AnswerMatrixMeasuresHorizontalTicked()
-    case 1 => new AnswerMatrixMeasuresHorizontalTicked()
+  def apply( version: Int): AnswerMatrixMeasuresHorizontalTicked = apply(None,version)
+  def apply( questions: Int, version: Int): AnswerMatrixMeasuresHorizontalTicked = apply(Some(questions),version)
+
+  def apply(questions: Option[Int], version: Int) = version match {
+    case 0 => new AnswerMatrixMeasuresHorizontalTicked(questions)
+    case 1 => new AnswerMatrixMeasuresHorizontalTicked(questions)
   }
 
   val matrixWithToLeftOfQRRatio = 0.02
@@ -110,9 +113,11 @@ object AnswerMatrixMeasures {
 
 
 
-class AnswerMatrixMeasuresHorizontalTicked(val columns: Int = 5) extends LazyLogging{
+class AnswerMatrixMeasuresHorizontalTicked(questionsO: Option[Int], val columns: Int = 5) extends LazyLogging{
 
-  def rows(questions: Int) = (1.0 * questions / columns).ceil.toInt
+  lazy val questions = questionsO.getOrElse( throw new IllegalStateException("Number of questions not known") )
+
+  val rows = (1.0 * questions / columns).ceil.toInt
 
   import AnswerMatrixMeasures.TypeSafeWidthHeight._
 
@@ -130,11 +135,11 @@ class AnswerMatrixMeasuresHorizontalTicked(val columns: Int = 5) extends LazyLog
 
   private val columnWidth = cellHeaderSize.w + answerCellAvailableWidth
   private val answerTableWidth = columnWidth * columns
-  private def answerTableHeight(questions:Int) = cellHeaderSize.h * rows(questions)
+  private def answerTableHeight = cellHeaderSize.h * rows
 
-  private def answerTableSize(questions: Int) = Size(answerTableWidth, answerTableHeight(questions))
+  private val answerTableSize = Size(answerTableWidth, answerTableHeight)
 
-  def answerTableRect(questions: Int) = answerTableOrigin.toRect(answerTableSize(questions))
+  val answerTableRect = answerTableOrigin.toRect(answerTableSize)
 
   def cellArea = cellSize.area
 
@@ -147,16 +152,16 @@ class AnswerMatrixMeasuresHorizontalTicked(val columns: Int = 5) extends LazyLog
     logger.error( s"rowOffset:$rowOffset")
   }
 
-  def rowOfQuestion(question: Int, questions: Int ) = question / columns
-  def columnOfQuestion(question: Int, questions: Int ) = question % columns
+  def rowOfQuestion(question: Int ) = question / columns
+  def columnOfQuestion(question: Int ) = question % columns
 
-  def answerCells(questions: Int) = {
+  lazy val answerCells = {
 
     def answerCell(question: Int) = {
       assert(question >= 0 && question < questions)
 
-      val row = rowOfQuestion(question,questions)
-      val column = columnOfQuestion(question,questions)
+      val row = rowOfQuestion(question)
+      val column = columnOfQuestion(question)
 
       import ValuesForAnswerCell._
 

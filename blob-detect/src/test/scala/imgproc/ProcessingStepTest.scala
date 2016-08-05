@@ -98,26 +98,6 @@ class ProcessingStepTest extends FlatSpec {
   }
 
   {
-    behavior of "Answer location step"
-
-    it should "find a location" in {
-      runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
-        val m = readImageFromResources(imageLocation)
-        val loc = answerMatrixLocationStep.process(m)(location)
-        assert(loc.isDefined, s"loc.isDefined is false: $imageLocation")
-      }
-    }
-
-    it should "find a location and save image" in {
-      runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
-        val m = readImageFromResources(imageLocation)
-        val m2 = processMat(answerMatrixLocationStep.withDrawContours(_(location).map(r => Seq(r))), m)
-        saveTestImage("07-answerlocation-" + imageLocation, m2)
-      }
-    }
-  }
-
-  {
     behavior of "QR step"
 
     it should "locate QR" in{
@@ -158,11 +138,9 @@ class ProcessingStepTest extends FlatSpec {
       val info = cellsLocationStep.process(m)
       for( measures <- info(answerMatrixMeasures) ;
            cells <- info(cellsLocation) ;
-           answers <- info(answers);
            mat <- info(originalMat);
            _ = saveTestImage("12-kk.png",mat);
-           questions = answers.size ;
-           ((cellInMatrix,cell),index) <- cells.zip(measures.answerCells(questions)).zipWithIndex ) {
+           (cellInMatrix,(cell,index)) <- cells.zip(measures.answerCells.zipWithIndex ) ) {
         val src = cellInMatrix
         val dst = measures.Params.cellSize.toRect.toOpenCV // cell.toOpenCV
         val h = ImageProcessing.findHomography(src,dst)

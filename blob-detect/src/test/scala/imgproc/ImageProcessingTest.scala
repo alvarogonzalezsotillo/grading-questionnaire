@@ -22,21 +22,6 @@ class ImageProcessingTest extends FlatSpec {
 
   nu.pattern.OpenCV.loadLibrary()
 
-  "The number of rows" should "be correct" in {
-    assert(AnswerMatrixMeasures(1).rows(1) == 1)
-
-
-    assert(AnswerMatrixMeasures(1).rows(5) == 1)
-    assert(AnswerMatrixMeasures(1).rows(4) == 1)
-    assert(AnswerMatrixMeasures(1).rows(6) == 2)
-
-
-    assert(AnswerMatrixMeasures(1).rows(29) == 6)
-    assert(AnswerMatrixMeasures(1).rows(30) == 6)
-    assert(AnswerMatrixMeasures(1).rows(31) == 7)
-
-
-  }
 
 
 
@@ -61,7 +46,8 @@ class ImageProcessingTest extends FlatSpec {
 
   def testHomography(pointsInImage: MatOfPoint) {
     val questions = 35
-    val H = ImageProcessing.findHomography(pointsInImage,AnswerMatrixMeasures(1).answerTableRect(questions).toOpenCV)
+    val v = 1
+    val H = ImageProcessing.findHomography(pointsInImage,AnswerMatrixMeasures(questions,v).answerTableRect.toOpenCV)
 
     val pointsInImage_mat = Converters.vector_Point2f_to_Mat(pointsInImage.toList)
     val dstPoints_mat = new Mat
@@ -74,7 +60,7 @@ class ImageProcessingTest extends FlatSpec {
 
     //for (p <- dstPoints) {  println(p)  }
 
-    val answerMatrixContour = AnswerMatrixMeasures(1).answerTableRect(questions).toOpenCV
+    val answerMatrixContour = AnswerMatrixMeasures(questions,v).answerTableRect.toOpenCV
 
     assert(dstPoints.get(0) ~= answerMatrixContour.toArray()(0))
     assert(dstPoints.get(1) ~= answerMatrixContour.toArray()(1))

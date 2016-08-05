@@ -224,94 +224,6 @@ object ProcessingStep extends LazyLogging {
   }
 
 
-  val answerMatrixLocationStep = biggestQuadrilateralsStep.extend("Localización de la tabla de respuestas") { implicit lsi =>
-    import ContoursInfo._
-    import LocationInfo._
-
-    def locateAnswerMatrix(imageWidth: Int, imageHeight: Int, number: Int = COLUMNS, insideLimit: Int = -8)(contours: Seq[MatOfPoint], version: Byte): Option[MatOfPoint] = {
-
-      import scala.collection.JavaConverters._
-
-      val allPoints = contours.map(_.toList.asScala).flatten
-
-
-      def doIt() = {
-        val (center, orientation) = {
-          val shapes = contours.map(c => new Shape(c))
-          val leftmostCenter = shapes.map(_.center).minBy(_.x)
-          val rightmostCenter = shapes.map(_.center).maxBy(_.x)
-
-          logger.error(s" leftmostCenter:$leftmostCenter rightmostCenter: $rightmostCenter")
-
-          ((leftmostCenter + rightmostCenter) * 0.5, (rightmostCenter - leftmostCenter))
-        }
-        logger.error(s" center:$center orientation: $orientation")
-
-        val Seq(upperLeft, upperRight, lowerRight, lowerLeft) = findProbableQuadrilateral(allPoints, orientation)
-
-        val extensionFactor = {
-          val amm = AnswerMatrixMeasures(version)
-          import amm.Params._
-          val extension = answerCellAvailableWidth.w
-          val cellHeaders = (cellHeaderSize.w.w) * (amm.columns) + extension * (amm.columns - 1)
-          extension / cellHeaders
-
-        }
-
-        val lowerExtension = (lowerRight - lowerLeft) * extensionFactor
-        val upperExtension = (upperRight - upperLeft) * extensionFactor
-
-        val ret = new MatOfPoint(
-          upperLeft,
-          upperRight + upperExtension,
-          lowerRight + lowerExtension,
-          lowerLeft
-        )
-
-        logger.error(s"doit: ${ret.points.mkString(",")}")
-
-        ret
-      }
-
-      def checkIt(contour: MatOfPoint) = {
-
-        def insideImage(p: Point) = {
-          p.x > 0 && p.y > 0 && p.x < imageWidth && p.y < imageHeight
-        }
-
-        val contour2f = new MatOfPoint2f()
-        contour.convertTo(contour2f, CvType.CV_32FC2)
-
-        def insideContour(p: Point) = {
-          val inside = Imgproc.pointPolygonTest(contour2f, p, true)
-          inside > insideLimit
-        }
-
-        val upperLeft = contour.toArray()(0)
-        val upperRight = contour.toArray()(1)
-        val w = upperRight.x - upperLeft.x
-
-        val contoursSizeOK = contours.size == number
-        val insideImageOK = contour.toArray.forall(insideImage)
-        val insideContourOK = allPoints.forall(insideContour)
-        val widthOK = w > imageWidth * 0.60
-
-        val ret = contoursSizeOK && insideImageOK && insideContourOK && widthOK
-
-        logger.error(s"$contoursSizeOK  $insideImageOK $insideContourOK $widthOK $w $imageWidth")
-
-        ret
-      }
-
-      Try(doIt).filter(checkIt).toOption
-    }
-
-    val l = lsi(biggestQuadrilaterals).flatMap { biggestQuadrilaterals =>
-      locateAnswerMatrix(originalMat().width(), originalMat().height())(biggestQuadrilaterals, 1)
-    }
-    lsi(location, l)
-  }
-
 
   val locateQRStep = biggestQuadrilateralsStep.extend("Localización del código QR") { psi =>
     import QRInfo._
@@ -363,7 +275,7 @@ object ProcessingStep extends LazyLogging {
 
     psi(qrText).map { s =>
       val (ans, v) = compute(s)
-      val measures = AnswerMatrixMeasures(v)
+      val measures = AnswerMatrixMeasures(Some(ans.size), v)
       psi(answers, ans)(qrVersion, v)(answerMatrixMeasures, measures)
     }.getOrElse(psi)
 
@@ -432,9 +344,9 @@ object ProcessingStep extends LazyLogging {
                    answers <- psi(answers);
                    questions = answers.size) yield {
       for (question <- 0 until questions) yield {
-        val rows = measures.rowOfQuestion(questions - 1, questions)
-        val row = measures.rowOfQuestion(question, questions)
-        val column = measures.columnOfQuestion(question, questions)
+        val rows = measures.rowOfQuestion(questions - 1)
+        val row = measures.rowOfQuestion(question)
+        val column = measures.columnOfQuestion(question)
         val rect = cellHeaderColumns(column)
         val tl = interpolateInLine(rect(0), rect(3), rows + 1, row)
         val tr = interpolateInLine(rect(1), rect(2), rows + 1, row)

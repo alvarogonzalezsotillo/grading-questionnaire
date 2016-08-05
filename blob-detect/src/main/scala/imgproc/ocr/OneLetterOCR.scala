@@ -70,7 +70,7 @@ object OneLetterOCR {
 
   val letterFragmentToCellRatio = 400
 
-  def findContoursOfLetterFragment( m: Mat, minAreaForLetterFragment: Double = AnswerMatrixMeasures(1).cellArea/letterFragmentToCellRatio ) = {
+  def findContoursOfLetterFragment( m: Mat, minAreaForLetterFragment: Double = AnswerMatrixMeasures(None,1).cellArea/letterFragmentToCellRatio ) = {
     import imgproc.Implicits._
 
     findContours(m).filter( _.boundingBox.area > minAreaForLetterFragment )
@@ -82,7 +82,7 @@ object OneLetterOCR {
     val bboxes = mergeBoundingBoxes(contours)()
 
 
-    val amm = AnswerMatrixMeasures(1)
+    val amm = AnswerMatrixMeasures(None,1)
     import amm.Params._
 
     val filters : Seq[ Rect => Boolean ] = Seq(
