@@ -1,25 +1,25 @@
 package imgproc
 
 /**
- * Created by alvaro on 8/07/15.
- */
+  * Created by alvaro on 8/07/15.
+  */
+
+import java.io.File
+import javax.imageio.ImageIO
 
 import imgproc.ImageProcessing._
+import imgproc.Implicits._
 import imgproc.TestUtil._
 import imgproc.ocr.OneLetterOCR._
 import imgproc.ocr.Pattern.TrainingPatterns
 import imgproc.ocr.{Pattern, TrainedOneLetterOCR}
+import imgproc.steps.AnswersInfo.cells
 import imgproc.steps.ProcessingStep
 import imgproc.steps.ProcessingStep.Implicits._
 import org.junit.runner.RunWith
+import org.opencv.core._
 import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner
-import java.io.File
-import javax.imageio.ImageIO
-
-import org.opencv.core._
-import Implicits._
-import imgproc.steps.AnswersInfo.cells
 
 import scala.util.Random
 
@@ -37,7 +37,7 @@ class OCRTest extends FlatSpec {
   }
 
 
-  ignored{
+  {
     behavior of "bounding boxes"
 
     it should "find overlap if contained" in {
@@ -74,14 +74,12 @@ class OCRTest extends FlatSpec {
       assert(!(r1 overlaps r2))
       assert(!(r2 overlaps r1))
     }
-
-
   }
 
   val fs = Seq("ocr-1.png", "ocr-2.png")
-  ignored {
 
 
+  {
     behavior of "Cell"
 
     it should "be thresholded to find single letters" in {
@@ -129,64 +127,61 @@ class OCRTest extends FlatSpec {
       }
     }
 
-    it should "improve bounding box if extracted again" in{
+    it should "improve bounding box if extracted again" in {
       for (f <- fs; cells = cellsOfTestImage(f); (c, index) <- cells.zipWithIndex) {
         val candidates = extractPossibleLettersImage(c).map(Pattern.resizeToPatterSize)
-        for ((candidate, candidateIndex) <- candidates.zipWithIndex ; again <- extractPossibleLettersImage(candidate) ) {
+        for ((candidate, candidateIndex) <- candidates.zipWithIndex; again <- extractPossibleLettersImage(candidate)) {
           saveTestImage(s"17-${index + 1}-$candidateIndex-$f", normalizeLetter(again))
         }
       }
-
     }
   }
 
 
+  {
+    behavior of "A trained ocr"
 
-  ignored{
-
-    def recognize(letter: Char) = {
+    def recognizeLetter(letter: Char) = {
       val ocr = new TrainedOneLetterOCR()
       val m = readImageFromResources(s"to-recognize-$letter.png")
       val prediction = ocr.predict(m)
-      println( s"Reconociendo $letter: $prediction")
-      assert( prediction.significative )
+      println(s"Reconociendo $letter: $prediction")
       assert(prediction.prediction.get.toLower == letter)
+      assert(prediction.significative)
     }
-
-    behavior of "A trained ocr"
 
     it should "not launch any exception" in {
       new TrainedOneLetterOCR()
     }
 
     it should "recognize sample a" in {
-      recognize('a')
+      recognizeLetter('a')
     }
 
     it should "recognize sample b" in {
-      recognize('b')
+      recognizeLetter('b')
     }
 
     it should "recognize sample c" in {
-      recognize('c')
+      recognizeLetter('c')
     }
 
     it should "recognize sample d" in {
-      recognize('d')
+      recognizeLetter('d')
     }
 
-    it should "try to clasify all pending images" in{
+    it should "try to clasify all pending images" in {
       val baseDirs = Seq(
         new File("blob-detect/src/main/resources/training-models/to-clasify"),
         new File("src/main/resources/training-models/to-clasify")
       )
 
 
-      val files = baseDirs.map(_.listFiles).filter(_ != null ).flatten
+      val files = baseDirs.map(_.listFiles).filter(_ != null).flatten
       val ocr = new TrainedOneLetterOCR()
-      
-      for(f <- files ){
-        val m : Mat = ImageIO.read(f)
+
+      for (f <- files) {
+        val m: Mat = ImageIO.read(f)
 
         {
           val mats = extractPossibleLettersImage(m)
@@ -196,59 +191,69 @@ class OCRTest extends FlatSpec {
         }
 
         val prediction = ocr.predict(m)
-        saveTestImage("prediction-" + prediction.prediction.getOrElse("#") + "-" + prediction.description + "-" + f.getName(), m)
+        saveTestImage("predictions/" + prediction.prediction.getOrElse("#") + "/" + prediction.description + "-" + f.getName(), m)
       }
     }
 
     it should "have a high accuracy with all the patterns" in {
 
-      val trainingPatterns = Pattern.trainingPatterns
+      val trainingPatterns = Pattern.letterTrainingPatterns
       val ocr = new TrainedOneLetterOCR(trainingPatterns)
 
-      println( "All")
-      for( (l,ps) <- trainingPatterns ){
-        val status = runSomeTestAndFailIfSoMuchFailures(ps,1){ p =>
+      println("All")
+      for ((l, ps) <- trainingPatterns) {
+        val status = runSomeTestAndFailIfSoMuchFailures(ps, 1) { p =>
           val prediction = ocr.predict(p)
-          assert( prediction.prediction.get == l )
+          assert(prediction.prediction.get == l)
         }
-        println( s"$l -> $status" )
+        println(s"$l -> $status")
       }
     }
-    it should "have a high accuracy with some of the training patterns" in{
 
-      def split( patterns : TrainingPatterns, trainingRatio: Double = 0.5 ) : (TrainingPatterns,TrainingPatterns) = {
-        val splitted = for( (l,ps) <- patterns ) yield {
-          val cut = (ps.size*trainingRatio).toInt
-          assert( cut > 0 && cut < ps.size )
-          val (training,test) = Random.shuffle(ps).splitAt(cut)
-          ( l-> training, l -> test )
+    it should "have a high accuracy with some of the training patterns" in {
+
+      def split(patterns: TrainingPatterns, trainingRatio: Double = 0.5): (TrainingPatterns, TrainingPatterns) = {
+        val splitted = for ((l, ps) <- patterns) yield {
+          val cut = (ps.size * trainingRatio).toInt
+          assert(cut > 0 && cut < ps.size)
+          val (training, test) = Random.shuffle(ps).splitAt(cut)
+          (l -> training, l -> test)
         }
 
         (splitted.map(_._1).toMap, splitted.map(_._2).toMap)
       }
 
-      val (trainingPatterns, testPatterns) = split(Pattern.trainingPatterns)
+      val (trainingPatterns, testPatterns) = split(Pattern.letterTrainingPatterns)
 
       val ocr = new TrainedOneLetterOCR(trainingPatterns)
 
-      println( "Same as training")
-      for( (l,ps) <- trainingPatterns ){
-        val status = runSomeTestAndFailIfSoMuchFailures(ps,1){ p =>
+      println("Same as training")
+      for ((l, ps) <- trainingPatterns) {
+        val status = runSomeTestAndFailIfSoMuchFailures(ps, 1) { p =>
           val prediction = ocr.predict(p)
-          assert( prediction.prediction.get == l )
+          assert(prediction.prediction.get == l)
         }
-        println( s"$l -> $status" )
+        println(s"$l -> $status")
       }
 
-      println( "Other letters")
-      for( (l,ps) <- testPatterns ){
-        val status = runSomeTestAndFailIfSoMuchFailures(ps,1){ p =>
+      println("Other letters")
+      for ((l, ps) <- testPatterns) {
+        val status = runSomeTestAndFailIfSoMuchFailures(ps, 1) { p =>
           val prediction = ocr.predict(p)
-          assert( prediction.prediction.get == l )
+          assert(prediction.prediction.get == l)
         }
-        println( s"$l -> $status" )
+        println(s"$l -> $status")
       }
     }
 
   }
+
+
+  it should "extract crosses and invalid crosses" in {
+    val patterns = Pattern.crossTrainingPatterns
+    for ((l, mats) <- patterns; (mat, index) <- mats.zipWithIndex) {
+      saveTestImage(s"crosspatterns/$l/$l-$index.png", mat)
+    }
+  }
+
 }

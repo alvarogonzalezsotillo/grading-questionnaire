@@ -51,7 +51,9 @@ object TestUtil {
     //Highgui.imwrite(testImgPath(name).toString, m)
     val format = name.takeRight(3).toLowerCase
     assert( name.takeRight(4).head == '.' )
-    ImageIO.write(m,format, testImgPath(name))
+    val f = testImgPath(name)
+    f.getParentFile.mkdirs()
+    ImageIO.write(m,format, f)
 
   }
 

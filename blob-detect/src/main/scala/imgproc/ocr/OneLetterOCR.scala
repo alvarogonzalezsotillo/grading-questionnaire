@@ -2,6 +2,7 @@ package imgproc.ocr
 
 import javax.imageio.ImageIO
 
+import com.typesafe.scalalogging.slf4j.LazyLogging
 import imgproc.ocr.Pattern.TrainingPatterns
 import imgproc.ocr.perceptron.Perceptron
 import imgproc.{AnswerMatrixMeasures, ImageProcessing}
@@ -86,9 +87,9 @@ object OneLetterOCR {
     import amm.Params._
 
     val filters : Seq[ Rect => Boolean ] = Seq(
-      _.width > cellSize.w.w/10,
-      _.width < cellSize.w.w/3,
-      _.height > cellSize.h.h/2
+      _.width > cellSize.w.w/15,
+      _.width < cellSize.w.w/2,
+      _.height > cellSize.h.h/3
     )
 
     filters.foldLeft(bboxes)( (b,f) => b.filter(f) )
@@ -135,7 +136,7 @@ object OneLetterOCR {
 
 
 
-abstract class OneLetterOCR{
+abstract class OneLetterOCR  extends LazyLogging{
   import OneLetterOCR._
   import imgproc.Implicits._
 
@@ -153,14 +154,24 @@ abstract class OneLetterOCR{
   }
 }
 
-class TrainedOneLetterOCR(trainingPatterns: TrainingPatterns = Pattern.trainingPatterns ) extends OneLetterOCR{
+class TrainedOneLetterOCR(trainingPatterns: TrainingPatterns = Pattern.letterTrainingPatterns ) extends OneLetterOCR{
   import OneLetterOCR._
+
+  logger.error( s"trainingPatterns: ${trainingPatterns}")
 
   val perceptron = new Perceptron()
 
   val normalizedTrainingPatterns = trainingPatterns.map{ case(c,mats) =>
-    c -> mats.flatMap(extractPossibleLettersImage(_)).map(normalizeLetter)
+    c -> mats.map(normalizeLetter)
   }
 
+  logger.error( s"normalizedTrainingPatterns: ${normalizedTrainingPatterns}")
+
+
   perceptron.train(normalizedTrainingPatterns)
+}
+
+class CrossRecognizer extends OneLetterOCR{
+  val perceptron = new Perceptron()
+  perceptron.train(Pattern.crossTrainingPatterns)
 }

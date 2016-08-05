@@ -2,10 +2,11 @@ package imgproc.ocr.perceptron
 
 import java.util
 
+import com.typesafe.scalalogging.slf4j.LazyLogging
 import imgproc.ocr.OneLetterOCR.{LetterProb, LetterResult}
 import imgproc.ocr.Pattern
 import imgproc.ocr.Pattern.TrainingPatterns
-import org.opencv.core.{TermCriteria, CvType, Mat}
+import org.opencv.core.{CvType, Mat, TermCriteria}
 import org.opencv.ml.{CvANN_MLP, CvANN_MLP_TrainParams}
 
 /**
@@ -33,7 +34,7 @@ object Perceptron{
 
 }
 
-class Perceptron( nodesInInternalLayers: Int = Pattern.patternSize*4, internalLayers: Int = 2, patternSize : Int = Pattern.patternSize ) {
+class Perceptron( nodesInInternalLayers: Int = Pattern.patternSize*4, internalLayers: Int = 2, patternSize : Int = Pattern.patternSize ) extends LazyLogging{
 
   import Perceptron._
 
@@ -74,12 +75,19 @@ class Perceptron( nodesInInternalLayers: Int = Pattern.patternSize*4, internalLa
   def train( data: TrainingPatterns, alpha: Double = 1,  beta: Double = 1, activateFunc : Int = CvANN_MLP.SIGMOID_SYM) : Int = {
     val letters = data.keys.toList
 
+    logger.error( s"data: ${data}" )
+
     characters = letters.toIndexedSeq
 
     def trainDataset : (Mat,Mat,Mat) = {
 
       val labels = {
-        val labelsArray : Array[Int] = letters.flatMap( l => Iterator.continually(labelOfLetter(l)).take(data(l).size) ).toArray
+        val labelsArray = letters.flatMap{ l =>
+          val label = labelOfLetter(l)
+          val size = data(l).size
+          val labels = Iterator.continually(label).take(size)
+          labels
+        }.toArray
         val ret = new Mat(labelsArray.size, letters.size,CvType.CV_32FC1)
         val buffer = new Array[Float](letters.size)
         for( r <- 0 until labelsArray.size ){
@@ -101,6 +109,8 @@ class Perceptron( nodesInInternalLayers: Int = Pattern.patternSize*4, internalLa
         }
         ret
       }
+
+      logger.error( s"trainData: input: ${input.size()} labels: ${labels.size()} weights: ${weights.size()}")
 
       (input,labels,weights)
     }
