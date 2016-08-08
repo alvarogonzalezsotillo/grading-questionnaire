@@ -102,31 +102,31 @@ object OneLetterOCR {
   }
 
 
-  def normalizeLetter(mat: Mat) : Mat = {
-    val grayscale = toGrayscaleImage(mat)
+  def normalizeLetter(mat: Mat,offset: Int = 10) : Mat = {
 
     def gray = {
+      val grayscale = toGrayscaleImage(mat)
       val t = Core.mean(grayscale).`val`(0) - 1
       Imgproc.threshold(grayscale, grayscale, t, 255, Imgproc.THRESH_BINARY_INV)
       grayscale
     }
 
     def invertGrayscale( m: Mat ) = {
-      val white = new Mat(grayscale.rows(),grayscale.cols(),grayscale.`type`(),new Scalar(255))
+      val white = new Mat(m.rows(),m.cols(),m.`type`(),new Scalar(255))
       Core.subtract(white,m,m)
       m
     }
 
-    def equalize = {
-      Imgproc.equalizeHist(grayscale,grayscale)
+    val equalize = {
+      Imgproc.equalizeHist(gray,gray)
       //Core.LUT(grayscale,lut,grayscale)
       //Contrib.applyColorMap(grayscale,grayscale,Contrib.COLORMAP_PINK)
       //invertGrayscale(grayscale)
-      val t = Core.mean(grayscale).`val`(0)
-      Imgproc.threshold(grayscale,grayscale,t,255,Imgproc.THRESH_TRUNC)
-      invertGrayscale(grayscale)
-      Imgproc.threshold(grayscale,grayscale,t,-1,Imgproc.THRESH_TOZERO)
-      grayscale
+      val t = Core.mean(gray).`val`(0)
+      Imgproc.threshold(gray,gray,t+offset,255,Imgproc.THRESH_TRUNC)
+      invertGrayscale(gray)
+      Imgproc.threshold(gray,gray,t+offset,-1,Imgproc.THRESH_TOZERO)
+      gray
     }
 
     Pattern.resizeToPatterSize(equalize)
@@ -162,7 +162,7 @@ class TrainedOneLetterOCR(trainingPatterns: TrainingPatterns = Pattern.letterTra
   val perceptron = new Perceptron()
 
   val normalizedTrainingPatterns = trainingPatterns.map{ case(c,mats) =>
-    c -> mats.map(normalizeLetter)
+    c -> mats.map(normalizeLetter(_))
   }
 
   logger.error( s"normalizedTrainingPatterns: ${normalizedTrainingPatterns}")
@@ -171,7 +171,16 @@ class TrainedOneLetterOCR(trainingPatterns: TrainingPatterns = Pattern.letterTra
   perceptron.train(normalizedTrainingPatterns)
 }
 
-class CrossRecognizer extends OneLetterOCR{
+class CrossRecognizer(trainingPatterns: TrainingPatterns = Pattern.crossTrainingPatterns) extends OneLetterOCR{
+  import OneLetterOCR._
+
   val perceptron = new Perceptron()
-  perceptron.train(Pattern.crossTrainingPatterns)
+
+  val normalizedTrainingPatterns = trainingPatterns.map{ case(c,mats) =>
+    c -> mats.map(normalizeLetter(_))
+  }
+
+  logger.error( s"normalizedTrainingPatterns: ${normalizedTrainingPatterns}")
+
+  perceptron.train(normalizedTrainingPatterns)
 }

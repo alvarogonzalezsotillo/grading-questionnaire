@@ -50,11 +50,11 @@ class OCRPanel(cell: Mat) extends JPanel {
 
   val candidates = extractPossibleLettersImage(cell)
   add( LabelAndImagesPanel("Letter candidates:", candidates ) )
-  add( LabelAndImagesPanel("Letter candidates normalized:", candidates.map(normalizeLetter) ) )
+  add( LabelAndImagesPanel("Letter candidates normalized:", candidates.map(normalizeLetter(_)) ) )
 
   for( c <- candidates ){
     val again = extractPossibleLettersImage(c,0)
-    add( LabelAndImagesPanel("Candidate again:", Seq(c) ++ again ++ again.map(normalizeLetter)) )
+    add( LabelAndImagesPanel("Candidate again:", Seq(c) ++ again ++ again.map(normalizeLetter(_))) )
   }
 
 }

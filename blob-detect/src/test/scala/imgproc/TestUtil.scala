@@ -59,7 +59,7 @@ object TestUtil {
 
   case class SomeTestsResult( allowedFailureRatio: Double, total: Int, failures: Int )
 
-  def runSomeTestAndFailIfSoMuchFailures[I,T](files: Seq[I], allowedFailureRatio: Double = 0.2, showFailures : Boolean = true)(test: I => T): SomeTestsResult = {
+  def runSomeTestAndFailIfSoMuchFailures[I,T](files: Seq[I], allowedFailureRatio: Double = 0.2, showFailures : Boolean = false)(test: I => T): SomeTestsResult = {
 
     def runSomeTestAndCollectFailures[T](files: Seq[I])(test: I => T) = {
       val results = for (f <- files) yield (f, Try(test(f)))

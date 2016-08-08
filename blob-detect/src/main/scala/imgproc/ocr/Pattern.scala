@@ -8,6 +8,7 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import imgproc.ImageProcessing
 import org.opencv.core.Mat
 import imgproc.Implicits._
+import org.opencv.imgproc.Imgproc
 
 /**
  * Created by alvaro on 3/02/16.
@@ -63,16 +64,19 @@ object Pattern extends LazyLogging{
 
   lazy val crossTrainingPatterns : TrainingPatterns = {
     def loadPatternsFromSheet(dir:String) = {
-      loadImagesFromDir(dir).map(BufferedImage2Mat).flatMap(OneLetterOCR.extractPossibleLettersImage(_))
+      loadImagesFromDir(dir).
+        map(BufferedImage2Mat).
+        flatMap(OneLetterOCR.extractPossibleLettersImage(_)).
+        map(resizeToPatterSize)
     }
 
     val crosses = loadPatternsFromSheet("cross")
 
     val invalidCrosses = loadPatternsFromSheet("invalid-cross")
 
-    val empties =  loadImagesFromDir("empty").map(BufferedImage2Mat)
+    //val empties =  loadImagesFromDir("empty").map(BufferedImage2Mat).map(ImageProcessing.toGrayscaleImage).map(resizeToPatterSize)
 
-    Map( 'X' -> crosses, 'O' -> invalidCrosses, 'E' -> empties )
+    Map( 'X' -> crosses, 'O' -> invalidCrosses)//, 'E' -> empties )
   }
 
 }
