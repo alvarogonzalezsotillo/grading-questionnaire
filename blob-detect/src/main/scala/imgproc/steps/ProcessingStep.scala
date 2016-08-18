@@ -346,18 +346,18 @@ object ProcessingStep extends LazyLogging {
 
     val ret = for (cellHeaderColumns <- psi(answerColumns);
                    measures <- psi(answerMatrixMeasures);
+                   rows = measures.rows;
                    version <- psi(qrVersion);
                    answers <- psi(answers);
                    questions = answers.size) yield {
       for (question <- 0 until questions) yield {
-        val rows = measures.rowOfQuestion(questions - 1)
         val row = measures.rowOfQuestion(question)
         val column = measures.columnOfQuestion(question)
         val rect = cellHeaderColumns(column)
-        val tl = interpolateInLine(rect(0), rect(3), rows + 1, row)
-        val tr = interpolateInLine(rect(1), rect(2), rows + 1, row)
-        val bl = interpolateInLine(rect(0), rect(3), rows + 1, row + 1)
-        val br = interpolateInLine(rect(1), rect(2), rows + 1, row + 1)
+        val tl = interpolateInLine(rect(0), rect(3), rows, row)
+        val tr = interpolateInLine(rect(1), rect(2), rows, row)
+        val bl = interpolateInLine(rect(0), rect(3), rows, row + 1)
+        val br = interpolateInLine(rect(1), rect(2), rows, row + 1)
 
         new MatOfPoint(tl, tr, br, bl)
 

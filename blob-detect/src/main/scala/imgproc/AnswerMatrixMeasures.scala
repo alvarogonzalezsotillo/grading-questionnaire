@@ -206,68 +206,21 @@ trait VerticalMeasures {
 trait TickedMeasures {
   self: AnswerMatrixMeasures =>
   lazy val cellCorrector = new TickedCellCorrector(possibleAnswers)
+
+  val params = new Params {
+    private val f = 5
+    val cellHeaderSize = Size(Width(24 * f), Height(14 * f))
+    val answerCellAvailableWidth = Width(67 * f)  // INCLUDING cellHeaderToCellWidthGap, cellSize AND THE FOLLOWING SPACE
+    val cellHeaderToCellWidthGap = Width(2 * f)
+    val cellSize = Size(Width(52 * f), cellHeaderSize.h)
+    val answerTableOrigin = Point(X(0), Y(0))
+  }
+
 }
 
 trait LetterMeasures {
   self: AnswerMatrixMeasures =>
   lazy val cellCorrector = new TickedCellCorrector(possibleAnswers)
-}
-
-class AnswerMatrixMeasuresHorizontalTicked(questionsO: Option[Int], columns: Int = 5, possibleAnswers: Int = 4)
-  extends AnswerMatrixMeasures(questionsO, columns, possibleAnswers)
-    with HorizontalMeasures
-    with TickedMeasures {
-
-  import AnswerMatrixMeasures.TypeSafeWidthHeight._
-
-  val params = new Params {
-    private val f = 5
-    val cellHeaderSize = Size(Width(24 * f), Height(14 * f))
-    val answerCellAvailableWidth = Width(67 * f)  // INCLUDING cellHeaderToCellWidthGap, cellSize AND THE FOLLOWING SPACE
-    val cellHeaderToCellWidthGap = Width(2 * f)
-    val cellSize = Size(Width(52 * f), cellHeaderSize.h)
-    val answerTableOrigin = Point(X(0), Y(0))
-  }
-}
-
-class AnswerMatrixMeasuresVerticalTicked(questionsO: Option[Int], columns: Int = 5, possibleAnswers: Int = 4)
-  extends AnswerMatrixMeasures(questionsO, columns, possibleAnswers)
-    with VerticalMeasures
-    with TickedMeasures {
-
-  val params = new Params {
-    private val f = 5
-    val cellHeaderSize = Size(Width(24 * f), Height(14 * f))
-    val answerCellAvailableWidth = Width(67 * f)  // INCLUDING cellHeaderToCellWidthGap, cellSize AND THE FOLLOWING SPACE
-    val cellHeaderToCellWidthGap = Width(2 * f)
-    val cellSize = Size(Width(52 * f), cellHeaderSize.h)
-    val answerTableOrigin = Point(X(0), Y(0))
-  }
-}
-
-class AnswerMatrixMeasuresHorizontalLetter(questionsO: Option[Int], columns: Int = 5, possibleAnswers: Int = 4)
-  extends AnswerMatrixMeasures(questionsO, columns, possibleAnswers)
-    with HorizontalMeasures
-    with LetterMeasures {
-  import AnswerMatrixMeasures.TypeSafeWidthHeight._
-
-  val params = new Params {
-    private val f = 5
-    val cellHeaderSize = Size(Width(24 * f), Height(14 * f))
-    val answerCellAvailableWidth = Width(67 * f)  // INCLUDING cellHeaderToCellWidthGap, cellSize AND THE FOLLOWING SPACE
-    val cellHeaderToCellWidthGap = Width(2 * f)
-    val cellSize = Size(Width(52 * f), cellHeaderSize.h)
-    val answerTableOrigin = Point(X(0), Y(0))
-  }
-
-
-}
-
-class AnswerMatrixMeasuresVerticalLetter(questionsO: Option[Int], columns: Int = 5, possibleAnswers: Int = 4)
-  extends AnswerMatrixMeasures(questionsO, columns, possibleAnswers)
-    with VerticalMeasures
-    with LetterMeasures {
-  import AnswerMatrixMeasures.TypeSafeWidthHeight._
 
   val params = new Params {
     private val f = 1
@@ -277,6 +230,38 @@ class AnswerMatrixMeasuresVerticalLetter(questionsO: Option[Int], columns: Int =
     val cellSize = Size(Width(100 * f), cellHeaderSize.h)
     val answerTableOrigin = Point(X(0), Y(0))
   }
+}
+
+class AnswerMatrixMeasuresHorizontalTicked(questionsO: Option[Int], columns: Int = 5, possibleAnswers: Int = 4)
+  extends AnswerMatrixMeasures(questionsO, columns, possibleAnswers)
+    with HorizontalMeasures
+    with TickedMeasures {
+
+
+}
+
+class AnswerMatrixMeasuresVerticalTicked(questionsO: Option[Int], columns: Int = 5, possibleAnswers: Int = 4)
+  extends AnswerMatrixMeasures(questionsO, columns, possibleAnswers)
+    with VerticalMeasures
+    with TickedMeasures {
+
+}
+
+class AnswerMatrixMeasuresHorizontalLetter(questionsO: Option[Int], columns: Int = 5, possibleAnswers: Int = 4)
+  extends AnswerMatrixMeasures(questionsO, columns, possibleAnswers)
+    with HorizontalMeasures
+    with LetterMeasures {
+
+
+
+}
+
+class AnswerMatrixMeasuresVerticalLetter(questionsO: Option[Int], columns: Int = 5, possibleAnswers: Int = 4)
+  extends AnswerMatrixMeasures(questionsO, columns, possibleAnswers)
+    with VerticalMeasures
+    with LetterMeasures {
+
+
 
 
 }

@@ -13,7 +13,7 @@ import org.scalatest.junit.JUnitRunner
 class AnswerMatrixMeasuresTest extends FlatSpec {
 
   val questions = Some(25)
-  val v = 1
+  val v = 0
 
   "The number of rows" should "be correct" in {
 
