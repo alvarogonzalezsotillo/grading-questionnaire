@@ -12,7 +12,7 @@ import imgproc.Implicits._
 import imgproc.TestUtil._
 import imgproc.ocr.OneLetterOCR._
 import imgproc.ocr.Pattern.TrainingPatterns
-import imgproc.ocr.{CrossRecognizer, OneLetterOCR, Pattern, TrainedOneLetterOCR}
+import imgproc.ocr._
 import imgproc.steps.AnswersInfo.cells
 import imgproc.steps.ProcessingStep
 import imgproc.steps.ProcessingStep.Implicits._
@@ -150,24 +150,21 @@ class OCRTest extends FlatSpec {
     behavior of "A trained ocr"
 
 
-    it should "not launch any exception" in {
-      new TrainedOneLetterOCR()
-    }
 
     it should "recognize sample a" in {
-      recognizeLetter('a', new TrainedOneLetterOCR())
+      recognizeLetter('a', DefaultTrainedOneLetterOCR)
     }
 
     it should "recognize sample b" in {
-      recognizeLetter('b', new TrainedOneLetterOCR())
+      recognizeLetter('b', DefaultTrainedOneLetterOCR)
     }
 
     it should "recognize sample c" in {
-      recognizeLetter('c', new TrainedOneLetterOCR())
+      recognizeLetter('c', DefaultTrainedOneLetterOCR)
     }
 
     it should "recognize sample d" in {
-      recognizeLetter('d', new TrainedOneLetterOCR())
+      recognizeLetter('d', DefaultTrainedOneLetterOCR)
     }
 
     it should "try to clasify all pending images" in {
@@ -178,7 +175,7 @@ class OCRTest extends FlatSpec {
 
 
       val files = baseDirs.map(_.listFiles).filter(_ != null).flatten
-      val ocr = new TrainedOneLetterOCR()
+      val ocr = DefaultTrainedOneLetterOCR
 
       for (f <- files) {
         val m: Mat = ImageIO.read(f)
@@ -202,7 +199,7 @@ class OCRTest extends FlatSpec {
 
       println("All")
       for ((l, ps) <- trainingPatterns) {
-        val status = runSomeTestAndFailIfSoMuchFailures(ps, 0.2) { p =>
+        val status = runSomeTestAndFailIfSoMuchFailures(ps, false, 0.2) { p =>
           val prediction = ocr.predict(p)
           assert(prediction.prediction.get == l)
         }
@@ -229,7 +226,7 @@ class OCRTest extends FlatSpec {
 
       println("Same as training")
       for ((l, ps) <- trainingPatterns) {
-        val status = runSomeTestAndFailIfSoMuchFailures(ps, 0.3) { p =>
+        val status = runSomeTestAndFailIfSoMuchFailures(ps, false, 0.3) { p =>
           val prediction = ocr.predict(p)
           assert(prediction.prediction.get == l)
         }
@@ -239,7 +236,7 @@ class OCRTest extends FlatSpec {
 
       println("Other letters")
       for ((l, ps) <- testPatterns) {
-        val status = runSomeTestAndFailIfSoMuchFailures(ps, 1) { p =>
+        val status = runSomeTestAndFailIfSoMuchFailures(ps, false, 1) { p =>
           val prediction = ocr.predict(p)
           assert(prediction.prediction.get == l)
         }
@@ -258,20 +255,14 @@ class OCRTest extends FlatSpec {
   }
 
   it should "recognice a cross" in {
-    recognizeLetter('X', new CrossRecognizer )
-
+    recognizeLetter('X', DefaultCrossRecognizer )
   }
 
   it should "recognice an invalid cross" in {
-    recognizeLetter('O', new CrossRecognizer )
+    recognizeLetter('O', DefaultCrossRecognizer )
   }
 
   it should "recognice an empty cell" in {
-    val ocr = new CrossRecognizer
-    val m = readImageFromResources(s"to-recognize-EMPTY.png")
-    val prediction = ocr.predict(m)
-    println(s"$prediction")
-    assert(!prediction.significative)
-  }
+    recognizeLetter('#', DefaultCrossRecognizer )  }
 
 }

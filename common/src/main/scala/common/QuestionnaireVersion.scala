@@ -6,17 +6,17 @@ package common
 object QuestionnaireVersion {
 
   val versions = Map[Byte, String](
-    0.toByte -> "Horizontal free hand letter answers",
-    1.toByte -> "Vertical free hand letter answers",
-    2.toByte -> "Horizontal ticked answers",
-    3.toByte -> "Vertical Ticked answers"
+    0.toByte -> "Horizontal ticked answers",
+    1.toByte -> "Vertical ticked answers",
+    2.toByte -> "Horizontal free letter answers",
+    3.toByte -> "Vertical letter answers"
   )
 
   def isHorizontalVersion(v: Byte) = v == 0 || v == 2
 
   def isVerticalVersion(v: Byte) = !isHorizontalVersion(v)
 
-  def isTickedVersion(v: Byte) = v == 2 || v == 3
+  def isTickedVersion(v: Byte) = v == 0 || v == 1
 
   def isLetterVersion(v: Byte) = !isTickedVersion(v)
 

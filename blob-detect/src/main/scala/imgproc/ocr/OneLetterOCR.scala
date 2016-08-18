@@ -84,7 +84,7 @@ object OneLetterOCR {
 
 
     val amm = AnswerMatrixMeasures(None,1)
-    import amm.Params._
+    import amm.params._
 
     val filters : Seq[ Rect => Boolean ] = Seq(
       _.width > cellSize.w.w/15,
@@ -131,10 +131,7 @@ object OneLetterOCR {
 
     Pattern.resizeToPatterSize(equalize)
   }
-
 }
-
-
 
 abstract class OneLetterOCR  extends LazyLogging{
   import OneLetterOCR._
@@ -143,23 +140,16 @@ abstract class OneLetterOCR  extends LazyLogging{
   protected val perceptron : Perceptron
 
   def predict( pattern: Mat ) : LetterResult = {
-    val e = extractPossibleLettersImage(pattern)
-    if( e.size == 0 ){
-      perceptron.predict(normalizeLetter(pattern))
-    }
-    else {
-      val mat = e.maxBy(_.area)
-      perceptron.predict(normalizeLetter(mat))
-    }
+    perceptron.predict(normalizeLetter(pattern))
   }
 }
 
-class TrainedOneLetterOCR(trainingPatterns: TrainingPatterns = Pattern.letterTrainingPatterns ) extends OneLetterOCR{
+class TrainedOneLetterOCR(trainingPatterns: TrainingPatterns  ) extends OneLetterOCR{
   import OneLetterOCR._
 
   logger.error( s"trainingPatterns: ${trainingPatterns}")
 
-  val perceptron = new Perceptron()
+  protected val perceptron = new Perceptron()
 
   val normalizedTrainingPatterns = trainingPatterns.map{ case(c,mats) =>
     c -> mats.map(normalizeLetter(_))
@@ -171,10 +161,12 @@ class TrainedOneLetterOCR(trainingPatterns: TrainingPatterns = Pattern.letterTra
   perceptron.train(normalizedTrainingPatterns)
 }
 
-class CrossRecognizer(trainingPatterns: TrainingPatterns = Pattern.crossTrainingPatterns) extends OneLetterOCR{
+object DefaultTrainedOneLetterOCR extends TrainedOneLetterOCR(Pattern.letterTrainingPatterns)
+
+class CrossRecognizer(trainingPatterns: TrainingPatterns ) extends OneLetterOCR{
   import OneLetterOCR._
 
-  val perceptron = new Perceptron()
+  protected val perceptron = new Perceptron()
 
   val normalizedTrainingPatterns = trainingPatterns.map{ case(c,mats) =>
     c -> mats.map(normalizeLetter(_))
@@ -184,3 +176,5 @@ class CrossRecognizer(trainingPatterns: TrainingPatterns = Pattern.crossTraining
 
   perceptron.train(normalizedTrainingPatterns)
 }
+
+object DefaultCrossRecognizer extends CrossRecognizer(Pattern.crossTrainingPatterns)

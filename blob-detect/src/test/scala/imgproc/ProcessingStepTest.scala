@@ -10,7 +10,7 @@ import imgproc.steps.{AnswersInfo, ProcessingStep}
 import org.junit.runner.RunWith
 import org.opencv.highgui.Highgui
 import imgproc.ImageProcessing._
-import org.opencv.core.Mat
+import org.opencv.core.{Mat, Point}
 import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner
 import imgproc.Implicits._
@@ -21,7 +21,7 @@ import imgproc.steps.AnswersInfo.{answers, cells, cellsLocation}
 import imgproc.steps.ContoursInfo._
 import imgproc.steps.LocationInfo.location
 import imgproc.steps.MainInfo.{mat, originalMat}
-import imgproc.steps.QRInfo.{answerMatrixMeasures, qrLocation}
+import imgproc.steps.QRInfo.{answerMatrixMeasures, qrLocation, qrText, qrVersion}
 
 
 
@@ -36,22 +36,32 @@ class ProcessingStepTest extends FlatSpec {
 
 
 
-  val positiveMatchImages = /* Seq(
+  val positiveMatchImages = Seq(
     "2016-01-26-101322.jpg",
     "2016-01-26-101343.jpg",
     "2016-01-26-101403.jpg",
     "2016-01-26-101423.jpg",
     "2016-01-26-101502.jpg",
-    "2016-01-26-101516.jpg", */ Seq(
-    "horizontal-ticked.png"
+    "2016-01-26-101516.jpg", // Seq(
+    "horizontal-letter.png",
+    "vertical-letter.png",
+    "horizontal-ticked.png",
+    "vertical-ticked.png"
   )
 
 
+  def removeFileExtension(s:String) = s.reverse.dropWhile(_!='.').tail.reverse
+
+  def saveDerivedTestImage( imageLocation: String, stepName: String, m: Mat ) = {
+    saveTestImage("processing-step/" + removeFileExtension(imageLocation) + "/" + stepName + ".png", m)
+  }
+  
+  
   "Initial step " should "do nothing" in {
     for (imageLocation <- positiveMatchImages) {
       val m = readImageFromResources(imageLocation)
       val m2 = processMat(initialStep, m)
-      saveTestImage("01-original-" + imageLocation, m2)
+      saveDerivedTestImage(imageLocation, "01-original", m2)
       assert(m eq m2)
     }
   }
@@ -60,7 +70,7 @@ class ProcessingStepTest extends FlatSpec {
     for (imageLocation <- positiveMatchImages) {
       val m = readImageFromResources(imageLocation)
       val m2 = processMat(thresholdStep, m)
-      saveTestImage("02-threshold-" + imageLocation, m2)
+      saveDerivedTestImage(imageLocation, "02-threshold", m2)
     }
   }
 
@@ -69,7 +79,7 @@ class ProcessingStepTest extends FlatSpec {
     for (imageLocation <- positiveMatchImages) {
       val m = readImageFromResources(imageLocation)
       val m2 = processMat(noiseReductionStep, m)
-      saveTestImage("03-noisereduction-" + imageLocation, m2)
+      saveDerivedTestImage(imageLocation, "03-noisereduction", m2)
     }
   }
 
@@ -77,7 +87,7 @@ class ProcessingStepTest extends FlatSpec {
     for (imageLocation <- positiveMatchImages) {
       val m = readImageFromResources(imageLocation)
       val m2 = processMat(contourStep.withDrawContours(_(contours)), m)
-      saveTestImage("04-contours-" + imageLocation, m2)
+      saveDerivedTestImage(imageLocation, "04-contours", m2)
     }
   }
 
@@ -85,7 +95,7 @@ class ProcessingStepTest extends FlatSpec {
     for (imageLocation <- positiveMatchImages) {
       val m = readImageFromResources(imageLocation)
       val m2 = processMat(quadrilateralStep.withDrawContours(_(quadrilaterals)), m)
-      saveTestImage("05-quads-" + imageLocation, m2)
+      saveDerivedTestImage(imageLocation, "05-quads", m2)
     }
   }
 
@@ -93,7 +103,8 @@ class ProcessingStepTest extends FlatSpec {
     runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
       val m = readImageFromResources(imageLocation)
       val m2 = processMat(biggestQuadrilateralsStep.withDrawNumberedContours(_(biggestQuadrilaterals)), m)
-      saveTestImage("06-bigquads-" + imageLocation, m2)
+      saveDerivedTestImage(imageLocation, "06-bigquads", m2)
+
     }
   }
 
@@ -104,31 +115,45 @@ class ProcessingStepTest extends FlatSpec {
       runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
         val m = readImageFromResources(imageLocation)
         val extracted = processMat(locateQRStep.withDrawContours( _(qrLocation).map( c => Seq(c) )), m)
-        saveTestImage("08-qrlocation-" + imageLocation, extracted)
+        saveDerivedTestImage(imageLocation, "08-qrlocation", extracted)
       }
     }
 
     it should "decode QR" in{
       runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
         val m = readImageFromResources(imageLocation)
-        processMat(decodeQRStep, m)
+        val info = decodeQRStep.process(m)
+        assert( info(qrText).isDefined )
+        println( info(qrText) )
       }
     }
   }
 
   "Answer columns step" should "find the columns of answers" in{
-    runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
+    runSomeTestAndFailIfSoMuchFailures(positiveMatchImages,true) { imageLocation =>
       val m = readImageFromResources(imageLocation)
       val m2 = processMat(answerColumnsStep.withDrawNumberedContours(_(answerColumns)), m)
-      saveTestImage("10-columns-" + imageLocation, m2)
+      saveDerivedTestImage(imageLocation, "10-colums", m2)
     }
   }
 
   "Cells extraction (column based) step" should "find the cells" in{
     runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
+      import ImageProcessing.drawString
+
       val m = readImageFromResources(imageLocation)
-      val m2 = processMat(cellsLocationStep.withDrawNumberedContours(_(cellsLocation)), m)
-      saveTestImage("11-cells-" + imageLocation, m2)
+      val info = cellsLocationStep.withDrawNumberedContours(_(cellsLocation)).process(m)
+      val m2 = mat(info)
+      val version = qrVersion(info)
+      val ans = answers(info)
+      val mMeasures = answerMatrixMeasures(info)
+
+      drawString(m2,s"version:$version answers:$ans", new Point(20,20) )
+      drawString(m2,s"measures:$mMeasures", new Point(20,60) )
+
+
+      saveDerivedTestImage(imageLocation, "11-cells", m2)
+
     }
   }
 
@@ -137,7 +162,8 @@ class ProcessingStepTest extends FlatSpec {
       val m = readImageFromResources(imageLocation)
       val info = cellsStep.process(m)
       for( cellsMat <- info(cells) ; (mat,index) <- cellsMat.zipWithIndex ){
-        saveTestImage("12-cell-" + imageLocation + "-" + index + ".png", mat )
+        saveDerivedTestImage(imageLocation, s"12-cell-$index", mat)
+
       }
     }
   }

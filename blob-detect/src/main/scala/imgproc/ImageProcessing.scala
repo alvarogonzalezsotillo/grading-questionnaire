@@ -212,9 +212,14 @@ object ImageProcessing {
   }
 
   def stretchImage(dst: Mat = null)(m:Mat, w:Int, h:Int) = {
-    val ret = newMatrixIfNull(dst)
-    Imgproc.resize(m, ret, new Size(w, h))
-    ret
+    if( m.width() == w && m.height() == h ){
+      m
+    }
+    else {
+      val ret = newMatrixIfNull(dst)
+      Imgproc.resize(m, ret, new Size(w, h))
+      ret
+    }
   }
 
 }

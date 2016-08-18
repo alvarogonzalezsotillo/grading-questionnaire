@@ -1,22 +1,29 @@
 package imgproc
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
-import org.opencv.core._
-
+import imgproc.AnswerMatrixMeasures.TypeSafeWidthHeight.{Y, Rect => _, _}
+import org.opencv.core.MatOfPoint
 
 
 object AnswerMatrixMeasures {
-  def apply( version: Int): AnswerMatrixMeasuresHorizontalTicked = apply(None,version)
-  def apply( questions: Int, version: Int): AnswerMatrixMeasuresHorizontalTicked = apply(Some(questions),version)
+  def apply(version: Int): AnswerMatrixMeasures = apply(None, version)
 
-  def apply(questions: Option[Int], version: Int) = version match {
-    case 0 => new AnswerMatrixMeasuresHorizontalTicked(questions)
-    case 1 => new AnswerMatrixMeasuresHorizontalTicked(questions)
+  def apply(questions: Int, version: Int): AnswerMatrixMeasures = apply(Some(questions), version)
+
+  def apply(questions: Option[Int], versionI: Int) = {
+    import common.QuestionnaireVersion._
+    val v = versionI.toByte
+    (isVerticalVersion(v), isLetterVersion(v) ) match{
+      case (true,true) =>  new AnswerMatrixMeasuresVerticalLetter(questions)
+      case (true,false) => new AnswerMatrixMeasuresVerticalTicked(questions)
+      case (false,true) => new AnswerMatrixMeasuresHorizontalLetter(questions)
+      case (false,false) => new AnswerMatrixMeasuresHorizontalTicked(questions)
+    }
   }
 
   val matrixWithToLeftOfQRRatio = 0.02
-  val matrixWithToTopOfQRRatio: Double = 0.23
-  val matrixWithToQRWidthRatio: Double = 0.20
+  val matrixWithToTopOfQRRatio: Double = 0.25
+  val matrixWithToQRWidthRatio: Double = 0.25
 
 
   object TypeSafeWidthHeight {
@@ -38,9 +45,9 @@ object AnswerMatrixMeasures {
 
       def *(d: Double) = Point(x * d, y * d)
 
-      def toOpenCV = new org.opencv.core.Point(x.x,y.y)
+      def toOpenCV = new org.opencv.core.Point(x.x, y.y)
 
-      def toRect( s: Size ) = Rect( this, s.w, s.h )
+      def toRect(s: Size) = Rect(this, s.w, s.h)
     }
 
     case class Width(w: Double) {
@@ -54,7 +61,7 @@ object AnswerMatrixMeasures {
 
       lazy val toX = X(w)
 
-      lazy val toPoint = Point( toX, Y(0) )
+      lazy val toPoint = Point(toX, Y(0))
     }
 
     case class Height(h: Double) {
@@ -66,30 +73,33 @@ object AnswerMatrixMeasures {
 
       def toY = Y(h)
 
-      lazy val toPoint = Point( X(0), toY )
+      lazy val toPoint = Point(X(0), toY)
     }
 
-    trait Area{
+    trait Area {
       val w: Width
       val h: Height
+
       def area = w.w * h.h
     }
 
-    case class Size(w: Width, h: Height) extends Area{
+    case class Size(w: Width, h: Height) extends Area {
       def on(o: Point) = Rect(o, w, h)
-      lazy val toOpenCV = new org.opencv.core.Size(w.w,h.h)
-      def toRect = on( Point(X(0),Y(0)) )
+
+      lazy val toOpenCV = new org.opencv.core.Size(w.w, h.h)
+
+      def toRect = on(Point(X(0), Y(0)))
     }
 
-    case class Rect(o: Point, w: Width, h: Height) extends Area{
+    case class Rect(o: Point, w: Width, h: Height) extends Area {
       lazy val corners = Seq(
         o,
         o + w.toPoint,
         o + w.toPoint + h.toPoint,
         o + h.toPoint
       )
-      lazy val toOpenCV = new MatOfPoint( corners.map(_.toOpenCV):_* )
-      lazy val size = new Size(w,h)
+      lazy val toOpenCV = new MatOfPoint(corners.map(_.toOpenCV): _*)
+      lazy val size = new Size(w, h)
     }
 
     case class WidthToHeightRatio(r: Double)
@@ -100,38 +110,45 @@ object AnswerMatrixMeasures {
 
   import TypeSafeWidthHeight._
 
-  object MeasuresToOpenCV{
-    def fromMeasures( src: Seq[Rect], anchorInMeasures: Rect, anchorInOpenCV: MatOfPoint ) : Seq[MatOfPoint] = {
+  object MeasuresToOpenCV {
+    def fromMeasures(src: Seq[Rect], anchorInMeasures: Rect, anchorInOpenCV: MatOfPoint): Seq[MatOfPoint] = {
       import ImageProcessing._
-      assert( anchorInOpenCV.size == 4)
+      assert(anchorInOpenCV.size == 4)
       val H = findHomography(anchorInMeasures.toOpenCV, anchorInOpenCV)
-      warpContours( src.map(_.toOpenCV), H)
+      warpContours(src.map(_.toOpenCV), H)
     }
   }
 
 }
 
 
+abstract class AnswerMatrixMeasures(questionsO: Option[Int], val columns: Int, val possibleAnswers: Int) extends LazyLogging {
 
-class AnswerMatrixMeasuresHorizontalTicked(questionsO: Option[Int], val columns: Int = 5) extends LazyLogging{
+  val cellCorrector: CellCorrector
 
-  lazy val questions = questionsO.getOrElse( throw new IllegalStateException("Number of questions not known") )
+  lazy val questions = questionsO.getOrElse(throw new IllegalStateException("Number of questions not known"))
 
   lazy val rows = (1.0 * questions / columns).ceil.toInt
 
-  import AnswerMatrixMeasures.TypeSafeWidthHeight._
+  def rowOfQuestion(question: Int): Int
 
+  def columnOfQuestion(question: Int): Int
 
-  object Params {
-    private val f = 5
-    val cellHeaderSize = Size(Width(24*f), Height(14*f))
-    val answerCellAvailableWidth = Width(67*f) // INCLUDING cellHeaderToCellWidthGap, cellSize AND THE FOLLOWING SPACE
-    val cellHeaderToCellWidthGap = Width(2*f)
-    val cellSize = Size(Width(52*f), cellHeaderSize.h)
-    val answerTableOrigin = Point(X(0), Y(0))
+  trait Params {
+
+    import AnswerMatrixMeasures.TypeSafeWidthHeight._
+
+    val cellHeaderSize: Size
+    val answerCellAvailableWidth: Width
+    // INCLUDING cellHeaderToCellWidthGap, cellSize AND THE FOLLOWING SPACE
+    val cellHeaderToCellWidthGap: Width
+    val cellSize: Size
+    val answerTableOrigin: Point
   }
 
-  import Params._
+  val params: Params
+
+  import params._
 
   private lazy val columnWidth = cellHeaderSize.w + answerCellAvailableWidth
   private lazy val answerTableWidth = columnWidth * columns
@@ -143,19 +160,15 @@ class AnswerMatrixMeasuresHorizontalTicked(questionsO: Option[Int], val columns:
 
   lazy val cellArea = cellSize.area
 
-  def qrLocation = ???
-
-  private object ValuesForAnswerCell {
-    val basePointForCells = answerTableOrigin + Point((cellHeaderSize.w + cellHeaderToCellWidthGap ).toX, Y(0))
-    val columnOffset = Point((answerCellAvailableWidth + cellHeaderSize.w).toX, Y(0))
-    val rowOffset = Point(X(0), cellSize.h.toY)
-    logger.error( s"rowOffset:$rowOffset")
-  }
-
-  def rowOfQuestion(question: Int ) = question / columns
-  def columnOfQuestion(question: Int ) = question % columns
 
   lazy val answerCells = {
+
+    object ValuesForAnswerCell {
+      val basePointForCells = answerTableOrigin + Point((cellHeaderSize.w + cellHeaderToCellWidthGap).toX, Y(0))
+      val columnOffset = Point((answerCellAvailableWidth + cellHeaderSize.w).toX, Y(0))
+      val rowOffset = Point(X(0), cellSize.h.toY)
+      logger.error(s"rowOffset:$rowOffset")
+    }
 
     def answerCell(question: Int) = {
       assert(question >= 0 && question < questions)
@@ -170,6 +183,100 @@ class AnswerMatrixMeasuresHorizontalTicked(questionsO: Option[Int], val columns:
 
     (0 until questions).map(answerCell)
   }
+
 }
 
+trait HorizontalMeasures {
+  self: AnswerMatrixMeasures =>
+  def rowOfQuestion(question: Int) = question / columns
 
+  def columnOfQuestion(question: Int) = question % columns
+
+}
+
+trait VerticalMeasures {
+  self: AnswerMatrixMeasures =>
+
+
+  def rowOfQuestion(question: Int) = question % rows
+
+  def columnOfQuestion(question: Int) = question / rows
+}
+
+trait TickedMeasures {
+  self: AnswerMatrixMeasures =>
+  lazy val cellCorrector = new TickedCellCorrector(possibleAnswers)
+}
+
+trait LetterMeasures {
+  self: AnswerMatrixMeasures =>
+  lazy val cellCorrector = new TickedCellCorrector(possibleAnswers)
+}
+
+class AnswerMatrixMeasuresHorizontalTicked(questionsO: Option[Int], columns: Int = 5, possibleAnswers: Int = 4)
+  extends AnswerMatrixMeasures(questionsO, columns, possibleAnswers)
+    with HorizontalMeasures
+    with TickedMeasures {
+
+  import AnswerMatrixMeasures.TypeSafeWidthHeight._
+
+  val params = new Params {
+    private val f = 5
+    val cellHeaderSize = Size(Width(24 * f), Height(14 * f))
+    val answerCellAvailableWidth = Width(67 * f)  // INCLUDING cellHeaderToCellWidthGap, cellSize AND THE FOLLOWING SPACE
+    val cellHeaderToCellWidthGap = Width(2 * f)
+    val cellSize = Size(Width(52 * f), cellHeaderSize.h)
+    val answerTableOrigin = Point(X(0), Y(0))
+  }
+}
+
+class AnswerMatrixMeasuresVerticalTicked(questionsO: Option[Int], columns: Int = 5, possibleAnswers: Int = 4)
+  extends AnswerMatrixMeasures(questionsO, columns, possibleAnswers)
+    with VerticalMeasures
+    with TickedMeasures {
+
+  val params = new Params {
+    private val f = 5
+    val cellHeaderSize = Size(Width(24 * f), Height(14 * f))
+    val answerCellAvailableWidth = Width(67 * f)  // INCLUDING cellHeaderToCellWidthGap, cellSize AND THE FOLLOWING SPACE
+    val cellHeaderToCellWidthGap = Width(2 * f)
+    val cellSize = Size(Width(52 * f), cellHeaderSize.h)
+    val answerTableOrigin = Point(X(0), Y(0))
+  }
+}
+
+class AnswerMatrixMeasuresHorizontalLetter(questionsO: Option[Int], columns: Int = 5, possibleAnswers: Int = 4)
+  extends AnswerMatrixMeasures(questionsO, columns, possibleAnswers)
+    with HorizontalMeasures
+    with LetterMeasures {
+  import AnswerMatrixMeasures.TypeSafeWidthHeight._
+
+  val params = new Params {
+    private val f = 5
+    val cellHeaderSize = Size(Width(24 * f), Height(14 * f))
+    val answerCellAvailableWidth = Width(67 * f)  // INCLUDING cellHeaderToCellWidthGap, cellSize AND THE FOLLOWING SPACE
+    val cellHeaderToCellWidthGap = Width(2 * f)
+    val cellSize = Size(Width(52 * f), cellHeaderSize.h)
+    val answerTableOrigin = Point(X(0), Y(0))
+  }
+
+
+}
+
+class AnswerMatrixMeasuresVerticalLetter(questionsO: Option[Int], columns: Int = 5, possibleAnswers: Int = 4)
+  extends AnswerMatrixMeasures(questionsO, columns, possibleAnswers)
+    with VerticalMeasures
+    with LetterMeasures {
+  import AnswerMatrixMeasures.TypeSafeWidthHeight._
+
+  val params = new Params {
+    private val f = 1
+    val cellHeaderSize = Size(Width(65 * f), Height(28 * f))
+    val answerCellAvailableWidth = Width(152 * f)  // INCLUDING cellHeaderToCellWidthGap, cellSize AND THE FOLLOWING SPACE
+    val cellHeaderToCellWidthGap = Width(12 * f)
+    val cellSize = Size(Width(100 * f), cellHeaderSize.h)
+    val answerTableOrigin = Point(X(0), Y(0))
+  }
+
+
+}

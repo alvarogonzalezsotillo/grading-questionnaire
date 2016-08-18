@@ -6,7 +6,7 @@ import java.util.Date
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import common.{BinaryConverter, HMap, Sounds}
-import imgproc.steps.AnswersInfo.{cells, cellsLocation}
+import imgproc.steps.AnswersInfo.{cells, cellsLocation, studentAnswers}
 import imgproc.steps.ContoursInfo.{answerColumns, biggestQuadrilaterals}
 import imgproc.steps.MainInfo._
 import imgproc.steps.ProcessingStep.{ExtendedStep, Info}
@@ -146,7 +146,17 @@ object ProcessingStep extends LazyLogging {
     override val stepName = "Imagen original"
   }
 
-  val thresholdStep = initialStep.extend("Umbral adaptativo") { implicit psi =>
+
+  val resizeStep = initialStep.extend( "Tamaño normalizado" ){ implicit info =>
+    val requiredWidth = 1280 // MAX HORIZONTAL RESOLUTION OF MY WEBCAM
+    val m = originalMat()
+    val h = (1.0*m.height()*requiredWidth/m.width()).toInt
+    val resizedMat = ImageProcessing.stretchImage()(m,requiredWidth,h)
+    info( originalMat, resizedMat )(mat, resizedMat)
+  }
+
+
+  val thresholdStep = resizeStep.extend("Umbral adaptativo") { implicit psi =>
     import GrayscaleInfo._
     val t = threshold()(originalMat())
     psi(thresholdMat, t)(mat, t)
@@ -222,6 +232,7 @@ object ProcessingStep extends LazyLogging {
 
   val locateQRStep = biggestQuadrilateralsStep.extend("Localización del código QR") { psi =>
     import QRInfo._
+
     def locateQR(cellHeaders: Seq[MatOfPoint]): MatOfPoint = {
       val tl = cellHeaders(0)(0)
       val tr = cellHeaders(COLUMNS - 1)(1)
@@ -298,7 +309,7 @@ object ProcessingStep extends LazyLogging {
         val br = next(3)
         val bl = prev(2)
 
-        import measures.Params._
+        import measures.params._
         val correctedTL = interpolateInLine(tl, tr, answerCellAvailableWidth.w, cellHeaderToCellWidthGap.w)
         val correctedBL = interpolateInLine(bl, br, answerCellAvailableWidth.w, cellHeaderToCellWidthGap.w)
         val correctedTR = interpolateInLine(tl, tr, answerCellAvailableWidth.w, cellHeaderToCellWidthGap.w + cellSize.w.w)
@@ -314,7 +325,7 @@ object ProcessingStep extends LazyLogging {
         val br = lastCellHeaders(2)
         val bl = lastCellHeaders(3)
 
-        import measures.Params._
+        import measures.params._
         val correctedTL = interpolateInLine(tl, tr, cellHeaderSize.w.w, (cellHeaderSize.w + cellHeaderToCellWidthGap).w)
         val correctedBL = interpolateInLine(bl, br, cellHeaderSize.w.w, (cellHeaderSize.w + cellHeaderToCellWidthGap).w)
         val correctedTR = interpolateInLine(tl, tr, cellHeaderSize.w.w, (cellHeaderSize.w + cellHeaderToCellWidthGap + cellSize.w).w)
@@ -362,11 +373,12 @@ object ProcessingStep extends LazyLogging {
       for (measures <- info(answerMatrixMeasures);
            cellsLoc <- info(cellsLocation);
            mat <- info(originalMat)) yield {
+        val cellSize = measures.params.cellSize
         for ((cellInMatrix, cell) <- cellsLoc.zip(measures.answerCells)) yield {
           val src = cellInMatrix
-          val dst = measures.Params.cellSize.toRect.toOpenCV // cell.toOpenCV
+          val dst = cellSize.toRect.toOpenCV
           val h = ImageProcessing.findHomography(src, dst)
-          ImageProcessing.warpImage()(mat, h, measures.Params.cellSize.toOpenCV)
+          ImageProcessing.warpImage()(mat, h, cellSize.toOpenCV)
         }
       }
     }
@@ -374,6 +386,17 @@ object ProcessingStep extends LazyLogging {
     info(cells, ret)
   }
 
+  val studentAnswersStep = cellsStep.extend("Respuestas del alumno ") { info =>
+    val ret = for (measures <- info(answerMatrixMeasures);
+                   cellRecognizer = measures.cellCorrector;
+                   cells <- info(cells)) yield {
+      for (cell <- cells) yield {
+        cellRecognizer.recognize(cell)
+      }
+    }
+
+    info(studentAnswers, ret)
+  }
 
 }
 

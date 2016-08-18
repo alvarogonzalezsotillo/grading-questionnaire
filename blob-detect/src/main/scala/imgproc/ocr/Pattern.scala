@@ -74,9 +74,9 @@ object Pattern extends LazyLogging{
 
     val invalidCrosses = loadPatternsFromSheet("invalid-cross")
 
-    //val empties =  loadImagesFromDir("empty").map(BufferedImage2Mat).map(ImageProcessing.toGrayscaleImage).map(resizeToPatterSize)
+    val empties =  loadImagesFromDir("empty").map(BufferedImage2Mat).map(resizeToPatterSize)
 
-    Map( 'X' -> crosses, 'O' -> invalidCrosses)//, 'E' -> empties )
+    Map( 'X' -> crosses, 'O' -> invalidCrosses, '#' -> empties )
   }
 
 }

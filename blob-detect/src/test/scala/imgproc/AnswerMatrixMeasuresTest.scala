@@ -39,7 +39,7 @@ class AnswerMatrixMeasuresTest extends FlatSpec {
     val r = ammht.answerTableRect
     val lastCell = ammht.answerCells.last
 
-    import ammht.Params._
+    import ammht.params._
     val freeWidthAfterCell = answerCellAvailableWidth - cellHeaderToCellWidthGap - cellSize.w
 
 
@@ -53,7 +53,7 @@ class AnswerMatrixMeasuresTest extends FlatSpec {
     val r = ammht.answerTableRect
     val lastCell = ammht.answerCells(4)
 
-    import ammht.Params._
+    import ammht.params._
     val freeWidthAfterCell = answerCellAvailableWidth - cellHeaderToCellWidthGap - cellSize.w
 
     assert(lastCell.corners(1) + freeWidthAfterCell.toPoint == r.corners(1))
