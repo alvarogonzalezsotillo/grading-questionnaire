@@ -19,8 +19,8 @@ import org.opencv.ml.{CvANN_MLP, CvANN_MLP_TrainParams}
 
 object Perceptron{
 
-  private def imageToSignal(i: Byte ) : Float = 1.0f*i/255
-  private def signalToImage(s: Float ) : Byte = (s*255).toByte
+  def imageToSignal(i: Byte ) : Float = 1.0f*i/255
+  def signalToImage(s: Float ) : Byte = (s*255).toByte
 
 
   private def fillRowWithArray( m: Mat, row: Int, b: Array[Float] ){
@@ -34,11 +34,10 @@ object Perceptron{
 
 }
 
-class Perceptron( nodesInInternalLayers: Int = Pattern.patternSize*4, internalLayers: Int = 2, patternSize : Int = Pattern.patternSize ) extends LazyLogging{
+abstract class Perceptron( val nodesInInputLayer : Int, nodesInInternalLayers: Int, internalLayers: Int = 2) extends LazyLogging{
 
   import Perceptron._
 
-  private val nodesInInputLayer = patternSize * patternSize
 
   private def layerSizes( outputNodes: Int ) = {
     val m = new Mat(2+internalLayers, 1, CvType.CV_32SC1)
@@ -50,18 +49,9 @@ class Perceptron( nodesInInternalLayers: Int = Pattern.patternSize*4, internalLa
     m
   }
 
-  def patternToInputData( pattern: Mat ) : Array[Float] = {
-    assert( pattern.rows() == patternSize )
-    assert( pattern.cols() == patternSize )
+  protected def patternToInputData( pattern: Mat ) : Array[Float]
 
-    val ret = new Array[Float](nodesInInputLayer)
-    val buffer = new Array[Byte](1)
-    for( c <- 0 until patternSize ; r <- 0 until patternSize ){
-      pattern.get(r,c,buffer)
-      ret(patternSize*c+r) = imageToSignal(buffer(0))
-    }
-    ret
-  }
+
 
 
 
@@ -85,8 +75,7 @@ class Perceptron( nodesInInternalLayers: Int = Pattern.patternSize*4, internalLa
         val labelsArray = letters.flatMap{ l =>
           val label = labelOfLetter(l)
           val size = data(l).size
-          val labels = Iterator.continually(label).take(size)
-          labels
+          Iterator.continually(label).take(size)
         }.toArray
         val ret = new Mat(labelsArray.size, letters.size,CvType.CV_32FC1)
         val buffer = new Array[Float](letters.size)
@@ -98,7 +87,22 @@ class Perceptron( nodesInInternalLayers: Int = Pattern.patternSize*4, internalLa
         ret
       }
 
-      val weights = new Mat
+      val weights = {
+        val max = data.values.map(_.size).max
+        val total = data.values.map(_.size).sum
+        val weights = new Mat(total,1,CvType.CV_32FC1)
+        val array = letters.flatMap{ letter =>
+          val size = data(letter).size
+          val w = 1.0f*size/total
+          Iterator.continually(w).take(size)
+        }.toArray
+        val buffer = new Array[Float](1)
+        for( r <- 0 until array.size){
+          buffer(0) = array(r)
+          weights.put(r,0,buffer)
+        }
+        weights
+      }
 
       val input = {
         val patterns = letters.flatMap( l => data(l).toList ).toArray
@@ -170,4 +174,23 @@ class Perceptron( nodesInInternalLayers: Int = Pattern.patternSize*4, internalLa
       LetterProb(l, prob )
     }
   }
+}
+
+class LetterPerceptron( nodesInInternalLayers: Int = Pattern.patternSize*4, internalLayers: Int = 2, patternSize : Int = Pattern.patternSize ) extends Perceptron(patternSize*patternSize,nodesInInternalLayers,internalLayers){
+
+  import Perceptron._
+
+  protected def patternToInputData( pattern: Mat ) : Array[Float] = {
+    assert( pattern.rows() == patternSize )
+    assert( pattern.cols() == patternSize )
+
+    val ret = new Array[Float](nodesInInputLayer)
+    val buffer = new Array[Byte](1)
+    for( c <- 0 until patternSize ; r <- 0 until patternSize ){
+      pattern.get(r,c,buffer)
+      ret(patternSize*c+r) = imageToSignal(buffer(0))
+    }
+    ret
+  }
+
 }

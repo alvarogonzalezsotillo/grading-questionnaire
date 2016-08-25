@@ -6,7 +6,7 @@ package imgproc
 
 import imgproc.ImageProcessing._
 import imgproc.TestUtil._
-import imgproc.steps.AnswersInfo.{answers, cells, cellsLocation}
+import imgproc.steps.AnswersInfo.{answers, cells, cellsLocation, studentAnswers}
 import imgproc.steps.ContoursInfo._
 import imgproc.steps.MainInfo.mat
 import imgproc.steps.ProcessingStep
@@ -18,6 +18,24 @@ import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner
 
 
+object ProcessingStepTest{
+  val fromWebCam = Seq(
+    "2016-01-26-101322.jpg",
+    "2016-01-26-101343.jpg",
+    "2016-01-26-101403.jpg",
+    "2016-01-26-101423.jpg",
+    "2016-01-26-101502.jpg",
+    "2016-01-26-101516.jpg" )
+
+  val  fromPDF = Seq(
+    "horizontal-letter.png",
+    "vertical-letter.png",
+    "horizontal-ticked.png",
+    "vertical-ticked.png"
+  )
+
+}
+
 @RunWith(classOf[JUnitRunner])
 class ProcessingStepTest extends FlatSpec {
 
@@ -28,18 +46,11 @@ class ProcessingStepTest extends FlatSpec {
   private def processMat(step: ProcessingStep, m: Mat) = step.process(m)(mat).get
 
 
-  val positiveMatchImages = Seq(
-    "2016-01-26-101322.jpg",
-    "2016-01-26-101343.jpg",
-    "2016-01-26-101403.jpg",
-    "2016-01-26-101423.jpg",
-    "2016-01-26-101502.jpg",
-    "2016-01-26-101516.jpg", // Seq(
-    "horizontal-letter.png",
-    "vertical-letter.png",
-    "horizontal-ticked.png",
-    "vertical-ticked.png"
-  )
+
+  private val positiveMatchImages = {
+    import ProcessingStepTest._
+      fromPDF ++ fromWebCam
+  }
 
 
   def removeFileExtension(s: String) = s.reverse.dropWhile(_ != '.').tail.reverse
@@ -112,7 +123,7 @@ class ProcessingStepTest extends FlatSpec {
     }
 
     it should "decode QR" in {
-      runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
+      runSomeTestAndFailIfSoMuchFailures(positiveMatchImages,true) { imageLocation =>
         val m = readImageFromResources(imageLocation)
         val info = decodeQRStep.process(m)
         assert(info(qrText).isDefined)
@@ -164,5 +175,13 @@ class ProcessingStepTest extends FlatSpec {
     }
   }
 
+
+  "Student Answers Step" should "read answers" in{
+    runSomeTestAndFailIfSoMuchFailures(positiveMatchImages, true) { imageLocation =>
+      val m = readImageFromResources(imageLocation)
+      val info = studentAnswersStep.process(m)
+      println( s"$imageLocation -> ${info(studentAnswers)}")
+    }
+  }
 }
 

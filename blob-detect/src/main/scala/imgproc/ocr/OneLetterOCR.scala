@@ -4,10 +4,12 @@ import javax.imageio.ImageIO
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import imgproc.ocr.Pattern.TrainingPatterns
-import imgproc.ocr.perceptron.Perceptron
+import imgproc.ocr.perceptron.{LetterPerceptron, Perceptron}
 import imgproc.{AnswerMatrixMeasures, ImageProcessing}
 import imgproc.ImageProcessing._
+import imgproc.ocr.OneLetterOCR.LetterResult
 import org.opencv.contrib.Contrib
+import org.opencv.core.Core.MinMaxLocResult
 import org.opencv.core._
 import org.opencv.imgproc.Imgproc
 
@@ -140,7 +142,12 @@ abstract class OneLetterOCR  extends LazyLogging{
   protected val perceptron : Perceptron
 
   def predict( pattern: Mat ) : LetterResult = {
-    perceptron.predict(normalizeLetter(pattern))
+    if( DefaultEmptyRecognizer.isEmpty(pattern ) ){
+      Seq(LetterProb(' ',1))
+    }
+    else {
+      perceptron.predict(normalizeLetter(pattern))
+    }
   }
 }
 
@@ -149,7 +156,7 @@ class TrainedOneLetterOCR(trainingPatterns: TrainingPatterns  ) extends OneLette
 
   logger.error( s"trainingPatterns: ${trainingPatterns}")
 
-  protected val perceptron = new Perceptron()
+  protected val perceptron = new LetterPerceptron()
 
   val normalizedTrainingPatterns = trainingPatterns.map{ case(c,mats) =>
     c -> mats.map(normalizeLetter(_))
@@ -166,7 +173,7 @@ object DefaultTrainedOneLetterOCR extends TrainedOneLetterOCR(Pattern.letterTrai
 class CrossRecognizer(trainingPatterns: TrainingPatterns ) extends OneLetterOCR{
   import OneLetterOCR._
 
-  protected val perceptron = new Perceptron()
+  protected val perceptron = new LetterPerceptron()
 
   val normalizedTrainingPatterns = trainingPatterns.map{ case(c,mats) =>
     c -> mats.map(normalizeLetter(_))
@@ -178,3 +185,43 @@ class CrossRecognizer(trainingPatterns: TrainingPatterns ) extends OneLetterOCR{
 }
 
 object DefaultCrossRecognizer extends CrossRecognizer(Pattern.crossTrainingPatterns)
+
+protected class EmptyRecognizer{
+
+  import ImageProcessing.toGrayscaleImage
+
+
+  val patterns = {
+    val allLetters = Pattern.letterTrainingPatterns.values.foldLeft(Seq[Mat]())((accum,s) => accum ++ s )
+    val allTicks = Pattern.crossTrainingPatterns.values.foldLeft(Seq[Mat]())((accum,s) => accum ++ s )
+    Map( 'A' -> (allLetters ++ allTicks) ) ++ Pattern.emptyPatterns
+  }
+
+  private val perceptron = {
+
+    val p = new Perceptron(nodesInInputLayer = 2,nodesInInternalLayers = 5,internalLayers = 1){
+      override protected def patternToInputData(pattern: Mat): Array[Float] = {
+        val (min,avg,max) = minAvgMax(pattern)
+        //Array(min.toFloat, avg.toFloat, max.toFloat)
+        Array(min.toFloat, max.toFloat-min.toFloat)
+      }
+    }
+
+    p.train( patterns )
+    p
+  }
+
+  def isEmpty( pattern: Mat ) : Boolean = {
+    val prediction = perceptron.predict(toGrayscaleImage(pattern))
+    println( prediction )
+    prediction.prediction match{
+      case Some('A') => false
+      case Some(' ') => true
+      case Some(_) => throw IllegalStateException
+      case None => true
+    }
+
+  }
+}
+
+object DefaultEmptyRecognizer extends EmptyRecognizer

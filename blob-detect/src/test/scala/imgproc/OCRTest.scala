@@ -76,7 +76,7 @@ class OCRTest extends FlatSpec {
     }
   }
 
-  val fs = Seq("ocr-1.png", "ocr-2.png")
+  val fs = ProcessingStepTest.fromWebCam
 
 
   {
@@ -254,15 +254,36 @@ class OCRTest extends FlatSpec {
     }
   }
 
-  it should "recognice a cross" in {
+  it should "recognize a cross" in {
     recognizeLetter('X', DefaultCrossRecognizer )
   }
 
-  it should "recognice an invalid cross" in {
+  it should "recognize an invalid cross" in {
     recognizeLetter('O', DefaultCrossRecognizer )
   }
 
-  it should "recognice an empty cell" in {
-    recognizeLetter('#', DefaultCrossRecognizer )  }
+  "Empty recognizer" should "recognize an empty pattern" in{
+    val m = readImageFromResources(s"to-recognize-#.png")
+    assert( DefaultEmptyRecognizer.isEmpty(m) )
+  }
+
+  "Empty recognizer" should "print the fingerprint of its patterns" in{
+    val patterns = DefaultEmptyRecognizer.patterns
+    for( (l,imgs) <- patterns ; img <- imgs ){
+      val (min,avg,max) = ImageProcessing.minAvgMax(img)
+      println( s"'$l' -> ${min} ${max-min}")
+    }
+  }
+
+  "Empty recognizer" should "recognize a non-empty pattern" in{
+    val all = for( c <- Seq('O', 'a','b','c','d') ) yield {
+      val m = readImageFromResources(s"to-recognize-$c.png")
+      c -> !DefaultEmptyRecognizer.isEmpty(m)
+    }
+    println( all )
+    assert( all.forall( _._2 ) )
+
+  }
+
 
 }

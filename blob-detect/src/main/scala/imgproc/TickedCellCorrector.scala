@@ -1,6 +1,6 @@
 package imgproc
 
-import imgproc.ocr.{CrossRecognizer, DefaultCrossRecognizer}
+import imgproc.ocr.{CrossRecognizer, DefaultCrossRecognizer, DefaultTrainedOneLetterOCR, OneLetterOCR}
 import imgproc.ocr.OneLetterOCR.LetterResult
 import org.opencv.core.{Mat, Rect}
 
@@ -8,6 +8,22 @@ import scala.collection.immutable.IndexedSeq
 
 trait CellCorrector {
   def recognize(cell: Mat): String
+}
+
+
+class LetterCellCorrector(possibleAnswers: Int) extends CellCorrector{
+  override def recognize(cell: Mat): String = {
+
+    val e = OneLetterOCR.extractPossibleLettersImage(cell)
+    val predictions = if( e.size == 0 ){
+      Seq(DefaultTrainedOneLetterOCR.predict(cell))
+    }
+    else {
+      e.map(DefaultTrainedOneLetterOCR.predict)
+    }
+    predictions.filter(_.prediction.isDefined).map(_.prediction.get).mkString(",")
+
+  }
 }
 
 /**
@@ -21,7 +37,7 @@ class TickedCellCorrector(possibleAnswers: Int) extends CellCorrector{
     val w = cell.width()/possibleAnswers
     val h = cell.height()
     val subcells = for( i <- 0 until possibleAnswers ) yield{
-      ImageProcessing.submatrix(cell, new Rect(w*i,0,w*(i+1),h))
+      ImageProcessing.submatrix(cell, new Rect(w*i,0,w,h))
     }
 
     val results = subcells.map( recognizer.predict )

@@ -35,9 +35,23 @@ object ImageProcessing {
   }
 
   def toGrayscaleImage( src: Mat ) = {
+    if (src.channels() == 1) {
+      src
+    }
+    else {
     val dst = new Mat(src.height(), src.width(), CvType.CV_8UC1)
     Imgproc.cvtColor(src, dst, Imgproc.COLOR_RGB2GRAY)
     dst
+    }
+  }
+
+  def minAvgMax( src: Mat ) = {
+    val p = toGrayscaleImage(src)
+    val mm = org.opencv.core.Core.minMaxLoc(p)
+    val min = mm.minVal
+    val max = mm.maxVal
+    val avg = org.opencv.core.Core.mean(p).`val`(0)
+    (min,avg,max)
   }
 
   def threshold(blockSize: Int = 101, C: Double = 3)(src: Mat): Mat = {
@@ -74,7 +88,7 @@ object ImageProcessing {
 
   private def newMatrixIfNull(m:Mat) = if( m == null ) new Mat else m
 
-  def clean(iterations: Int = 3, sizeOpen: Int = 7, sizeClose: Int = 7)(dst: Mat = null)(src: Mat): Mat = {
+  def clean(iterations: Int = 3, sizeOpen: Int = 9, sizeClose: Int = 9)(dst: Mat = null)(src: Mat): Mat = {
 
     val ret = newMatrixIfNull(dst)
     val open = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(sizeOpen, sizeOpen))

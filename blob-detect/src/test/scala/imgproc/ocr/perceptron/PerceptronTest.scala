@@ -72,7 +72,7 @@ class PerceptronTest extends FlatSpec {
     val data = letters.map{ case(l,f) => l -> Iterator.continually[Mat]( noise(f()) ).take(samples).toSeq}
 
 
-    val p = new Perceptron(patternSize, 2, patternSize)
+    val p = new LetterPerceptron(patternSize, 2, patternSize)
     val iterations = p.train(data)
     println(s"iterations:$iterations")
 

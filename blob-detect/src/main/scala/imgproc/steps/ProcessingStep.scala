@@ -390,12 +390,13 @@ object ProcessingStep extends LazyLogging {
     val ret = for (measures <- info(answerMatrixMeasures);
                    cellRecognizer = measures.cellCorrector;
                    cells <- info(cells)) yield {
-      for (cell <- cells) yield {
+      val r = for (cell <- cells) yield {
         cellRecognizer.recognize(cell)
       }
+      r.zipWithIndex.map(_.toString)
     }
 
-    info(studentAnswers, ret)
+    info(studentAnswers,  ret)
   }
 
 }
