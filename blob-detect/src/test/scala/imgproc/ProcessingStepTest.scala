@@ -34,6 +34,10 @@ object ProcessingStepTest{
     "vertical-ticked.png"
   )
 
+  val fromPDFFilled = Seq(
+    "vertical-ticked-filled.png"
+  )
+
 }
 
 @RunWith(classOf[JUnitRunner])
@@ -49,7 +53,8 @@ class ProcessingStepTest extends FlatSpec {
 
   private val positiveMatchImages = {
     import ProcessingStepTest._
-      fromPDF ++ fromWebCam
+      //fromPDF ++ fromWebCam ++
+      fromPDFFilled
   }
 
 

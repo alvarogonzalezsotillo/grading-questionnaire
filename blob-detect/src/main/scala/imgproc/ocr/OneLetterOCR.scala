@@ -217,7 +217,7 @@ protected class EmptyRecognizer{
     prediction.prediction match{
       case Some('A') => false
       case Some(' ') => true
-      case Some(_) => throw IllegalStateException
+      case Some(_) => throw new IllegalStateException
       case None => true
     }
 

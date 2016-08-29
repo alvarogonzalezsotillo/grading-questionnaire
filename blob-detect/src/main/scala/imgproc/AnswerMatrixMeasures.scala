@@ -205,7 +205,7 @@ trait VerticalMeasures {
 
 trait TickedMeasures {
   self: AnswerMatrixMeasures =>
-  lazy val cellCorrector = new LetterCellCorrector(possibleAnswers) //new TickedCellCorrector(possibleAnswers)
+  lazy val cellCorrector = new TickedCellCorrector(possibleAnswers)
 
   val params = new Params {
     private val f = 5
