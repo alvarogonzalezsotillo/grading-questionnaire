@@ -7,9 +7,10 @@ package imgproc
 import java.io.File
 import javax.imageio.ImageIO
 
+import common.TestUtil
 import imgproc.ImageProcessing._
 import imgproc.Implicits._
-import imgproc.TestUtil._
+import TestUtil._
 import imgproc.ocr.OneLetterOCR._
 import imgproc.ocr.Pattern.TrainingPatterns
 import imgproc.ocr._
@@ -271,7 +272,7 @@ class OCRTest extends FlatSpec {
     val patterns = DefaultEmptyRecognizer.patterns
     for( (l,imgs) <- patterns ; img <- imgs ){
       val (min,avg,max) = ImageProcessing.minAvgMax(img)
-      println( s"'$l' -> ${min} ${max-min}")
+      println( s"'$l' -> ${avg} ${max-min}")
     }
   }
 

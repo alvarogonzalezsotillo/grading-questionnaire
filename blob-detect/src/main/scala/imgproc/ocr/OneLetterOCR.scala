@@ -106,20 +106,21 @@ object OneLetterOCR {
 
   def normalizeLetter(mat: Mat,offset: Int = 10) : Mat = {
 
-    def gray = {
-      val grayscale = toGrayscaleImage(mat)
-      val t = Core.mean(grayscale).`val`(0) - 1
-      Imgproc.threshold(grayscale, grayscale, t, 255, Imgproc.THRESH_BINARY_INV)
-      grayscale
-    }
-
-    def invertGrayscale( m: Mat ) = {
-      val white = new Mat(m.rows(),m.cols(),m.`type`(),new Scalar(255))
-      Core.subtract(white,m,m)
-      m
-    }
-
     val equalize = {
+
+      val gray = {
+        val grayscale = toGrayscaleImage(mat)
+        val t = Core.mean(grayscale).`val`(0) - 1
+        Imgproc.threshold(grayscale, grayscale, t, 255, Imgproc.THRESH_BINARY_INV)
+        grayscale
+      }
+
+      def invertGrayscale( m: Mat ) = {
+        val white = new Mat(m.rows(),m.cols(),m.`type`(),new Scalar(255))
+        Core.subtract(white,m,m)
+        m
+      }
+
       Imgproc.equalizeHist(gray,gray)
       //Core.LUT(grayscale,lut,grayscale)
       //Contrib.applyColorMap(grayscale,grayscale,Contrib.COLORMAP_PINK)
@@ -198,12 +199,11 @@ protected class EmptyRecognizer{
   }
 
   private val perceptron = {
+    val binSize = 32
+    val p = new Perceptron(nodesInInputLayer = 256/binSize,nodesInInternalLayers = 5,internalLayers = 1){
 
-    val p = new Perceptron(nodesInInputLayer = 2,nodesInInternalLayers = 5,internalLayers = 1){
       override protected def patternToInputData(pattern: Mat): Array[Float] = {
-        val (min,avg,max) = minAvgMax(pattern)
-        //Array(min.toFloat, avg.toFloat, max.toFloat)
-        Array(min.toFloat, max.toFloat-min.toFloat)
+        ImageProcessing.histogram(toGrayscaleImage(pattern),binSize).map(_.toFloat )
       }
     }
 
@@ -213,7 +213,6 @@ protected class EmptyRecognizer{
 
   def isEmpty( pattern: Mat ) : Boolean = {
     val prediction = perceptron.predict(toGrayscaleImage(pattern))
-    println( prediction )
     prediction.prediction match{
       case Some('A') => false
       case Some(' ') => true

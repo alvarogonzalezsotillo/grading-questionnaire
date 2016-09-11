@@ -4,8 +4,11 @@ package imgproc
   * Created by alvaro on 8/07/15.
   */
 
+import javax.imageio.ImageIO
+
+import common.TestUtil
 import imgproc.ImageProcessing._
-import imgproc.TestUtil._
+import TestUtil._
 import imgproc.steps.AnswersInfo.{answers, cells, cellsLocation, studentAnswers}
 import imgproc.steps.ContoursInfo._
 import imgproc.steps.MainInfo.mat
@@ -38,10 +41,14 @@ object ProcessingStepTest{
     "vertical-ticked-filled.png"
   )
 
+
 }
 
 @RunWith(classOf[JUnitRunner])
 class ProcessingStepTest extends FlatSpec {
+
+  import ProcessingStepTest._
+  import imgproc.Implicits._
 
   nu.pattern.OpenCV.loadLibrary()
 
@@ -58,11 +65,6 @@ class ProcessingStepTest extends FlatSpec {
   }
 
 
-  def removeFileExtension(s: String) = s.reverse.dropWhile(_ != '.').tail.reverse
-
-  def saveDerivedTestImage(imageLocation: String, stepName: String, m: Mat) = {
-    saveTestImage("processing-step/" + removeFileExtension(imageLocation) + "/" + stepName + ".png", m)
-  }
 
 
   "Initial step " should "do nothing" in {

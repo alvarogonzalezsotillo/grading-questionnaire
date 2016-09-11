@@ -14,8 +14,11 @@ import scala.collection.generic.CanBuildFrom
  */
 object ImageProcessing {
 
+
+
   import imgproc.Implicits._
 
+  def boundingRect(shape: MatOfPoint) : Rect = Imgproc.boundingRect(shape)
 
   def readImageFromResources[T](f: String, clazz: java.lang.Class[T] = ImageProcessing.getClass ): Mat = {
     def mat() = {
@@ -236,4 +239,20 @@ object ImageProcessing {
     }
   }
 
+  def histogram( m: Mat, binSize : Int ) : Array[Int]= {
+    assert( m.`type`() == CvType.CV_8UC1 )
+    val channels: MatOfInt = new MatOfInt(0)
+    val mask: Mat = new Mat
+    val hist: Mat = new Mat()
+    val rangesArray : Array[Float] = Iterator.from(binSize,binSize).takeWhile(_<=256).map(_.toFloat).toArray
+    val histSize: MatOfInt = new MatOfInt(rangesArray.size)
+    val ranges: MatOfFloat = new MatOfFloat( 0, 256 )
+    import scala.collection.JavaConversions._
+    org.opencv.imgproc.Imgproc.calcHist( Seq(m), channels, mask, hist, histSize, ranges )
+
+    Array.tabulate(rangesArray.size){ i =>
+      hist.get(i,0)(0).toInt
+    }
+
+  }
 }

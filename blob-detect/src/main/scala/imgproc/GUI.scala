@@ -105,6 +105,7 @@ object GUI extends App {
     extractQRStep,
     decodeQRStep.withDrawString( _(qrText) ),
     cellsLocationStep.withDrawContours( _(cellsLocation) ),
+    studentAnswersStep,
     cellsLocationStep.withFilter()(_(mat).isDefined).withSaveMatrix()
   ))
 

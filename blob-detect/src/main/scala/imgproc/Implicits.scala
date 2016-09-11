@@ -36,11 +36,6 @@ object Implicits {
   }
 
 
-  implicit def BufferedImage2Mat( image: BufferedImage ) : Mat = {
-    val ret = new Mat(image.getHeight,image.getWidth,CvType.CV_8UC3)
-    BufferedImage2Mat(image, ret)
-    ret
-  }
 
 
   def toBufferedImageOfType(original:BufferedImage, typeI: Int) = {
@@ -65,6 +60,12 @@ object Implicits {
 
       image
     }
+  }
+
+  implicit def BufferedImage2Mat( image: BufferedImage ) : Mat = {
+    val ret = new Mat(image.getHeight,image.getWidth,CvType.CV_8UC3)
+    BufferedImage2Mat(image, ret)
+    ret
   }
 
   def BufferedImage2Mat( src: BufferedImage, dst: Mat ){

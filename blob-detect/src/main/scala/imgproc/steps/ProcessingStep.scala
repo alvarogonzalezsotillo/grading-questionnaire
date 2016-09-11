@@ -15,6 +15,8 @@ import imgproc.{AnswerMatrixMeasures, ImageProcessing, QRScanner}
 import org.opencv.core.{MatOfPoint, _}
 import org.opencv.highgui.Highgui
 
+import scala.collection.SeqView
+
 
 /**
   * Created by alvaro on 13/11/15.
@@ -189,17 +191,34 @@ object ProcessingStep extends LazyLogging {
     def findBiggestAlignedQuadrilaterals(number: Int = COLUMNS)(contours: Seq[MatOfPoint]): Option[IndexedSeq[MatOfPoint]] = {
       val ordered = contours.sortBy(_.area).reverse
 
-      def similarQuadrilaterals(quad: MatOfPoint) = {
+      def similarAreaQuadrilaterals(quad: MatOfPoint) = {
         implicit val epsilon = Epsilon(quad.area * 0.25)
         contours.filter(_.area ~= quad.area)
       }
+
 
       if (false) {
         println("Similar quadrilaterals:")
         println(" area:" + ordered.map(_.area).mkString(", "))
       }
 
-      val ret = ordered.view.map(similarQuadrilaterals).filter(_.size == number).headOption
+      val groupedBySize = ordered.view.map(similarAreaQuadrilaterals)
+      val groupedByNumberOfColumns = groupedBySize.flatMap( _.toSet.subsets(number).map(_.toSeq) )
+
+
+
+      def quadrilateralsAreOfSimilarShape( quads: Seq[MatOfPoint] ) = {
+        val rects = quads.map( ImageProcessing.boundingRect )
+        val first = rects.head
+        val w : Double= first.width
+        val h : Double = first.height
+        implicit val epsilon = Epsilon(h * 0.2)
+        rects.tail.forall( r => (r.width.toDouble ~= w) && (r.height.toDouble ~= h) )
+      }
+
+      val groupedAndSimilar = groupedByNumberOfColumns.filter(quadrilateralsAreOfSimilarShape)
+
+      val ret = groupedAndSimilar.headOption
       ret.map(_.sortBy(_.boundingBox.minX).toIndexedSeq)
     }
 
@@ -364,7 +383,7 @@ object ProcessingStep extends LazyLogging {
       }
     }
 
-    psi(cellsLocation, ret.get)
+    psi(cellsLocation, ret)
   }
 
   val cellsStep = cellsLocationStep.extend("Celdas individuales") { info =>
@@ -387,7 +406,7 @@ object ProcessingStep extends LazyLogging {
   }
 
   val studentAnswersStep = cellsStep.extend("Respuestas del alumno ") { info =>
-    val ret = for (measures <- info(answerMatrixMeasures);
+      val ret = for (measures <- info(answerMatrixMeasures);
                    cellRecognizer = measures.cellCorrector;
                    cells <- info(cells)) yield {
       val r = for (cell <- cells) yield {
@@ -395,6 +414,8 @@ object ProcessingStep extends LazyLogging {
       }
       r.zipWithIndex.map(_.toString)
     }
+
+    println( ret )
 
     info(studentAnswers,  ret)
   }
