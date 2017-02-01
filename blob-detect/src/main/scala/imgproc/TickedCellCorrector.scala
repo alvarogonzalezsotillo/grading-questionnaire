@@ -72,10 +72,11 @@ class TickedCellCorrector(possibleAnswers: Int) extends CellCorrector{
       for( i <- 0 until subcells.size ){
         val c = subcells(i)
         val tc = trimmedSubcells(i)
+        val histogram = ImageProcessing.histogram(OneLetterOCR.normalizeLetter(tc),32).mkString("-")
+        println( s"cell-$s-$i -> $histogram"   )
         TestUtil.saveTestImage( s"tickedCellCorrector/cell-$s-$i.png", c )
-        TestUtil.saveTestImage( s"tickedCellCorrector/cell-$s-$i-trimmed.png", tc )
+        TestUtil.saveTestImage( s"tickedCellCorrector/cell-$s-$i-trimmed-$histogram.png", tc )
         TestUtil.saveTestImage( s"tickedCellCorrector/cell-$s-$i-normalized.png", OneLetterOCR.normalizeLetter(tc) )
-        println( s"cell-$s-$i -> " + ImageProcessing.histogram(OneLetterOCR.normalizeLetter(tc),32).mkString(",") )
       }
     }
 

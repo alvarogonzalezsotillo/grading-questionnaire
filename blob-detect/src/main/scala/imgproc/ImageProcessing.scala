@@ -240,19 +240,35 @@ object ImageProcessing {
   }
 
   def histogram( m: Mat, binSize : Int ) : Array[Int]= {
-    assert( m.`type`() == CvType.CV_8UC1 )
-    val channels: MatOfInt = new MatOfInt(0)
-    val mask: Mat = new Mat
-    val hist: Mat = new Mat()
-    val rangesArray : Array[Float] = Iterator.from(binSize,binSize).takeWhile(_<=256).map(_.toFloat).toArray
-    val histSize: MatOfInt = new MatOfInt(rangesArray.size)
-    val ranges: MatOfFloat = new MatOfFloat( 0, 256 )
-    import scala.collection.JavaConversions._
-    org.opencv.imgproc.Imgproc.calcHist( Seq(m), channels, mask, hist, histSize, ranges )
+    assert(m.`type`() == CvType.CV_8UC1)
+    val rangesArray: Array[Float] = Iterator.from(binSize, binSize).takeWhile(_ <= 256).map(_.toFloat).toArray
 
-    Array.tabulate(rangesArray.size){ i =>
-      hist.get(i,0)(0).toInt
+    val slowHistogram = {
+      val h = new Array[Int](rangesArray.size)
+      val ranges = rangesArray.zipWithIndex
+      for( x <- 0 until m.width() ; y <- 0 until m.height() ){
+        val v = m.get(y,x)(0).toInt
+        ???
+      }
     }
+
+    val fastHistogram = {
+      val channels: MatOfInt = new MatOfInt(0)
+      val mask: Mat = new Mat
+      val hist: Mat = new Mat()
+      val histSize: MatOfInt = new MatOfInt(rangesArray.size)
+      val ranges: MatOfFloat = new MatOfFloat(0, 256)
+      import scala.collection.JavaConversions._
+      org.opencv.imgproc.Imgproc.calcHist(Seq(m), channels, mask, hist, histSize, ranges)
+
+      Array.tabulate(rangesArray.size) { i =>
+        hist.get(i, 0)(0).toInt
+      }
+    }
+
+    //assert( slowHistogram.toSeq == fastHistogram.toSeq)
+
+    fastHistogram
 
   }
 }

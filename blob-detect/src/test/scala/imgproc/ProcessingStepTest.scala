@@ -61,7 +61,8 @@ class ProcessingStepTest extends FlatSpec {
   private val positiveMatchImages = {
     import ProcessingStepTest._
       //fromPDF ++ fromWebCam ++
-      fromPDFFilled
+      // fromPDFFilled
+      fromWebCam
   }
 
 

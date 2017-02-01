@@ -104,7 +104,15 @@ object GiftToLatex extends LazyLogging{
 
       // SIZES
       """<font size="\+1">""" -> "\\\\begin{large}\n",
-      """</font>""" -> "\\\\end{large}\n"
+      """</font>""" -> "\\\\end{large}\n",
+
+      // FORMAT
+      "<i>" -> """\\textit{""",
+      "</i>" -> "}",
+      "<b>" -> """\\textbf{""",
+      "</b>" -> "}"
+
+
     )
 
 
