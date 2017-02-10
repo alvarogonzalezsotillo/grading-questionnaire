@@ -263,28 +263,4 @@ class OCRTest extends FlatSpec {
     recognizeLetter('O', DefaultCrossRecognizer )
   }
 
-  "Empty recognizer" should "recognize an empty pattern" in{
-    val m = readImageFromResources(s"to-recognize-#.png")
-    assert( DefaultEmptyRecognizer.isEmpty(m) )
-  }
-
-  "Empty recognizer" should "print the fingerprint of its patterns" in{
-    val patterns = DefaultEmptyRecognizer.patterns
-    for( (l,imgs) <- patterns ; img <- imgs ){
-      val (min,avg,max) = ImageProcessing.minAvgMax(img)
-      println( s"'$l' -> ${avg} ${max-min}")
-    }
-  }
-
-  "Empty recognizer" should "recognize a non-empty pattern" in{
-    val all = for( c <- Seq('O', 'a','b','c','d') ) yield {
-      val m = readImageFromResources(s"to-recognize-$c.png")
-      c -> !DefaultEmptyRecognizer.isEmpty(m)
-    }
-    println( all )
-    assert( all.forall( _._2 ) )
-
-  }
-
-
 }
