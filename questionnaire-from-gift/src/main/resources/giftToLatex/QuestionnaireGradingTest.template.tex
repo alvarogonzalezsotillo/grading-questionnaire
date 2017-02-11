@@ -214,25 +214,33 @@
   {}%
 }%
 
+\usepackage{array}
 
 \definecolor{light-gray}{gray}{0.60}
 \newcommand{\LetterAnswerCellTemplate}[1]{%
   \setlength{\arrayrulewidth}{.02em}%
-  %\setlength{\tabcolsep}{20pt}
-  \begin{tabular}{p{0.6cm}@{\hskip 0.4cm}!{\color{light-gray}\vrule}p{1.3cm}!{\color{light-gray}\vrule}}%
+  \setlength{\tabcolsep}{1pt}
+  \begin{tabular}{m{0.9cm}@{\hskip 0.15cm}!{\color{light-gray}\vrule}p{2cm}!{\color{light-gray}\vrule}}%
     \arrayrulecolor{light-gray}\cline{2-2}%
-    \cellcolor{black}\textcolor{white}{\hfill #1 \hfill} &  \hfill \\[2pt]%
+    \vspace{5pt}\cellcolor{black}\textcolor{white}{\hfill {#1} \hfill} &  {\hfill}\\%
     \arrayrulecolor{light-gray}\cline{2-2}%
   \end{tabular}%
 }
 
 \newcommand{\TickWidth}{0.5cm}
 \usepackage{array}
+\definecolor{sep-gray}{gray}{0.60}
 \newcolumntype{x}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}b{#1}}
 \newcommand{\TickedAnswerCellTemplate}[5]{%
   \setlength{\tabcolsep}{0pt}
-  \begin{tabular}{x{1.0cm}@{\hskip 0.1cm}!{\color{light-gray}\vrule}@{}x{\TickWidth}@{}!{\color{light-gray}\vrule}@{}x{\TickWidth}@{}!{\color{light-gray}\vrule}@{}x{\TickWidth}@{}!{\color{light-gray}\vrule}@{}x{\TickWidth}@{}!{\color{light-gray}\vrule}}%
-    \arrayrulecolor{light-gray}\cline{2-5}%
+  \begin{tabular}{
+    x{1.0cm}
+    @{\hskip 0.1cm}!{\color{sep-gray}\vrule}
+    @{}x{\TickWidth}@{}!{\color{sep-gray}\vrule}
+    @{}x{\TickWidth}@{}!{\color{sep-gray}\vrule}
+    @{}x{\TickWidth}@{}!{\color{sep-gray}\vrule}
+    @{}x{\TickWidth}@{}!{\color{sep-gray}\vrule}}%
+    \arrayrulecolor{sep-gray}\cline{2-5}%
     \ifthenelse{\equal{#2}{}}
     {
     \cellcolor{black}\textcolor{white}{ #1 } & #2 &#3&#4& {#5}\\[2pt]%
@@ -277,7 +285,7 @@
   \begin{multicols}{5}%
     \forloop[5]{DummyAnswerCounter}{1}{\value{DummyAnswerCounter}<#1 \OR \value{AnswerTableC}=#1}%
     {      
-      \AnswerCell     \AnswerCell     \AnswerCell     \AnswerCell     \AnswerCell
+      \AnswerCell \AnswerCell \AnswerCell \AnswerCell \AnswerCell
      }%
    \end{multicols}%
 
@@ -361,6 +369,23 @@
     \addtocounter{AnswerTableC}{1}
   }
 
+  \newcommand{\HeaderCell}
+  {
+    \TickedAnswerCellTemplate{}{\hfill}{}{}{}
+    \hspace{0.0mm}
+    \addtocounter{AnswerTableC}{0}
+  }
+
+  
+  {
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+
+  }
+
 
   \forloop[5]{DummyAnswerCounter}{1}{\value{DummyAnswerCounter}<#1 \OR \value{AnswerTableC}=#1}
   {
@@ -368,9 +393,19 @@
     \AnswerCell \hfill
     \AnswerCell \hfill
     \AnswerCell \hfill
-    \AnswerCell
+    \AnswerCell \hfill
 
   }
+
+    {
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+
+  }
+
 }
 
 \newcommand{\LetterVerticalAnswerTable}[1]
@@ -391,7 +426,7 @@
 
   \newcommand{\HeaderCell}
   {
-    \TickedAnswerCellTemplate{}{a}{b}{c}{d}
+    \TickedAnswerCellTemplate{}{\hfill}{}{}{}
     \hspace{0mm}
     \addtocounter{AnswerTableC}{0}
   }
@@ -403,8 +438,6 @@
     \HeaderCell
     \HeaderCell
   \end{multicols}
-  
-
   
   \begin{multicols}{5}%
 
@@ -478,7 +511,7 @@
 $GeneratedContent$
 
   \setlength{\multicolsep}{3px}
-\FirstPage{30}{70}{51}{false}{false}% horizontal ticked
+  \FirstPage{30}{70}{120}{false}{true}% horizontal ticked
 
 
 
