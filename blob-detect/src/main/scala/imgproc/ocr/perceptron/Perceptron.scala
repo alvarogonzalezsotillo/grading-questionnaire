@@ -51,10 +51,6 @@ abstract class Perceptron( val nodesInInputLayer : Int, nodesInInternalLayers: I
 
   protected def patternToInputData( pattern: Mat ) : Array[Float]
 
-
-
-
-
   val ann = new CvANN_MLP
   var characters : IndexedSeq[Char] = null
 
