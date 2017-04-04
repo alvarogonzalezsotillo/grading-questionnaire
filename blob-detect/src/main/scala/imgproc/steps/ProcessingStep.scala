@@ -48,15 +48,7 @@ trait ProcessingStep {
     val matWithContours = for (m <- p(mat); contours <- extractContours(p)) yield {
       val newM = m.clone
       ImageProcessing.drawContours(newM, contours)
-
-      for ((c, i) <- contours.zipWithIndex) {
-        ImageProcessing.drawString(newM, s"$i", c.center)
-        for (pairs <- c.toArray.grouped(2)) {
-          val p = pairs.head
-          ImageProcessing.drawString(newM, s"$p", p, new Scalar(255, 0, 0))
-        }
-      }
-
+      ImageProcessing.drawVertices(newM, contours)
       newM
     }
     p(mat, matWithContours)
@@ -188,7 +180,7 @@ object ProcessingStep extends LazyLogging {
   val biggestQuadrilateralsStep = quadrilateralStep.extend("Los mayores cinco cuadriláteros") { implicit csi =>
     import ContoursInfo._
 
-    def findBiggestAlignedQuadrilaterals(number: Int = COLUMNS)(contours: Seq[MatOfPoint]): Option[IndexedSeq[MatOfPoint]] = {
+    def findBiggestAlignedQuadrilaterals(number: Int = COLUMNS)(contours: Seq[MatOfPoint]): Seq[IndexedSeq[MatOfPoint]] = {
       val ordered = contours.sortBy(_.area).reverse
 
       def similarAreaQuadrilaterals(quad: MatOfPoint) = {
@@ -196,30 +188,22 @@ object ProcessingStep extends LazyLogging {
         contours.filter(_.area ~= quad.area)
       }
 
-
-      if (false) {
-        println("Similar quadrilaterals:")
-        println(" area:" + ordered.map(_.area).mkString(", "))
-      }
-
       val groupedBySize = ordered.view.map(similarAreaQuadrilaterals)
-      val groupedByNumberOfColumns = groupedBySize.flatMap( _.toSet.subsets(number).map(_.toSeq) )
-
-
+      val groupedByNumberOfColumns = groupedBySize.flatMap( _.toSet.subsets(number).map(_.toIndexedSeq) )
 
       def quadrilateralsAreOfSimilarShape( quads: Seq[MatOfPoint] ) = {
         val rects = quads.map( ImageProcessing.boundingRect )
         val first = rects.head
         val w : Double= first.width
         val h : Double = first.height
-        implicit val epsilon = Epsilon(h * 0.2)
+        implicit val epsilon = Epsilon(h * 0.3)
         rects.tail.forall( r => (r.width.toDouble ~= w) && (r.height.toDouble ~= h) )
       }
 
       val groupedAndSimilar = groupedByNumberOfColumns.filter(quadrilateralsAreOfSimilarShape)
 
-      val ret = groupedAndSimilar.headOption
-      ret.map(_.sortBy(_.boundingBox.minX).toIndexedSeq)
+      val ret = groupedAndSimilar.map(_.sortBy(_.boundingBox.minX) )
+      ret
     }
 
 
@@ -229,10 +213,12 @@ object ProcessingStep extends LazyLogging {
       sortedQuads.map(q => toMatOfPoint(findProbableQuadrilateral(q.points, orientation)))
     }
 
-
-    csi(biggestQuadrilaterals, quads)
+    csi(biggestQuadrilaterals, quads.headOption)(allBiggestQuadrilaterals,quads)
   }
 
+  /*
+  FIND THE CORNERS OF A SHAPE, AND ORDER THEM CLOCKWISE STARTING AT UPPER LEFT
+   */
   private def findProbableQuadrilateral(points: Seq[Point], orientation: Point): Seq[Point] = {
     val center = new Shape(points).center
     val unit = orientation.normalize

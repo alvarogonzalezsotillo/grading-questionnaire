@@ -91,7 +91,7 @@ object ImageProcessing {
 
   private def newMatrixIfNull(m:Mat) = if( m == null ) new Mat else m
 
-  def clean(iterations: Int = 3, sizeOpen: Int = 9, sizeClose: Int = 9)(dst: Mat = null)(src: Mat): Mat = {
+  def clean(iterations: Int = 3, sizeOpen: Int = 9, sizeClose: Int = 6)(dst: Mat = null)(src: Mat): Mat = {
 
     val ret = newMatrixIfNull(dst)
     val open = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(sizeOpen, sizeOpen))
@@ -172,7 +172,16 @@ object ImageProcessing {
     dst
   }
 
-
+  def drawVertices( dst:Mat, contours: Seq[MatOfPoint], id: String = "", color: Scalar = new Scalar(255, 0, 0) ): Mat = {
+    for ((c, i) <- contours.zipWithIndex) {
+      ImageProcessing.drawString(dst, s"$id:$i", c.center)
+      for (pairs <- c.toArray.grouped(2)) {
+        val p = pairs.head
+        ImageProcessing.drawString(dst, s"$p", p, color)
+      }
+    }
+    dst
+  }
 
   def drawString(dst: Mat, string: String, point: Point, color: Scalar = defaultColor): Mat = {
     val fontFace = Core.FONT_HERSHEY_PLAIN
@@ -180,9 +189,6 @@ object ImageProcessing {
     Core.putText(dst,string,point,fontFace,fontScale,color)
     dst
   }
-
-
-
 
   def findHomography(srcPoints: MatOfPoint, dstPoints : MatOfPoint) = {
     val dstPoints2f = new MatOfPoint2f()

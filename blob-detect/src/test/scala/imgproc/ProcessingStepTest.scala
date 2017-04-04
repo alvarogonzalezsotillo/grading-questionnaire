@@ -12,7 +12,7 @@ import TestUtil._
 import imgproc.steps.AnswersInfo.{answers, cells, cellsLocation, studentAnswers}
 import imgproc.steps.ContoursInfo._
 import imgproc.steps.MainInfo.mat
-import imgproc.steps.ProcessingStep
+import imgproc.steps.{MainInfo, ProcessingStep}
 import imgproc.steps.ProcessingStep._
 import imgproc.steps.QRInfo.{answerMatrixMeasures, qrLocation, qrText, qrVersion}
 import org.junit.runner.RunWith
@@ -23,12 +23,17 @@ import org.scalatest.junit.JUnitRunner
 
 object ProcessingStepTest{
   val fromWebCam = Seq(
-    "2016-01-26-101322.jpg",
-    "2016-01-26-101343.jpg",
-    "2016-01-26-101403.jpg",
-    "2016-01-26-101423.jpg",
-    "2016-01-26-101502.jpg",
-    "2016-01-26-101516.jpg" )
+
+    "2017-03-03-122810.jpg",
+    "2017-03-03-122820.jpg",
+    "2017-03-03-122850.jpg",
+    "2017-03-03-122856.jpg",
+    "2017-03-03-122902.jpg",
+    "2017-03-03-122909.jpg",
+    "2017-03-03-122916.jpg",
+    "2017-03-03-122923.jpg",
+    "2017-03-03-122931.jpg",
+    "2017-03-03-122935.jpg" )
 
   val  fromPDF = Seq(
     "horizontal-letter.png",
@@ -113,8 +118,16 @@ class ProcessingStepTest extends FlatSpec {
   "Biggest quadrilaterals step" should "find quadrilaterals" in {
     runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
       val m = readImageFromResources(imageLocation)
-      val m2 = processMat(biggestQuadrilateralsStep.withDrawNumberedContours(_ (biggestQuadrilaterals)), m)
-      saveDerivedTestImage(imageLocation, "06-bigquads", m2)
+      val info = biggestQuadrilateralsStep.withDrawNumberedContours(_ (biggestQuadrilaterals)).process( m )
+      val m2 = info(MainInfo.mat)
+      m2.foreach( saveDerivedTestImage(imageLocation, "06-bigquads", _ ) )
+
+      val newM = m.clone
+      for( pair <- info(allBiggestQuadrilaterals).map(_.zipWithIndex) ; (q,index) <- pair ) {
+        ImageProcessing.drawContours(newM, q )
+        ImageProcessing.drawVertices(newM, q, index.toString )
+      }
+      saveDerivedTestImage(imageLocation, "06-allbigquads", newM )
 
     }
   }
