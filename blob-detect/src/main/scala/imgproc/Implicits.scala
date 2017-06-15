@@ -207,6 +207,11 @@ object Implicits {
 
     def ~=(p:Point)(implicit e: Epsilon) = (point.x ~= p.x) && (point.y ~= p.y)
 
+    def distanceToLine( p1: Point, p2: Point ) : Double = {
+      // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+      ???
+    }
+
   }
 
   implicit def toOpenCVPoint(p:MyPoint) : Point = p.point

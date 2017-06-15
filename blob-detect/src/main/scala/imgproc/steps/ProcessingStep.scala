@@ -180,6 +180,70 @@ object ProcessingStep extends LazyLogging {
   val biggestQuadrilateralsStep = quadrilateralStep.extend("Los mayores cinco cuadriláteros") { implicit csi =>
     import ContoursInfo._
 
+
+    class Quadrilateral( val points: MatOfPoint ){
+      val asSet = points.toArray.toSet
+
+      override val hashCode: Int = asSet.map(_.hashCode()).sum
+
+      override def equals(obj: scala.Any): Boolean = obj match{
+        case q: Quadrilateral  => q.asSet == asSet
+        case _ => false
+      }
+
+      lazy val center = {
+        val c = asSet.foldLeft( new Point(0,0) ) {
+          (p, center) => p+center
+        }
+        c / asSet.size
+      }
+
+    }
+
+    implicit def toMatOfPoint(q:Quadrilateral) = q.points
+
+    def sameArea(q1: MatOfPoint)( q2: MatOfPoint) = {
+      val average = (q1.area *q2.area )/2
+      implicit val epsilon = Epsilon( average * 0.25)
+      q1.area ~= q2.area
+    }
+
+    def similarShape( quads: Iterable[Quadrilateral] ) = {
+      val rects = quads.map( q => ImageProcessing.boundingRect(q) )
+      val first = rects.head
+      val w : Double= first.width
+      val h : Double = first.height
+      implicit val epsilon = Epsilon(h * 0.3)
+      rects.tail.forall( r => (r.width.toDouble ~= w) && (r.height.toDouble ~= h) )
+    }
+
+    def centersAligned(quads: Iterable[Quadrilateral] ) = {
+      import imgproc.Implicits.MyPoint;
+
+      val centers = quads.map( _.center )
+      val first = centers.minBy(_.x)
+      val last = centers.minBy(_.y)
+      implicit val epsilon = Epsilon(quads.head.height() * 0.2)
+      centers.forall( _.distanceToLine(first,last) ~= 0.0 )
+    }
+
+    val quads = quadrilaterals().map( new Quadrilateral(_) )
+
+    val groupsByArea = quads.map(q => quads.filter(sameArea(q)(_)).toSet ).toSet
+
+    val alignedGroups: Set[Set[Quadrilateral]] = {
+      for( group <- groupsByArea ;
+           g <- group.subsets(COLUMNS) if( similarShape(g) && centersAligned(g) ) ) yield g
+    }
+
+    val ret = alignedGroups.map(g => g.map(_.points).toIndexedSeq ).toSeq
+
+    csi(biggestQuadrilaterals, ret.headOption)(allBiggestQuadrilaterals,ret)
+  }
+
+  val biggestQuadrilateralsStep_old = quadrilateralStep.extend("Los mayores cinco cuadriláteros") { implicit csi =>
+    import ContoursInfo._
+
     def findBiggestAlignedQuadrilaterals(number: Int = COLUMNS)(contours: Seq[MatOfPoint]): Seq[IndexedSeq[MatOfPoint]] = {
       val ordered = contours.sortBy(_.area).reverse
 
@@ -187,6 +251,7 @@ object ProcessingStep extends LazyLogging {
         implicit val epsilon = Epsilon(quad.area * 0.25)
         contours.filter(_.area ~= quad.area)
       }
+
 
       val groupedBySize = ordered.view.map(similarAreaQuadrilaterals)
       val groupedByNumberOfColumns = groupedBySize.flatMap( _.toSet.subsets(number).map(_.toIndexedSeq) )
@@ -210,7 +275,7 @@ object ProcessingStep extends LazyLogging {
     val quads = findBiggestAlignedQuadrilaterals()(quadrilaterals()).map { quads =>
       val sortedQuads = quads.sortBy(_.center.x)
       val orientation = sortedQuads.last.center - sortedQuads.head.center
-      sortedQuads.map(q => toMatOfPoint(findProbableQuadrilateral(q.points, orientation)))
+      sortedQuads.map(q => toMatOfPoint(orderVerticesOfQuadrilateral(q.points, orientation)))
     }
 
     csi(biggestQuadrilaterals, quads.headOption)(allBiggestQuadrilaterals,quads)
@@ -219,7 +284,7 @@ object ProcessingStep extends LazyLogging {
   /*
   FIND THE CORNERS OF A SHAPE, AND ORDER THEM CLOCKWISE STARTING AT UPPER LEFT
    */
-  private def findProbableQuadrilateral(points: Seq[Point], orientation: Point): Seq[Point] = {
+  private def orderVerticesOfQuadrilateral(points: Seq[Point], orientation: Point): Seq[Point] = {
     val center = new Shape(points).center
     val unit = orientation.normalize
     val diffs = points.map(_ - center)
