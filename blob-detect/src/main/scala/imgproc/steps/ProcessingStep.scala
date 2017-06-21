@@ -5,9 +5,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
-import common.{BinaryConverter, HMap, Sounds}
+import common.{BinaryConverter, HKey, HMap, Sounds}
 import imgproc.steps.AnswersInfo.{cells, cellsLocation, studentAnswers}
 import imgproc.steps.ContoursInfo.{answerColumns, biggestQuadrilaterals}
+import imgproc.steps.LocationInfo.locatedMat
 import imgproc.steps.MainInfo._
 import imgproc.steps.ProcessingStep.{ExtendedStep, Info}
 import imgproc.steps.QRInfo.{answerMatrixMeasures, qrVersion}
@@ -76,12 +77,12 @@ trait ProcessingStep {
     }
   }
 
-  def withSaveMatrix(name: String = "Grabando:" + stepName): ProcessingStep = {
+  def withSaveMatrix( hkey: HKey[Mat] = mat, name: String = "Grabando:" + stepName): ProcessingStep = {
     var lastInfo: Info = HMap()
     extend(name) { psi =>
       if (!(psi eq lastInfo)) {
         lastInfo = psi
-        for (m <- lastInfo(mat)) {
+        for (m <- lastInfo(hkey)) {
           ProcessingStep.saveMatrix(m)
         }
         for (m <- lastInfo(originalMat)) {

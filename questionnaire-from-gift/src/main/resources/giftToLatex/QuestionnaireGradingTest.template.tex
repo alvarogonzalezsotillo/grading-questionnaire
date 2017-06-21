@@ -58,6 +58,7 @@
 \newcommand{\HalfWidth}{0.46\textwidth}
 \newcommand{\Height}{0.95\textheight}
 \newcommand{\HalfHeight}{0.45\textheight}
+\newcommand{\QuarterHeight}{0.20\textheight}
 
 
 
@@ -102,6 +103,21 @@
 \newcommand{\Answer}[1]{
   \item #1
 }
+
+\newenvironment{QuarterPageOpenQuestion}
+{
+
+  \begin{minipage}[t][\QuarterHeight][t]{\Width}
+    \HorizontalLine
+    \arabic{QuestionCounter}.
+}
+{
+    \vfill
+  \end{minipage}
+  \stepcounter{QuestionCounter}
+  \\
+}
+
 
 \newenvironment{HalfPageOpenQuestion}
 {
@@ -526,7 +542,6 @@
 $GeneratedContent$
 
   %\FirstPage{30}{70}{120}{false}{false}% horizontal ticked
-
 
 
 

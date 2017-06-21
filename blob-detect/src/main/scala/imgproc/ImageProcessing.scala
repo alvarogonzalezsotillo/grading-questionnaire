@@ -254,8 +254,10 @@ object ImageProcessing {
       val ranges = rangesArray.zipWithIndex
       for( x <- 0 until m.width() ; y <- 0 until m.height() ){
         val v = m.get(y,x)(0).toInt
-        ???
+        val index = ranges.find{ case (f,_) => v <= f }.get._2
+        h(index) += 1
       }
+      h
     }
 
     val fastHistogram = {
@@ -277,4 +279,13 @@ object ImageProcessing {
     fastHistogram
 
   }
+
+  def derivate( src: Mat, order: Int = 1 ) = {
+    assert(src.`type`() == CvType.CV_8UC1)
+    val ret = new Mat()
+    org.opencv.imgproc.Imgproc.Sobel(src,ret,-1,order,order)
+    ret
+  }
+
+
 }

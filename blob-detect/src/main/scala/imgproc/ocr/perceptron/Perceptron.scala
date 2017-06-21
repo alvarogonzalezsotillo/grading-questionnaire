@@ -157,6 +157,7 @@ abstract class Perceptron( val nodesInInputLayer : Int, nodesInInternalLayers: I
   def predict( pattern: Mat ) : LetterResult = {
     assert( trained )
     val input = patternToInputData(pattern)
+    logger.error(s"predict:${input.toList}")
     val mInput = new Mat(1,nodesInInputLayer,CvType.CV_32FC1)
     fillRowWithArray( mInput, 0, input )
     val mOutput = new Mat

@@ -5,11 +5,11 @@ import javax.swing._
 import javax.swing.event.{ChangeEvent, ChangeListener}
 
 import common.Logging
-import imgproc.steps.AnswersInfo.cellsLocation
+import imgproc.steps.AnswersInfo.{cells, cellsLocation}
 import imgproc.steps.ContoursInfo.{biggestQuadrilaterals, contours, quadrilaterals}
 import imgproc.steps.LocationInfo.location
 import imgproc.steps.MainInfo.mat
-import imgproc.steps.ProcessingStep
+import imgproc.steps.{AnswersInfo, LocationInfo, ProcessingStep}
 import imgproc.steps.QRInfo.{qrLocation, qrText}
 import org.opencv.core._
 import org.opencv.imgproc.Imgproc
@@ -106,7 +106,7 @@ object GUI extends App {
     decodeQRStep.withDrawString( _(qrText) ),
     cellsLocationStep.withDrawContours( _(cellsLocation) ),
     studentAnswersStep,
-    cellsLocationStep.withFilter()(_(mat).isDefined).withSaveMatrix()
+    cellsLocationStep.withFilter()(_(cellsLocation).isDefined).withSaveMatrix(LocationInfo.locatedMat)
   ))
 
   frame.setSize(640, 480)
