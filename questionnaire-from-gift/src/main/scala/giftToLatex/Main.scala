@@ -23,6 +23,7 @@ object Main extends App with LazyLogging {
                     numberOfVariations: Int = 2,
                     horizontalTable: Boolean = true,
                     tickedTable: Boolean = false,
+                    reduceOpenQuestions: Boolean = false,
                     questionnaireQuestionsWeight: Int = 60)
   realMain
 
@@ -63,6 +64,11 @@ object Main extends App with LazyLogging {
         c.copy( horizontalTable = !v )
       }
 
+      opt[Boolean]('r', "reduce-open-questions") text ("Reserved half the space for open questions") action{ (r,c) =>
+        c.copy( reduceOpenQuestions = r )
+      }
+
+
       opt[Unit]('h',"help") text("Shows this help") action { (_,c) =>
         c.copy(help = true)
       }
@@ -79,7 +85,14 @@ object Main extends App with LazyLogging {
     }
 
     def generateQuestionnarieVersion(c: Config, version: Option[String]) = {
-      val latex = GiftToLatex(c.giftFile, c.headerText, c.questionnaireQuestionsWeight, c.maxQuestionnaireQuestions, c.horizontalTable, c.tickedTable )
+      val latex = GiftToLatex(
+        c.giftFile,
+        headerText = c.headerText,
+        questionnaireQuestionsWeight = c.questionnaireQuestionsWeight,
+        maxQuestionnaireQuestions = c.maxQuestionnaireQuestions,
+        horizontal = c.horizontalTable,
+        reduceOpenQuestions = c.reduceOpenQuestions,
+        ticked = c.tickedTable )
       def computeOutFile: File = {
         val name = if( c.giftFile == invalidFile ){
           createTempFileFrom(System.in)

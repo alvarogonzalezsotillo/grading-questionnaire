@@ -108,9 +108,9 @@ object GiftToLatex extends LazyLogging{
 
       // FORMAT
       "<i>" -> """\\textit{""",
-      "</i>" -> "}",
+      "</i>" -> "} ",
       "<b>" -> """\\textbf{""",
-      "</b>" -> "}"
+      "</b>" -> "} "
 
 
     )
@@ -130,9 +130,17 @@ object GiftToLatex extends LazyLogging{
     ret
   }
 
-  private def generateQuestionLatex(q: Question): String = q match {
+  private def generateQuestionLatex(q: Question, reduceOpenQuestions: Boolean ): String = q match {
     case question:OpenQuestion =>
-      val typeOfQuestion = if (question.fullPageQuestion) "FullPageOpenQuestion" else "HalfPageOpenQuestion"
+
+      val typeOfQuestion = {
+        if( !reduceOpenQuestions ) {
+          if (question.fullPageQuestion) "FullPageOpenQuestion" else "HalfPageOpenQuestion"
+        }
+        else{
+          if (question.fullPageQuestion) "HalfPageOpenQuestion" else "QuarterPageOpenQuestion"
+        }
+      }
       s"\\begin{${
         typeOfQuestion
       }}\n  ${
@@ -156,9 +164,9 @@ object GiftToLatex extends LazyLogging{
       begin + sa + end
   }
 
-  private def generateLatexForQuestions(g: GiftFile) = {
-    val qq = g.questionnaireQuestions.map(GiftToLatex.generateQuestionLatex).mkString("\n")
-    val oq = g.openQuestions.map(GiftToLatex.generateQuestionLatex).mkString("\n")
+  private def generateLatexForQuestions(g: GiftFile, reduceOpenQuestions: Boolean ) = {
+    val qq = g.questionnaireQuestions.map(GiftToLatex.generateQuestionLatex(_,reduceOpenQuestions)).mkString("\n")
+    val oq = g.openQuestions.map(GiftToLatex.generateQuestionLatex(_,reduceOpenQuestions)).mkString("\n")
 
     s"\\begin{QuestionnaireQuestions}\n$qq\n\\end{QuestionnaireQuestions}\n$oq"
   }
@@ -175,13 +183,13 @@ object GiftToLatex extends LazyLogging{
 
 
 
-  def generateLatex(f: GiftFile, headerText: String = "", questionnaireQuestionsWeight: Int = 60, horizontal: Boolean = true, ticked: Boolean = false, imagePath: Seq[String] = Seq() ): String = {
+  def generateLatex(f: GiftFile, headerText: String = "", questionnaireQuestionsWeight: Int = 60, horizontal: Boolean = true, ticked: Boolean = false, imagePath: Seq[String] = Seq(), reduceOpenQuestions: Boolean=false ): String = {
 
     val version = QuestionnaireVersion.version(horizontal,ticked)
 
     val openQuestionsWeight = 100 - questionnaireQuestionsWeight
     val firstPage = s"\\FirstPage{$questionnaireQuestionsWeight}{$openQuestionsWeight}{${f.questionnaireQuestions.size}}{$horizontal}{$ticked}"
-    val questions = generateLatexForQuestions(f)
+    val questions = generateLatexForQuestions(f,reduceOpenQuestions)
     val solutionIndexes = generateSolutionIndexes(f)
     val solutions = solutionIndexes.map(i => (i.toChar + 'a').toChar).mkString(",")
     val qrCodeData = BinaryConverter.toBase64( BinaryConverter.toBinarySolutions(solutionIndexes,version) )
@@ -205,7 +213,14 @@ object GiftToLatex extends LazyLogging{
   }
 
 
-  def apply(f: File, headerText: String = "", questionnaireQuestionsWeight: Int = 60, maxQuestionnaireQuestions: Int = Integer.MAX_VALUE, horizontal: Boolean = true, ticked: Boolean = false, imagePath: Seq[String] = Seq() ): String = {
+  def apply(f: File,
+            headerText: String = "",
+            questionnaireQuestionsWeight: Int = 60,
+            maxQuestionnaireQuestions: Int = Integer.MAX_VALUE,
+            horizontal: Boolean = true,
+            ticked: Boolean = false,
+            reduceOpenQuestions: Boolean = false,
+            imagePath: Seq[String] = Seq() ): String = {
     GiftParser.parse(f) match {
       case GiftError(msg, line, column, lineContents) =>
         throw new IllegalArgumentException(s"Error:$msg, at $line,$column\n$lineContents")
@@ -214,7 +229,7 @@ object GiftToLatex extends LazyLogging{
         val additionalImagePath = f.getAbsoluteFile.getParent
         val ip = additionalImagePath +: imagePath
         logger.debug( ip.toString )
-        generateLatex( g.reduce(maxQuestionnaireQuestions), headerText, questionnaireQuestionsWeight, horizontal, ticked, ip )
+        generateLatex( g.reduce(maxQuestionnaireQuestions), headerText, questionnaireQuestionsWeight, horizontal, ticked, ip, reduceOpenQuestions )
     }
 
   }
