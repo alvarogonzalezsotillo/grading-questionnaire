@@ -116,19 +116,21 @@ class ProcessingStepTest extends FlatSpec {
   }
 
   "Biggest quadrilaterals step" should "find quadrilaterals" in {
-    runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
+    runSomeTestAndFailIfSoMuchFailures(positiveMatchImages,showFailures = true) { imageLocation =>
       val m = readImageFromResources(imageLocation)
-      val info = biggestQuadrilateralsStep.withDrawNumberedContours(_ (biggestQuadrilaterals)).process( m )
+      val info = biggestQuadrilateralsStep.withDrawNumberedContours(_ (biggestQuadrilaterals)).process(m)
       val m2 = info(MainInfo.mat)
-      m2.foreach( saveDerivedTestImage(imageLocation, "06-bigquads", _ ) )
+      m2.foreach(saveDerivedTestImage(imageLocation, "06-bigquads", _))
 
       val newM = m.clone
-      for( pair <- info(allBiggestQuadrilaterals).map(_.zipWithIndex) ; (q,index) <- pair ) {
-        ImageProcessing.drawContours(newM, q )
-        ImageProcessing.drawVertices(newM, q, index.toString )
+      for (pair <- info(allBiggestQuadrilaterals).map(_.zipWithIndex); (q, index) <- pair) {
+        ImageProcessing.drawContours(newM, q)
+        ImageProcessing.drawVertices(newM, q, index.toString)
       }
-      saveDerivedTestImage(imageLocation, "06-allbigquads", newM )
+      saveDerivedTestImage(imageLocation, "06-allbigquads", newM)
 
+      assert(info(allBiggestQuadrilaterals).isDefined)
+      assert(info(biggestQuadrilaterals).isDefined)
     }
   }
 

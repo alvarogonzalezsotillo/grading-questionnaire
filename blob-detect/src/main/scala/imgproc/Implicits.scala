@@ -209,7 +209,10 @@ object Implicits {
 
     def distanceToLine( p1: Point, p2: Point ) : Double = {
       // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
-      ???
+      val v = (p1-p2)
+      val lambda = (this * v - p2*v )/(v*v)
+      val projectionOfThisOnP1P2 = v*lambda + p2
+      (this - projectionOfThisOnP1P2).modulus
     }
 
   }

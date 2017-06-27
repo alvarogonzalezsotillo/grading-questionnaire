@@ -224,7 +224,7 @@ object ProcessingStep extends LazyLogging {
       val centers = quads.map( _.center )
       val first = centers.minBy(_.x)
       val last = centers.minBy(_.y)
-      implicit val epsilon = Epsilon(quads.head.height() * 0.2)
+      implicit val epsilon = Epsilon(quads.head.height() * 0.5)
       centers.forall( _.distanceToLine(first,last) ~= 0.0 )
     }
 
@@ -238,6 +238,9 @@ object ProcessingStep extends LazyLogging {
     }
 
     val ret = alignedGroups.map(g => g.map(_.points).toIndexedSeq ).toSeq
+
+    println( s" allBiggestQuadrilaterals:$ret" )
+    println( s" biggestQuadrilaterals:${ret.headOption}" )
 
     csi(biggestQuadrilaterals, ret.headOption)(allBiggestQuadrilaterals,ret)
   }
