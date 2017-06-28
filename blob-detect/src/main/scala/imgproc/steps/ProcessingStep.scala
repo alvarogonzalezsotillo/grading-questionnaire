@@ -182,8 +182,8 @@ object ProcessingStep extends LazyLogging {
     import ContoursInfo._
 
 
-    class Quadrilateral( val points: MatOfPoint ){
-      val asSet = points.toArray.toSet
+    class Quadrilateral( val toMatOfPoint: MatOfPoint ){
+      val asSet = toMatOfPoint.toArray.toSet
 
       override val hashCode: Int = asSet.map(_.hashCode()).sum
 
@@ -201,11 +201,11 @@ object ProcessingStep extends LazyLogging {
 
     }
 
-    implicit def toMatOfPoint(q:Quadrilateral) = q.points
+    implicit def toMatOfPoint(q:Quadrilateral) = q.toMatOfPoint
 
-    def sameArea(q1: MatOfPoint)( q2: MatOfPoint) = {
-      val average = (q1.area *q2.area )/2
-      implicit val epsilon = Epsilon( average * 0.25)
+    def sameArea(q1: MatOfPoint)(q2: MatOfPoint)(factor: Double = 0.2) = {
+      val average = (q1.area + q2.area )/2
+      implicit val epsilon = Epsilon( average * factor)
       q1.area ~= q2.area
     }
 
@@ -223,24 +223,44 @@ object ProcessingStep extends LazyLogging {
 
       val centers = quads.map( _.center )
       val first = centers.minBy(_.x)
-      val last = centers.minBy(_.y)
-      implicit val epsilon = Epsilon(quads.head.height() * 0.5)
+      val last = centers.maxBy(_.x)
+      implicit val epsilon = Epsilon(quads.head.height() * 1.0)
       centers.forall( _.distanceToLine(first,last) ~= 0.0 )
     }
 
     val quads = quadrilaterals().map( new Quadrilateral(_) )
 
-    val groupsByArea = quads.map(q => quads.filter(sameArea(q)(_)).toSet ).toSet
+    val groupsByArea = quads.map(q => quads.filter(sameArea(q)(_)()).toSet ).toSet
 
-    val alignedGroups: Set[Set[Quadrilateral]] = {
-      for( group <- groupsByArea ;
-           g <- group.subsets(COLUMNS) if( similarShape(g) && centersAligned(g) ) ) yield g
+    def debugSeqsOfQuadrilateral( suffix: String, ps: Iterable[Iterable[Quadrilateral]] ){
+      debugSeqsOfMatsOfPoints(suffix,ps.map(_.map(_.toMatOfPoint)))
     }
 
-    val ret = alignedGroups.map(g => g.map(_.points).toIndexedSeq ).toSeq
+    def debugSeqsOfMatsOfPoints( suffix: String, ps: Iterable[Iterable[MatOfPoint]] ){
+      for ((g, i) <- ps.zipWithIndex ) {
+        val m = csi(mat).get.clone
+        val file = csi(fileName).getOrElse("noname")
+        ImageProcessing.drawContours(m, g.toSeq)
+        Highgui.imwrite(s"abq/$file-$suffix-$i.png", m)
+      }
 
-    println( s" allBiggestQuadrilaterals:$ret" )
-    println( s" biggestQuadrilaterals:${ret.headOption}" )
+    }
+
+
+    val subsets: Set[Set[Quadrilateral]] = groupsByArea.flatMap( _.subsets(COLUMNS) )
+
+    val alignedGroups = subsets.filter(centersAligned)
+
+    debugSeqsOfQuadrilateral("alignedGroups", alignedGroups)
+
+
+    val similar = alignedGroups.filter(similarShape)
+
+    debugSeqsOfQuadrilateral("similar", similar)
+
+
+
+    val ret = similar.map(g => g.map(_.toMatOfPoint).toIndexedSeq ).toSeq
 
     csi(biggestQuadrilaterals, ret.headOption)(allBiggestQuadrilaterals,ret)
   }

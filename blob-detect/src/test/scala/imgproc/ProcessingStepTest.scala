@@ -11,7 +11,7 @@ import imgproc.ImageProcessing._
 import TestUtil._
 import imgproc.steps.AnswersInfo.{answers, cells, cellsLocation, studentAnswers}
 import imgproc.steps.ContoursInfo._
-import imgproc.steps.MainInfo.mat
+import imgproc.steps.MainInfo.{fileName, mat}
 import imgproc.steps.{MainInfo, ProcessingStep}
 import imgproc.steps.ProcessingStep._
 import imgproc.steps.QRInfo.{answerMatrixMeasures, qrLocation, qrText, qrVersion}
@@ -19,6 +19,7 @@ import org.junit.runner.RunWith
 import org.opencv.core.{Mat, Point}
 import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.words.ResultOfStringPassedToVerb
 
 
 object ProcessingStepTest{
@@ -70,55 +71,57 @@ class ProcessingStepTest extends FlatSpec {
       fromWebCam
   }
 
+  ignored {
 
 
+    "Initial step " should "do nothing" in {
+      for (imageLocation <- positiveMatchImages) {
+        val m = readImageFromResources(imageLocation)
+        val m2 = processMat(initialStep, m)
+        saveDerivedTestImage(imageLocation, "01-original", m2)
+        assert(m eq m2)
+      }
+    }
 
-  "Initial step " should "do nothing" in {
-    for (imageLocation <- positiveMatchImages) {
-      val m = readImageFromResources(imageLocation)
-      val m2 = processMat(initialStep, m)
-      saveDerivedTestImage(imageLocation, "01-original", m2)
-      assert(m eq m2)
+    "threshold step" should "convert to grayscale" in {
+      for (imageLocation <- positiveMatchImages) {
+        val m = readImageFromResources(imageLocation)
+        val m2 = processMat(thresholdStep, m)
+        saveDerivedTestImage(imageLocation, "02-threshold", m2)
+      }
+    }
+
+    "noise reduction step" should "reduce noise" in {
+      for (imageLocation <- positiveMatchImages) {
+        val m = readImageFromResources(imageLocation)
+        val m2 = processMat(noiseReductionStep, m)
+        saveDerivedTestImage(imageLocation, "03-noisereduction", m2)
+      }
+    }
+
+    "Contour extraction step" should "extract contours" in {
+      for (imageLocation <- positiveMatchImages) {
+        val m = readImageFromResources(imageLocation)
+        val m2 = processMat(contourStep.withDrawContours(_ (contours)), m)
+        saveDerivedTestImage(imageLocation, "04-contours", m2)
+      }
+    }
+
+    "Quadrilateral filter step" should "extract quadrilaterals" in {
+      for (imageLocation <- positiveMatchImages) {
+        val m = readImageFromResources(imageLocation)
+        val m2 = processMat(quadrilateralStep.withDrawContours(_ (quadrilaterals)), m)
+        saveDerivedTestImage(imageLocation, "05-quads", m2)
+      }
     }
   }
 
-  "threshold step" should "convert to grayscale" in {
-    for (imageLocation <- positiveMatchImages) {
-      val m = readImageFromResources(imageLocation)
-      val m2 = processMat(thresholdStep, m)
-      saveDerivedTestImage(imageLocation, "02-threshold", m2)
-    }
-  }
-
-
-  "noise reduction step" should "reduce noise" in {
-    for (imageLocation <- positiveMatchImages) {
-      val m = readImageFromResources(imageLocation)
-      val m2 = processMat(noiseReductionStep, m)
-      saveDerivedTestImage(imageLocation, "03-noisereduction", m2)
-    }
-  }
-
-  "Contour extraction step" should "extract contours" in {
-    for (imageLocation <- positiveMatchImages) {
-      val m = readImageFromResources(imageLocation)
-      val m2 = processMat(contourStep.withDrawContours(_ (contours)), m)
-      saveDerivedTestImage(imageLocation, "04-contours", m2)
-    }
-  }
-
-  "Quadrilateral filter step" should "extract quadrilaterals" in {
-    for (imageLocation <- positiveMatchImages) {
-      val m = readImageFromResources(imageLocation)
-      val m2 = processMat(quadrilateralStep.withDrawContours(_ (quadrilaterals)), m)
-      saveDerivedTestImage(imageLocation, "05-quads", m2)
-    }
-  }
 
   "Biggest quadrilaterals step" should "find quadrilaterals" in {
     runSomeTestAndFailIfSoMuchFailures(positiveMatchImages,showFailures = true) { imageLocation =>
       val m = readImageFromResources(imageLocation)
-      val info = biggestQuadrilateralsStep.withDrawNumberedContours(_ (biggestQuadrilaterals)).process(m)
+      val initialInfo = infoFromMat(m)(fileName, imageLocation)
+      val info = biggestQuadrilateralsStep.withDrawNumberedContours(_ (biggestQuadrilaterals)).process(initialInfo)
       val m2 = info(MainInfo.mat)
       m2.foreach(saveDerivedTestImage(imageLocation, "06-bigquads", _))
 
@@ -134,7 +137,7 @@ class ProcessingStepTest extends FlatSpec {
     }
   }
 
-  {
+  ignored {
     behavior of "QR step"
 
     it should "locate QR" in {
@@ -155,55 +158,57 @@ class ProcessingStepTest extends FlatSpec {
     }
   }
 
-  "Answer columns step" should "find the columns of answers" in {
-    runSomeTestAndFailIfSoMuchFailures(positiveMatchImages, true) { imageLocation =>
-      val m = readImageFromResources(imageLocation)
-      val m2 = processMat(answerColumnsStep.withDrawNumberedContours(_ (answerColumns)), m)
-      saveDerivedTestImage(imageLocation, "10-colums", m2)
-    }
-  }
-
-  "Cells extraction (column based) step" should "find the cells" in {
-    runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
-
-      val m = readImageFromResources(imageLocation)
-      val info = cellsLocationStep.withDrawNumberedContours(_ (cellsLocation)).process(m)
-      val m2 = mat(info)
-
-      if (true) {
-        import ImageProcessing.drawString
-
-        val version = qrVersion(info)
-        val ans = answers(info)
-        val mMeasures = answerMatrixMeasures(info)
-
-        drawString(m2, s"version:$version answers:$ans", new Point(20, 20))
-        drawString(m2, s"measures:$mMeasures", new Point(20, 60))
+  ignored {
+    "Answer columns step" should "find the columns of answers" in {
+      runSomeTestAndFailIfSoMuchFailures(positiveMatchImages, true) { imageLocation =>
+        val m = readImageFromResources(imageLocation)
+        val m2 = processMat(answerColumnsStep.withDrawNumberedContours(_ (answerColumns)), m)
+        saveDerivedTestImage(imageLocation, "10-colums", m2)
       }
-
-
-      saveDerivedTestImage(imageLocation, "11-cells", m2)
-
     }
-  }
 
-  "Cells extraction (column based) step" should "save all the individual cells" in {
-    runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
-      val m = readImageFromResources(imageLocation)
-      val info = cellsStep.process(m)
-      for (cellsMat <- info(cells); (mat, index) <- cellsMat.zipWithIndex) {
-        saveDerivedTestImage(imageLocation, s"12-cell-$index", mat)
+    "Cells extraction (column based) step" should "find the cells" in {
+      runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
+
+        val m = readImageFromResources(imageLocation)
+        val info = cellsLocationStep.withDrawNumberedContours(_ (cellsLocation)).process(m)
+        val m2 = mat(info)
+
+        if (true) {
+          import ImageProcessing.drawString
+
+          val version = qrVersion(info)
+          val ans = answers(info)
+          val mMeasures = answerMatrixMeasures(info)
+
+          drawString(m2, s"version:$version answers:$ans", new Point(20, 20))
+          drawString(m2, s"measures:$mMeasures", new Point(20, 60))
+        }
+
+
+        saveDerivedTestImage(imageLocation, "11-cells", m2)
 
       }
     }
-  }
+
+    "Cells extraction (column based) step" should "save all the individual cells" in {
+      runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
+        val m = readImageFromResources(imageLocation)
+        val info = cellsStep.process(m)
+        for (cellsMat <- info(cells); (mat, index) <- cellsMat.zipWithIndex) {
+          saveDerivedTestImage(imageLocation, s"12-cell-$index", mat)
+
+        }
+      }
+    }
 
 
-  "Student Answers Step" should "read answers" in{
-    runSomeTestAndFailIfSoMuchFailures(positiveMatchImages, true) { imageLocation =>
-      val m = readImageFromResources(imageLocation)
-      val info = studentAnswersStep.process(m)
-      println( s"$imageLocation -> ${info(studentAnswers)}")
+    "Student Answers Step" should "read answers" in {
+      runSomeTestAndFailIfSoMuchFailures(positiveMatchImages, true) { imageLocation =>
+        val m = readImageFromResources(imageLocation)
+        val info = studentAnswersStep.process(m)
+        println(s"$imageLocation -> ${info(studentAnswers)}")
+      }
     }
   }
 }

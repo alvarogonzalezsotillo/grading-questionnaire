@@ -8,6 +8,7 @@ import imgproc.{AnswerMatrixMeasures}
 object MainInfo{
   object mat extends HKey[Mat]
   object originalMat  extends HKey[Mat]
+  object fileName extends HKey[String]
 }
 
 object GrayscaleInfo{

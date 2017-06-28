@@ -95,5 +95,4 @@ object TestUtil {
   def ignored( proc : => Unit) = {}
 
 
-
 }
