@@ -68,10 +68,12 @@ class ProcessingStepTest extends FlatSpec {
     import ProcessingStepTest._
       //fromPDF ++ fromWebCam ++
       // fromPDFFilled
-      fromWebCam
+      // fromWebCam
+
+    Seq("2017-03-03-122810.jpg")
   }
 
-  ignored {
+  {
 
 
     "Initial step " should "do nothing" in {
@@ -137,7 +139,7 @@ class ProcessingStepTest extends FlatSpec {
     }
   }
 
-  ignored {
+  {
     behavior of "QR step"
 
     it should "locate QR" in {
@@ -158,7 +160,7 @@ class ProcessingStepTest extends FlatSpec {
     }
   }
 
-  ignored {
+  {
     "Answer columns step" should "find the columns of answers" in {
       runSomeTestAndFailIfSoMuchFailures(positiveMatchImages, true) { imageLocation =>
         val m = readImageFromResources(imageLocation)

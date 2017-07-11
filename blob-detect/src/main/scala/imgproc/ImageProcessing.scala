@@ -175,9 +175,12 @@ object ImageProcessing {
   def drawVertices( dst:Mat, contours: Seq[MatOfPoint], id: String = "", color: Scalar = new Scalar(255, 0, 0) ): Mat = {
     for ((c, i) <- contours.zipWithIndex) {
       ImageProcessing.drawString(dst, s"$id:$i", c.center)
-      for (pairs <- c.toArray.grouped(2)) {
-        val p = pairs.head
-        ImageProcessing.drawString(dst, s"$p", p, color)
+//      for (pairs <- c.toArray.grouped(2)) {
+//        val p = pairs.head
+//        ImageProcessing.drawString(dst, s"$p", p, color)
+//      }
+      for( (p,j) <- c.toArray.zipWithIndex ){
+        ImageProcessing.drawString(dst, s"$j", p, color)
       }
     }
     dst
