@@ -91,9 +91,9 @@ object OneLetterOCR {
     import amm.params._
 
     val filters: Seq[Rect => Boolean] = Seq(
-      _.width > cellSize.w.w / 15,
+      _.width > cellSize.w.w / 20,
       _.width < cellSize.w.w / 2,
-      _.height > cellSize.h.h / 3
+      _.height > cellSize.h.h / 4
     )
 
     filters.foldLeft(bboxes)((b, f) => b.filter(f))

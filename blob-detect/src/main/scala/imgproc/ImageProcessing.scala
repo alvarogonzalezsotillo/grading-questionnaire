@@ -76,7 +76,7 @@ object ImageProcessing {
   }
 
 
-  def canny(t1: Int = 1, t2: Int = 20)(m: Mat) = {
+  def canny(t1: Int = 10, t2: Int = 20)(m: Mat) = {
     val ret = new Mat
     Imgproc.Canny(m, ret, t1, t2)
     ret

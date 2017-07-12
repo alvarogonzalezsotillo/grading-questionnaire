@@ -259,12 +259,14 @@ object ProcessingStep extends LazyLogging {
     }
 
     def debugSeqsOfMatsOfPoints( suffix: String, ps: Iterable[Iterable[MatOfPoint]] ){
-      for ((g, i) <- ps.zipWithIndex ) {
-        val m = csi(mat).get.clone
-        val file = csi(fileName).getOrElse("noname")
-        ImageProcessing.drawContours(m, g.toSeq)
-        new File("abq").mkdirs()
-        Highgui.imwrite(s"abq/$file-$suffix-$i.png", m)
+      if( false ) {
+        for ((g, i) <- ps.zipWithIndex) {
+          val m = csi(mat).get.clone
+          val file = csi(fileName).getOrElse("noname")
+          ImageProcessing.drawContours(m, g.toSeq)
+          new File("abq").mkdirs()
+          Highgui.imwrite(s"abq/$file-$suffix-$i.png", m)
+        }
       }
 
     }
@@ -302,7 +304,7 @@ object ProcessingStep extends LazyLogging {
       toSeq
 
     val sortedByY = ret.sortBy( qs => qs.map(_.center.y).sum )
-    val middle = sortedByY.tail.headOption
+    val middle = if( sortedByY.size > 1 ) sortedByY.tail.headOption else None
 
     csi(biggestQuadrilaterals, middle )(allBiggestQuadrilaterals,ret)
   }
@@ -332,12 +334,13 @@ object ProcessingStep extends LazyLogging {
     import QRInfo._
 
     def debugMats( ps: Iterable[MatOfPoint] ){
+      if ( false ) {
         val m = psi(mat).get.clone
         val file = psi(fileName).getOrElse("noname")
         ImageProcessing.drawVertices(m, ps.toSeq)
         new File("lqs").mkdirs()
         Highgui.imwrite(s"lqs/$file-axis.png", m)
-
+      }
 
     }
 

@@ -36,7 +36,10 @@ object TestUtil {
 
   private def testImgPath(file: String): File = new File(testImgPath, file)
 
-  def removeFileExtension(s: String) = s.reverse.dropWhile(_ != '.').tail.reverse
+  def removeFileExtension(s: String) = {
+    val file = new File(s)
+    file.getName.reverse.dropWhile(_ != '.').tail.reverse
+  }
 
 
 
@@ -54,19 +57,9 @@ object TestUtil {
   }
 
 
-  def saveDerivedTestImage(imageLocation: String, stepName: String, m: RenderedImage) = {
-    saveTestImage("processing-step/" + removeFileExtension(imageLocation) + "/" + stepName + ".png", m)
+  def saveDerivedTestImage(imageLocation: String, stepName: String, m: RenderedImage, group: String = "processing-step" ) = {
+    saveTestImage(group + "/" + removeFileExtension(imageLocation) + "/" + stepName + ".png", m)
   }
-
-  private val positiveMatchImages = Seq(
-    "2016-01-26-101322.jpg",
-    "2016-01-26-101343.jpg",
-    "2016-01-26-101403.jpg",
-    "2016-01-26-101423.jpg",
-    "2016-01-26-101448.jpg",
-    "2016-01-26-101502.jpg",
-    "2016-01-26-101516.jpg"
-  )
 
 
   case class SomeTestsResult( allowedFailureRatio: Double, total: Int, failures: Int )

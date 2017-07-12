@@ -9,6 +9,7 @@ import javax.imageio.ImageIO
 import common.TestUtil
 import imgproc.ImageProcessing._
 import TestUtil._
+import imgproc.ocr.OneLetterOCR
 import imgproc.steps.AnswersInfo.{answers, cells, cellsLocation, studentAnswers}
 import imgproc.steps.ContoursInfo._
 import imgproc.steps.MainInfo.{fileName, mat}
@@ -48,6 +49,15 @@ object ProcessingStepTest{
   )
 
 
+  val positiveMatchImages = {
+    import ProcessingStepTest._
+    //fromPDF ++ fromWebCam ++
+    // fromPDFFilled
+    // fromWebCam
+
+    Seq("2017-03-03-122810.jpg")
+  }
+
 }
 
 @RunWith(classOf[JUnitRunner])
@@ -64,14 +74,6 @@ class ProcessingStepTest extends FlatSpec {
 
 
 
-  private val positiveMatchImages = {
-    import ProcessingStepTest._
-      //fromPDF ++ fromWebCam ++
-      // fromPDFFilled
-      // fromWebCam
-
-    Seq("2017-03-03-122810.jpg")
-  }
 
   {
 
@@ -193,13 +195,29 @@ class ProcessingStepTest extends FlatSpec {
       }
     }
 
-    "Cells extraction (column based) step" should "save all the individual cells" in {
-      runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
-        val m = readImageFromResources(imageLocation)
-        val info = cellsStep.process(m)
-        for (cellsMat <- info(cells); (mat, index) <- cellsMat.zipWithIndex) {
-          saveDerivedTestImage(imageLocation, s"12-cell-$index", mat)
+    {
+      behavior of "Cells extraction step"
 
+      it should "save all the individual cells" in {
+        runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
+          val m = readImageFromResources(imageLocation)
+          val info = cellsStep.process(m)
+          for (cellsMat <- info(cells); (mat, index) <- cellsMat.zipWithIndex) {
+            saveDerivedTestImage(imageLocation, s"12-cell-$index", mat)
+
+          }
+        }
+      }
+
+      it should "save all the candidate letters" in {
+        runSomeTestAndFailIfSoMuchFailures(positiveMatchImages) { imageLocation =>
+          val m = readImageFromResources(imageLocation)
+          val info = cellsStep.process(m)
+          for (cellsMat <- info(cells); (mat, index) <- cellsMat.zipWithIndex) {
+            for( (l,i) <- OneLetterOCR.extractPossibleLettersImage(mat).zipWithIndex ) {
+              saveDerivedTestImage(imageLocation, s"12-cell-$index-letter-$i", l)
+            }
+          }
         }
       }
     }

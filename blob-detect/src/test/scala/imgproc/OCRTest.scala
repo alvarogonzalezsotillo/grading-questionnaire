@@ -4,6 +4,7 @@ package imgproc
   * Created by alvaro on 8/07/15.
   */
 
+import java.awt.image.RenderedImage
 import java.io.File
 import javax.imageio.ImageIO
 
@@ -77,7 +78,8 @@ class OCRTest extends FlatSpec {
     }
   }
 
-  val fs = ProcessingStepTest.fromWebCam
+  val fs = ProcessingStepTest.positiveMatchImages
+
 
 
   {
@@ -85,8 +87,8 @@ class OCRTest extends FlatSpec {
 
     it should "be thresholded to find single letters" in {
       for (f <- fs; cells = cellsOfTestImage(f); (c, index) <- cells.zipWithIndex) {
-        saveTestImage(s"12-${index + 1}-$f", c)
-        saveTestImage(s"12-${index + 1}-lettersContours-$f", thresholdLettersImage(c))
+        saveDerivedTestImage(f, s"cell-${index + 1}", c, "ocr-test")
+        saveDerivedTestImage(f, s"cell-${index + 1}-threshold", thresholdLettersImage(c), "ocr-test")
       }
     }
 
@@ -94,15 +96,16 @@ class OCRTest extends FlatSpec {
       for (f <- fs; cells = cellsOfTestImage(f); (c, index) <- cells.zipWithIndex) {
         val contours = findContoursOfLetterFragment(thresholdLettersImage(c))
         drawContours(c, contours, new Scalar(255, 0, 255), 1)
-        saveTestImage(s"13-${index + 1}-$f", c)
+        saveDerivedTestImage(f, s"cell-${index + 1}-contours", c, "ocr-test")
       }
     }
 
-    it should "find letter candidate contours from thresholded image" in {
+    it should "find letter candidate boxes from thresholded image" in {
       for (f <- fs; cells = cellsOfTestImage(f); (c, index) <- cells.zipWithIndex) {
         val contours = extractPossibleLettersBBox(c)
         drawContours(c, contours.map(_.asShape), new Scalar(255, 0, 255), 1)
-        saveTestImage(s"14-${index + 1}-$f", c)
+        saveDerivedTestImage(f, s"cell-${index + 1}-boxes", c, "ocr-test")
+
       }
     }
 
@@ -110,7 +113,7 @@ class OCRTest extends FlatSpec {
       for (f <- fs; cells = cellsOfTestImage(f); (c, index) <- cells.zipWithIndex) {
         val candidates = extractPossibleLettersImage(c).map(Pattern.resizeToPatterSize)
         for ((candidate, candidateIndex) <- candidates.zipWithIndex) {
-          saveTestImage(s"15-${index + 1}-$candidateIndex-$f", candidate)
+          saveDerivedTestImage(f, s"cell-${index + 1}-candidate-$candidateIndex", candidate, "ocr-test")
         }
       }
     }
@@ -123,7 +126,8 @@ class OCRTest extends FlatSpec {
       for (f <- fs; cells = cellsOfTestImage(f); (c, index) <- cells.zipWithIndex) {
         val candidates = extractPossibleLettersImage(c)
         for ((candidate, candidateIndex) <- candidates.zipWithIndex) {
-          saveTestImage(s"16-${index + 1}-$candidateIndex-$f", normalizeLetter(candidate))
+          val n = normalizeLetter(candidate)
+          saveDerivedTestImage(f, s"cell-${index + 1}-candidate-normalized-$candidateIndex", n, "ocr-test")
         }
       }
     }
@@ -132,7 +136,7 @@ class OCRTest extends FlatSpec {
       for (f <- fs; cells = cellsOfTestImage(f); (c, index) <- cells.zipWithIndex) {
         val candidates = extractPossibleLettersImage(c).map(Pattern.resizeToPatterSize)
         for ((candidate, candidateIndex) <- candidates.zipWithIndex; again <- extractPossibleLettersImage(candidate)) {
-          saveTestImage(s"17-${index + 1}-$candidateIndex-$f", normalizeLetter(again))
+          saveDerivedTestImage(f, s"cell-${index + 1}-candidate-again-$candidateIndex", normalizeLetter(again), "ocr-test")
         }
       }
     }
@@ -181,7 +185,7 @@ class OCRTest extends FlatSpec {
       for (f <- files) {
         val m: Mat = ImageIO.read(f)
 
-        {
+        if(false){
           val mats = extractPossibleLettersImage(m)
           for ((m, i) <- mats.zipWithIndex) {
             saveTestImage(s"$i-${f.getName}", m)
