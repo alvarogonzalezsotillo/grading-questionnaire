@@ -10,6 +10,8 @@ import imgproc.steps.AnswersInfo.cells
 import imgproc.steps.MainInfo.originalMat
 import imgproc.steps.ProcessingStep.cellsStep
 
+import scala.concurrent.Future
+import scala.concurrent.duration.Duration
 import scala.util.Try
 
 /**
@@ -47,18 +49,27 @@ object ExtractLettersApp extends App {
   nu.pattern.OpenCV.loadLibrary()
 
 
-  for (s <- samples.toParArray) {
+
+  def processSample( s: Sample ) = {
     import imgproc.Implicits._
     import imgproc.steps.ProcessingStep.Implicits._
     val info = cellsStep.process(BufferedImage2Mat(s.image.get))
     log(s"$s: ${info(cells)}")
-    for (cellsMat <- info(cells) ) {
-      saveDerivedTestImage(s.file.toString, "original", originalMat(info), "ExtractLettersApp" )
-      for( (mat, index) <- cellsMat.zipWithIndex; (l,i) <- OneLetterOCR.extractPossibleLettersImage(mat).zipWithIndex ) {
+    for (cellsMat <- info(cells)) {
+      saveDerivedTestImage(s.file.toString, "original", originalMat(info), "ExtractLettersApp")
+      for ((mat, index) <- cellsMat.zipWithIndex; (l, i) <- OneLetterOCR.extractPossibleLettersImage(mat).zipWithIndex) {
         val normalized = OneLetterOCR.normalizeLetter(l)
-        saveDerivedTestImage(s.file.toString, s"cell-${index+1}-letter-$i", l, "ExtractLettersApp")
-        saveDerivedTestImage(s.file.toString, s"cell-${index+1}-letter-$i-normalized", normalized, "ExtractLettersApp")
+        saveDerivedTestImage(s.file.toString, s"cell-${index + 1}-letter-$i", l, "ExtractLettersApp")
+        saveDerivedTestImage(s.file.toString, s"cell-${index + 1}-letter-$i-normalized", normalized, "ExtractLettersApp")
       }
     }
   }
+
+  import scala.concurrent._
+  import scala.concurrent.ExecutionContext.Implicits._
+  val futures = samples.map( s => Future(processSample(s) ) )
+
+  Await.result( Future.sequence(futures), Duration.Inf )
+
+  println( "end")
 }
