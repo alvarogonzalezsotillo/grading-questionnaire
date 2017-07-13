@@ -1,14 +1,19 @@
 package imgproc
 
 import java.awt.Image
+import java.awt.image.{BufferedImage, RenderedImage}
 import java.io.File
 import javax.imageio.ImageIO
 
+import common.TestUtil
 import common.TestUtil.saveDerivedTestImage
+import imgproc.ImageProcessing.drawContours
 import imgproc.ocr.OneLetterOCR
+import imgproc.ocr.OneLetterOCR.extractPossibleLettersBBox
 import imgproc.steps.AnswersInfo.cells
 import imgproc.steps.MainInfo.originalMat
 import imgproc.steps.ProcessingStep.cellsStep
+import org.opencv.core.{Mat, Scalar}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
@@ -53,14 +58,20 @@ object ExtractLettersApp extends App {
   def processSample( s: Sample ) = {
     import imgproc.Implicits._
     import imgproc.steps.ProcessingStep.Implicits._
+
+    def saveImage( name: String, letter: BufferedImage, withNormalized: Boolean = true, withContours : Boolean = true ) = {
+
+
+      TestUtil.saveTestImage( s"ExtractLettersApp/$name.png", letter )
+      TestUtil.saveTestImage( s"ExtractLettersApp/$name-normalized.png", OneLetterOCR.normalizeLetter(letter) ) If withNormalized
+    }
+
     val info = cellsStep.process(BufferedImage2Mat(s.image.get))
-    log(s"$s: ${info(cells)}")
     for (cellsMat <- info(cells)) {
-      saveDerivedTestImage(s.file.toString, "original", originalMat(info), "ExtractLettersApp")
+      log(s"$s: ${info(cells)}")
       for ((mat, index) <- cellsMat.zipWithIndex; (l, i) <- OneLetterOCR.extractPossibleLettersImage(mat).zipWithIndex) {
-        val normalized = OneLetterOCR.normalizeLetter(l)
-        saveDerivedTestImage(s.file.toString, s"cell-${index + 1}-letter-$i", l, "ExtractLettersApp")
-        saveDerivedTestImage(s.file.toString, s"cell-${index + 1}-letter-$i-normalized", normalized, "ExtractLettersApp")
+        val file = s.file.getName()
+        saveImage( s"${file}-cell-${index + 1}-letter-$i", l )
       }
     }
   }

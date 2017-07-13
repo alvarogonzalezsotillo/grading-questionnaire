@@ -49,11 +49,11 @@ object OneLetterOCR {
   def thresholdLettersImage(m: Mat) = canny()(meanShift()(m))
 
 
-  def mergeBoundingBoxes(points: Seq[MatOfPoint])(offset: Int = 2) = {
+  def mergeBoundingBoxes(points: Seq[Rect])(offset: Int = 2) = {
     import imgproc.Implicits._
     import scala.util.control.Breaks._
 
-    val bBoxes = scala.collection.mutable.ArrayBuffer() ++ points.map(_.boundingBox)
+    val bBoxes = scala.collection.mutable.ArrayBuffer() ++ points
 
     var finish = false
     while (!finish) {
@@ -76,27 +76,38 @@ object OneLetterOCR {
   val letterFragmentToCellRatio = 400
 
   def findContoursOfLetterFragment(m: Mat, minAreaForLetterFragment: Double = AnswerMatrixMeasures(None, 1).cellArea / letterFragmentToCellRatio) = {
+    val amm = AnswerMatrixMeasures(None, 1)
+    import amm.params._
     import imgproc.Implicits._
 
-    findContours(m).filter(_.boundingBox.area > minAreaForLetterFragment)
+    val contours = findContours(m).filter(_.boundingBox.area > minAreaForLetterFragment)
+
+    val filtersForContours: Seq[MatOfPoint => Boolean] = Seq(
+      _.width < cellSize.w.w / 4
+    )
+
+    filtersForContours.foldLeft(contours)((b, f) => b.filter(f))
   }
 
   def extractPossibleLettersBBox(m: Mat) = {
+    val amm = AnswerMatrixMeasures(None, 1)
+    import amm.params._
+    import imgproc.Implicits._
+
     val thresholded = thresholdLettersImage(m)
-    val contours = findContoursOfLetterFragment(thresholded)
+    val contours = findContoursOfLetterFragment(thresholded).map(_.boundingBox)
+
     val bboxes = mergeBoundingBoxes(contours)()
 
 
-    val amm = AnswerMatrixMeasures(None, 1)
-    import amm.params._
 
-    val filters: Seq[Rect => Boolean] = Seq(
+    val filtersForBBoxes: Seq[Rect => Boolean] = Seq(
       _.width > cellSize.w.w / 20,
-      _.width < cellSize.w.w / 2,
+      _.width < cellSize.w.w / 5,
       _.height > cellSize.h.h / 4
     )
 
-    filters.foldLeft(bboxes)((b, f) => b.filter(f))
+    filtersForBBoxes.foldLeft(bboxes)((b, f) => b.filter(f))
   }
 
   def extractPossibleLettersImage(m: Mat, bboxGrow: Int = 3) = {
@@ -128,7 +139,7 @@ object OneLetterOCR {
       //Contrib.applyColorMap(grayscale,grayscale,Contrib.COLORMAP_PINK)
       //invertGrayscale(grayscale)
       val t = Core.mean(gray).`val`(0)
-      Imgproc.threshold(gray, gray, t + offset, 255, Imgproc.THRESH_TRUNC)
+      Imgproc.threshold(gray, gray, t + offset, 255, Imgproc.THRESH_BINARY)
       invertGrayscale(gray)
       Imgproc.threshold(gray, gray, t + offset, -1, Imgproc.THRESH_TOZERO)
       gray
