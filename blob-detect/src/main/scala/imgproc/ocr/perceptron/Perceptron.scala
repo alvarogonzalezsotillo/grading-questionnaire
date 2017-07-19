@@ -61,7 +61,7 @@ abstract class Perceptron( val nodesInInputLayer : Int, nodesInInternalLayers: I
   def train( data: TrainingPatterns, alpha: Double = 1,  beta: Double = 1, activateFunc : Int = CvANN_MLP.SIGMOID_SYM) : Int = {
     val letters = data.keys.toList
 
-    logger.error( s"data: ${data}" )
+    // logger.error( s"data: ${data}" )
 
     characters = letters.toIndexedSeq
 
@@ -110,7 +110,7 @@ abstract class Perceptron( val nodesInInputLayer : Int, nodesInInternalLayers: I
         ret
       }
 
-      logger.error( s"trainData: input: ${input.size()} labels: ${labels.size()} weights: ${weights.size()}")
+      // logger.error( s"trainData: input: ${input.size()} labels: ${labels.size()} weights: ${weights.size()}")
 
       (input,labels,weights)
     }
@@ -124,7 +124,7 @@ abstract class Perceptron( val nodesInInputLayer : Int, nodesInInternalLayers: I
       // https://github.com/arnaudgelas/OpenCVExamples/blob/master/NeuralNetwork/NeuralNetwork.cpp
       val ret = new CvANN_MLP_TrainParams
       ret.set_train_method(CvANN_MLP_TrainParams.BACKPROP)
-      val maxIterations = 1000
+      val maxIterations = 10000
       val epsilon = 0.0001
       val termCriteria = new TermCriteria(TermCriteria.MAX_ITER+TermCriteria.EPS,maxIterations,epsilon)
       ret.set_term_crit( termCriteria )
@@ -157,7 +157,7 @@ abstract class Perceptron( val nodesInInputLayer : Int, nodesInInternalLayers: I
   def predict( pattern: Mat ) : LetterResult = {
     assert( trained )
     val input = patternToInputData(pattern)
-    logger.error(s"predict:${input.toList}")
+    // logger.error(s"predict:${input.toList}")
     val mInput = new Mat(1,nodesInInputLayer,CvType.CV_32FC1)
     fillRowWithArray( mInput, 0, input )
     val mOutput = new Mat
@@ -173,21 +173,30 @@ abstract class Perceptron( val nodesInInputLayer : Int, nodesInInternalLayers: I
   }
 }
 
-class LetterPerceptron( nodesInInternalLayers: Int = Pattern.patternSize*4, internalLayers: Int = 2, patternSize : Int = Pattern.patternSize ) extends Perceptron(patternSize*patternSize,nodesInInternalLayers,internalLayers){
+object LetterPerceptron{
+  case class LetterPerceptronParams(nodesInInternalLayers: Int = Pattern.patternSize*4, internalLayers: Int = 2, patternSize : Int = Pattern.patternSize)
 
-  import Perceptron._
+  val defaultParams = LetterPerceptronParams()
 
-  protected def patternToInputData( pattern: Mat ) : Array[Float] = {
-    assert( pattern.rows() == patternSize )
-    assert( pattern.cols() == patternSize )
+  def apply( p: LetterPerceptronParams = defaultParams) : Perceptron = new LetterPerceptron(p.nodesInInternalLayers,p.internalLayers,p.patternSize)
 
-    val ret = new Array[Float](nodesInInputLayer)
-    val buffer = new Array[Byte](1)
-    for( c <- 0 until patternSize ; r <- 0 until patternSize ){
-      pattern.get(r,c,buffer)
-      ret(patternSize*c+r) = imageToSignal(buffer(0))
+  private class LetterPerceptron( nodesInInternalLayers: Int, internalLayers: Int, patternSize : Int ) extends Perceptron(patternSize*patternSize,nodesInInternalLayers,internalLayers){
+
+    import Perceptron._
+
+    protected def patternToInputData( pattern: Mat ) : Array[Float] = {
+      assert( pattern.rows() == patternSize )
+      assert( pattern.cols() == patternSize )
+
+      val ret = new Array[Float](nodesInInputLayer)
+      val buffer = new Array[Byte](1)
+      for( c <- 0 until patternSize ; r <- 0 until patternSize ){
+        pattern.get(r,c,buffer)
+        ret(patternSize*c+r) = imageToSignal(buffer(0))
+      }
+      ret
     }
-    ret
-  }
 
+  }
 }
+

@@ -8,6 +8,7 @@ import imgproc.ocr.perceptron.{LetterPerceptron, Perceptron}
 import imgproc.{AnswerMatrixMeasures, ImageProcessing}
 import imgproc.ImageProcessing._
 import imgproc.ocr.OneLetterOCR.LetterResult
+import imgproc.ocr.perceptron.LetterPerceptron.LetterPerceptronParams
 import org.opencv.contrib.Contrib
 import org.opencv.core.Core.MinMaxLocResult
 import org.opencv.core._
@@ -172,13 +173,13 @@ abstract class OneLetterOCR extends LazyLogging {
 
 }
 
-class TrainedOneLetterOCR(trainingPatterns: TrainingPatterns) extends OneLetterOCR {
+class TrainedOneLetterOCR(trainingPatterns: TrainingPatterns, perceptronParams : LetterPerceptronParams = LetterPerceptron.defaultParams ) extends OneLetterOCR {
 
   import OneLetterOCR._
 
   logger.error(s"trainingPatterns: ${trainingPatterns}")
 
-  protected val perceptron = new LetterPerceptron()
+  protected val perceptron = LetterPerceptron(perceptronParams)
 
   val normalizedTrainingPatterns = normalizeTrainingPatterns(trainingPatterns)
 
@@ -194,7 +195,7 @@ class CrossRecognizer(trainingPatterns: TrainingPatterns) extends OneLetterOCR {
 
   import OneLetterOCR._
 
-  protected val perceptron = new LetterPerceptron()
+  protected val perceptron = LetterPerceptron()
 
   val normalizedTrainingPatterns = normalizeTrainingPatterns(trainingPatterns)
 
