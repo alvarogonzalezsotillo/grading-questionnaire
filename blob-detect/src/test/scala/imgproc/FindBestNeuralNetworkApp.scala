@@ -19,7 +19,7 @@ object FindBestNeuralNetworkApp extends App{
   nu.pattern.OpenCV.loadLibrary()
 
   val internalLayersRange = 1 to 4
-  val internalLayerNodesRange = Pattern.patternSize to Pattern.patternSize*8 by 10
+  val internalLayerNodesRange = Pattern.patternSize to Pattern.patternSize*8 by 20
 
 
 

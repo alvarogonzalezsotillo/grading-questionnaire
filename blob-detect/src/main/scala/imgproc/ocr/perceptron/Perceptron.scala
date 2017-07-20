@@ -124,8 +124,8 @@ abstract class Perceptron( val nodesInInputLayer : Int, nodesInInternalLayers: I
       // https://github.com/arnaudgelas/OpenCVExamples/blob/master/NeuralNetwork/NeuralNetwork.cpp
       val ret = new CvANN_MLP_TrainParams
       ret.set_train_method(CvANN_MLP_TrainParams.BACKPROP)
-      val maxIterations = 10000
-      val epsilon = 0.0001
+      val maxIterations = 1000
+      val epsilon = 0.01
       val termCriteria = new TermCriteria(TermCriteria.MAX_ITER+TermCriteria.EPS,maxIterations,epsilon)
       ret.set_term_crit( termCriteria )
       ret
