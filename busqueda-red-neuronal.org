@@ -1,0 +1,28 @@
+* Verano 2017
+      val maxIterations = 1000
+      val epsilon = 0.0001
+best: (0.8240384615384615,LetterPerceptronParams(30,2,20))
+
+      val maxIterations = 10000
+      val epsilon = 0.0001
+Params:LetterPerceptronParams(40,2,20)  accuracy:0.7926923076923076
+
+      val maxIterations = 1000
+      val epsilon = 0.01
+best: (0.8127564102564102,LetterPerceptronParams(40,2,20))
+
+* Primer examen 2017
+
+      val maxIterations = 1000
+      val epsilon = 0.01
+best: (0.8015476190476191,LetterPerceptronParams(100,2,20))
+
+
+      val maxIterations = 10000
+      val epsilon = 0.01
+best: (0.7947402597402597,LetterPerceptronParams(40,2,20))
+
+
+      val maxIterations = 10000
+      val epsilon = 0.0001
+best: (0.8092316017316017,LetterPerceptronParams(100,2,20))
