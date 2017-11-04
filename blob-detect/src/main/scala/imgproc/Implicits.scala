@@ -104,7 +104,7 @@ object Implicits {
     lazy val points = contour.toArray
     def apply(index:Int) = points(index)
     lazy val center = {
-      val c = points.foldLeft( new Point(0,0) ) {
+      val c = points.tail.foldLeft( points(0) ) {
         (p, center) => p+center
       }
       c / points.size
@@ -116,6 +116,26 @@ object Implicits {
       val maxX = points.map(_.x).max.toInt
       val maxY = points.map(_.y).max.toInt
       new Rect(minX,minY,maxX-minX,maxY-minY)
+    }
+
+    def grow( inc: Double ) : MatOfPoint = {
+      val c = center
+      println( s"Center:$center")
+      val newPoints = points.map {p =>
+        println( s"  p:$p")
+        val v = p - c
+        println( s"  v:$v")
+        val modulus = v.modulus + inc
+        println( s"  modulus:$modulus")
+
+        val ret = c + v.withModulus( modulus )
+        println( s"  ret:$ret")
+        println()
+        ret
+      }
+
+      println( newPoints.mkString(","))
+      new MatOfPoint(newPoints :_* )
     }
 
     lazy val area = Imgproc.contourArea(contour)

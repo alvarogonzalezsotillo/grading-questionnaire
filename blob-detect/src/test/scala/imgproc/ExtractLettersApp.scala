@@ -60,7 +60,7 @@ object ExtractLettersApp extends App {
     import imgproc.steps.ProcessingStep.Implicits._
 
     def saveImage( name: String, letter: BufferedImage, withNormalized: Boolean = true, withContours : Boolean = true ) = {
-
+      log( s"saveImage: $name")
 
       TestUtil.saveTestImage( s"ExtractLettersApp/$name.png", letter )
       TestUtil.saveTestImage( s"ExtractLettersApp/$name-normalized.png", OneLetterOCR.normalizeLetter(letter) ) If withNormalized
@@ -68,7 +68,7 @@ object ExtractLettersApp extends App {
 
     val info = cellsStep.process(BufferedImage2Mat(s.image.get))
     for (cellsMat <- info(cells)) {
-      log(s"$s: ${info(cells)}")
+      log(s"$s: ${cellsMat.size}")
       for ((mat, index) <- cellsMat.zipWithIndex; (l, i) <- OneLetterOCR.extractPossibleLettersImage(mat).zipWithIndex) {
         val file = s.file.getName()
         saveImage( s"${file}-cell-${index + 1}-letter-$i", l )

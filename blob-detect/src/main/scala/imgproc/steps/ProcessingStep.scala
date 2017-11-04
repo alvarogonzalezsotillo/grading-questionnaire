@@ -458,6 +458,7 @@ object ProcessingStep extends LazyLogging {
 
   val cellsLocationStep = answerColumnsStep.extend("Localización de celdas (basada en columnas)") { psi =>
     import imgproc.steps.AnswersInfo._
+    import imgproc.Implicits._
 
     val ret = for (cellHeaderColumns <- psi(answerColumns);
                    measures <- psi(answerMatrixMeasures);
@@ -474,8 +475,8 @@ object ProcessingStep extends LazyLogging {
         val bl = interpolateInLine(rect(0), rect(3), rows, row + 1)
         val br = interpolateInLine(rect(1), rect(2), rows, row + 1)
 
-        new MatOfPoint(tl, tr, br, bl)
-
+        val cell = new MatOfPoint(tl, tr, br, bl)
+        cell.grow(-10)
       }
     }
 

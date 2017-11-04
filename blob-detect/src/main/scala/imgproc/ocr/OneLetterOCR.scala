@@ -103,9 +103,9 @@ object OneLetterOCR {
 
 
     val filtersForBBoxes: Seq[Rect => Boolean] = Seq(
-      _.width > cellSize.w.w / 20,
-      _.width < cellSize.w.w / 5,
-      _.height > cellSize.h.h / 4
+//      _.width > cellSize.w.w / 20,
+//      _.width < cellSize.w.w / 5,
+//      _.height > cellSize.h.h / 4
     )
 
     filtersForBBoxes.foldLeft(bboxes)((b, f) => b.filter(f))
