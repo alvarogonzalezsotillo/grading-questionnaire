@@ -230,7 +230,7 @@ protected class EmptyRecognizer {
   }
 
   private val perceptron = {
-    val p = new Perceptron(nodesInInputLayer = 2 /*256 / binSize*/, nodesInInternalLayers = 2, internalLayers = 1) {
+    val p = new Perceptron(nodesInInputLayer = 2 /*256 / binSize*/, nodesInInternalLayers = 2, internalLayers = 1, epsilon = 0.01, maxIterations = 1000) {
 
       override protected def patternToInputData(pattern: Mat) = matrixToInputData(pattern)
     }

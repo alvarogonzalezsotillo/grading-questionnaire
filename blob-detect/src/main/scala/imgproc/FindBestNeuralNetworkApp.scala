@@ -1,14 +1,11 @@
 package imgproc
 
-
-import imgproc.ocr.OneLetterOCR.{LetterProb, LetterResult}
 import imgproc.ocr.Pattern.TrainingPatterns
-import imgproc.ocr.perceptron.{LetterPerceptron, Perceptron}
 import imgproc.ocr.perceptron.LetterPerceptron.LetterPerceptronParams
-import imgproc.ocr.{DefaultTrainedOneLetterOCR, OneLetterOCR, Pattern}
+import imgproc.ocr.perceptron.{LetterPerceptron, Perceptron}
+import imgproc.ocr.{OneLetterOCR, Pattern}
 import org.opencv.core.Mat
 
-import scala.collection.parallel.immutable.ParSeq
 import scala.util.Random
 
 /**
@@ -19,7 +16,9 @@ object FindBestNeuralNetworkApp extends App{
   nu.pattern.OpenCV.loadLibrary()
 
   val internalLayersRange = 1 to 4
-  val internalLayerNodesRange = Pattern.patternSize to Pattern.patternSize*8 by 20
+  val maxIterationsRange = Seq(1000)
+  val epsilonRange = Seq(0.01)
+  val internalLayerNodesRange = Pattern.patternSize to Pattern.patternSize*9 by 30
 
 
 
@@ -68,20 +67,21 @@ object FindBestNeuralNetworkApp extends App{
     (probes, probes.sum / times)
   }
 
-  val accuracies = for(l <- internalLayersRange; n <- internalLayerNodesRange.par ) yield{
-    val params = LetterPerceptronParams(n,l)
+  val accuracies = for(l <- internalLayersRange.par ; maxIterations <- maxIterationsRange ; epsilon <- epsilonRange; n <- internalLayerNodesRange ) yield{
+    val params = LetterPerceptronParams(n,l,maxIterations,epsilon)
     val ocr = LetterPerceptron(params)
     val (probes,accuracy) = average(10){
+      println( s"For average: $params")
       accuracyOfOCR(ocr)()
     }
 
-    println( s"Params:$params  accuracy:$accuracy  probes:$probes")
+    println( s"** Params:$params  accuracy:$accuracy")
 
     (accuracy,params)
   }
 
-  for( (a,LetterPerceptronParams(nodes,layers,_)) <- accuracies ){
-    println( s"$nodes\t $layers\t $a" )
+  for( (a,LetterPerceptronParams(nodes,layers,maxIterations,epsilon,_)) <- accuracies ){
+    println( s"nodes:$nodes\t layers:$layers\t iterations:$maxIterations\t epsilon:$epsilon\t  $a" )
   }
 
   val best = accuracies.maxBy{case (a,_) => a}

@@ -33,3 +33,10 @@ tasks.withType(Test) {
     systemProperty "java.library.path", "./lib"
 }
 
+task findBestNeuralNetwork( type: JavaExec, dependsOn: classes){
+    main = 'imgproc.FindBestNeuralNetworkApp'
+    classpath sourceSets.main.runtimeClasspath
+    classpath configurations.runtime
+    jvmArgs "-Xmx6G"
+    systemProperty "java.library.path", "./lib"
+}

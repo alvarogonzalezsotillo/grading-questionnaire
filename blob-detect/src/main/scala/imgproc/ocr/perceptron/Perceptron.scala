@@ -34,7 +34,7 @@ object Perceptron{
 
 }
 
-abstract class Perceptron( val nodesInInputLayer : Int, nodesInInternalLayers: Int, internalLayers: Int = 2) extends LazyLogging{
+abstract class Perceptron( val nodesInInputLayer : Int, nodesInInternalLayers: Int, internalLayers: Int, maxIterations: Int, epsilon: Double) extends LazyLogging{
 
   import Perceptron._
 
@@ -124,8 +124,6 @@ abstract class Perceptron( val nodesInInputLayer : Int, nodesInInternalLayers: I
       // https://github.com/arnaudgelas/OpenCVExamples/blob/master/NeuralNetwork/NeuralNetwork.cpp
       val ret = new CvANN_MLP_TrainParams
       ret.set_train_method(CvANN_MLP_TrainParams.BACKPROP)
-      val maxIterations = 1000
-      val epsilon = 0.01
       val termCriteria = new TermCriteria(TermCriteria.MAX_ITER+TermCriteria.EPS,maxIterations,epsilon)
       ret.set_term_crit( termCriteria )
       ret
@@ -174,13 +172,14 @@ abstract class Perceptron( val nodesInInputLayer : Int, nodesInInternalLayers: I
 }
 
 object LetterPerceptron{
-  case class LetterPerceptronParams(nodesInInternalLayers: Int = Pattern.patternSize*4, internalLayers: Int = 2, patternSize : Int = Pattern.patternSize)
+  case class LetterPerceptronParams(nodesInInternalLayers: Int = Pattern.patternSize*4, internalLayers: Int = 2, maxIterations: Int = 1000, epsilon: Double = 0.01, patternSize : Int = Pattern.patternSize)
 
   val defaultParams = LetterPerceptronParams()
 
-  def apply( p: LetterPerceptronParams = defaultParams) : Perceptron = new LetterPerceptron(p.nodesInInternalLayers,p.internalLayers,p.patternSize)
+  def apply( p: LetterPerceptronParams = defaultParams) : Perceptron = new LetterPerceptron(p.nodesInInternalLayers,p.internalLayers,p.patternSize, p.maxIterations, p.epsilon)
 
-  private class LetterPerceptron( nodesInInternalLayers: Int, internalLayers: Int, patternSize : Int ) extends Perceptron(patternSize*patternSize,nodesInInternalLayers,internalLayers){
+  private class LetterPerceptron( nodesInInternalLayers: Int, internalLayers: Int, patternSize : Int, maxIterations: Int, epsilon: Double )
+    extends Perceptron(patternSize*patternSize,nodesInInternalLayers,internalLayers, maxIterations, epsilon){
 
     import Perceptron._
 
