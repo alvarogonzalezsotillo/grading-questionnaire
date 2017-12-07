@@ -6,9 +6,10 @@ package giftParser
 
 import java.io._
 
+import giftParser.GiftParser.{GiftError, GiftFile}
 import giftToLatex.GiftToLatex
 
-import scala.util.{Random}
+import scala.util.Random
 import scala.util.parsing.combinator._
 
 // SEE https://docs.moodle.org/23/en/GIFT_format
@@ -59,6 +60,13 @@ object GiftParser {
 
   trait GiftParserResult {
     val successful = false
+    def get : GiftFile = this match{
+      case GiftError(msg, line, column, lineContents) =>
+        throw new IllegalArgumentException(s"Error:$msg, at $line,$column\n$lineContents")
+
+      case g: GiftFile =>
+        g
+    }
   }
 
   object GiftFile {

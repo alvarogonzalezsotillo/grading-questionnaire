@@ -1,13 +1,14 @@
 package giftToLatex
 
-import java.io.{OutputStream, ByteArrayOutputStream, File, InputStream}
+import java.io.{ByteArrayOutputStream, File, InputStream, OutputStream}
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
-import common.{QuestionnaireVersion, BinaryConverter}
+import common.{BinaryConverter, QuestionnaireVersion}
 import giftParser.GiftParser
 import giftParser.GiftParser.GiftFile._
 import giftParser.GiftParser._
 import giftParser.Util._
+import giftToLatex.Main.Config
 
 import scala.util.parsing.combinator.RegexParsers
 
@@ -212,25 +213,33 @@ object GiftToLatex extends LazyLogging{
     substitutions.foldLeft(latexTemplate){ case (latex,(k,v)) => latex.replace(k,v) }
   }
 
+  trait GiftToLatexConfig {
+    val giftFile: File
+    val headerText: String = "headerText"
+    val horizontalTable: Boolean = true
+    val tickedTable: Boolean = false
+    val reduceOpenQuestions: Boolean = false
+    val questionnaireQuestionsWeight: Int = 60
+    val imagePath : Seq[String] = Seq()
+  }
 
-  def apply(f: File,
-            headerText: String = "",
-            questionnaireQuestionsWeight: Int = 60,
-            maxQuestionnaireQuestions: Int = Integer.MAX_VALUE,
-            horizontal: Boolean = true,
-            ticked: Boolean = false,
-            reduceOpenQuestions: Boolean = false,
-            imagePath: Seq[String] = Seq() ): String = {
-    GiftParser.parse(f) match {
-      case GiftError(msg, line, column, lineContents) =>
-        throw new IllegalArgumentException(s"Error:$msg, at $line,$column\n$lineContents")
 
-      case g: GiftFile =>
-        val additionalImagePath = f.getAbsoluteFile.getParent
-        val ip = additionalImagePath +: imagePath
-        logger.debug( ip.toString )
-        generateLatex( g.reduce(maxQuestionnaireQuestions), headerText, questionnaireQuestionsWeight, horizontal, ticked, ip, reduceOpenQuestions )
-    }
+
+  def apply(giftParsedFile: GiftFile)(implicit c: GiftToLatexConfig ) : String = {
+
+    val headerText = c.headerText
+    val questionnaireQuestionsWeight = c.questionnaireQuestionsWeight
+    val horizontal = c.horizontalTable
+    val reduceOpenQuestions = c.reduceOpenQuestions
+    val ticked = c.tickedTable
+    val imagePath = c.imagePath
+
+
+    val additionalImagePath = c.giftFile.getAbsoluteFile.getParent
+    val ip = additionalImagePath +: imagePath
+    logger.debug( ip.toString )
+    generateLatex( giftParsedFile, headerText, questionnaireQuestionsWeight, horizontal, ticked, ip, reduceOpenQuestions )
+
 
   }
 
