@@ -46,9 +46,5 @@ class EmptyRecognizerTest extends FlatSpec {
 
   }
 
-  "Inspecting histograms" should "dump data" in{
-    DefaultEmptyRecognizer.inspect()
-  }
-
 
 }

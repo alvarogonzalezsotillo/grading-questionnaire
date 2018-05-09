@@ -5,7 +5,7 @@ import javax.imageio.ImageIO
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import imgproc.ocr.Pattern.TrainingPatterns
-import imgproc.ocr.perceptron.{LetterPerceptron, UntrainedPerceptron}
+import imgproc.ocr.perceptron.{LetterPerceptron, Perceptron, PerceptronWithSquareInput, UntrainedPerceptron}
 import imgproc.{AnswerMatrixMeasures, ImageProcessing}
 import imgproc.ImageProcessing._
 import imgproc.ocr.OneLetterOCR.LetterResult
@@ -208,47 +208,29 @@ class CrossRecognizer(trainingPatterns: TrainingPatterns) extends OneLetterOCR {
 
 object DefaultCrossRecognizer extends CrossRecognizer(Pattern.crossTrainingPatterns)
 
-protected class EmptyRecognizer {
+protected class EmptyRecognizer extends LazyLogging {
 
   import ImageProcessing._
   import OneLetterOCR._
 
 
   val patterns = {
-    val allLetters = Pattern.letterTrainingPatterns.values.foldLeft(Seq[Mat]())((accum, s) => accum ++ s)
-    val allTicks = Pattern.crossTrainingPatterns.values.foldLeft(Seq[Mat]())((accum, s) => accum ++ s)
+    val allLetters = Pattern.letterTrainingPatterns.values.toSeq.flatten
+    val allTicks = Pattern.crossTrainingPatterns.values.toSeq.flatten
     Map('A' -> (allLetters ++ allTicks)) ++ Pattern.emptyPatterns
   }
 
   val normalizedPatterns = normalizeTrainingPatterns(patterns)
 
-  private val binSize = 16
-
-  private def matrixToInputData(m: Mat): Array[Float] = {
-    val grayscale = toGrayscaleImage(m)
-    val drv = derivate(grayscale)
-    val h = ImageProcessing.histogram(drv, binSize).map(_.toFloat)
-    Array(h(0),h.drop(2).sum)
-  }
-
-  private val perceptron = {
-    val p = new UntrainedPerceptron(nodesInInputLayer = 2 /*256 / binSize*/, nodesInInternalLayers = 2, internalLayers = 1, epsilon = 0.01, maxIterations = 1000) {
-
-      override protected def patternToInputData(pattern: Mat) = matrixToInputData(pattern)
-    }
-
+  private val perceptron : Perceptron = {
+    val p = LetterPerceptron()
     p.train(normalizedPatterns)
     p
   }
 
-  def inspect() = {
-    for ((p, mats) <- normalizedPatterns; m <- mats) {
-      println(s"$p \t ${matrixToInputData(m).mkString("\t")}")
-    }
-  }
-
   def isEmpty(pattern: Mat): Boolean = {
     val prediction = perceptron.predict(normalizeLetter(pattern))
+    logger.error( s"isEmpty:$prediction")
     prediction.prediction match {
       case Some('A') => false
       case Some(' ') => true
@@ -261,5 +243,4 @@ protected class EmptyRecognizer {
 
 object DefaultEmptyRecognizer extends EmptyRecognizer with App {
   nu.pattern.OpenCV.loadLibrary()
-  inspect()
 }

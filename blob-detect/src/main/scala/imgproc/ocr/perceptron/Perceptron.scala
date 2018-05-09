@@ -238,13 +238,11 @@ object LetterPerceptron{
 
   val defaultParams = LetterPerceptronParams()
 
-
-
-  def apply( p: LetterPerceptronParams = defaultParams) : UntrainedPerceptron = new LetterUntrainedPerceptron(p.nodesInInternalLayers,p.internalLayers,p.patternSize, p.maxIterations, p.epsilon)
-
-  private class LetterUntrainedPerceptron(nodesInInternalLayers: Int, internalLayers: Int, override val patternSize : Int, maxIterations: Int, epsilon: Double )
-    extends UntrainedPerceptron(patternSize*patternSize,nodesInInternalLayers,internalLayers, maxIterations, epsilon)
-    with PerceptronWithSquareInput {
+  def apply( p: LetterPerceptronParams = defaultParams) : UntrainedPerceptron = {
+    new UntrainedPerceptron(p.patternSize * p.patternSize, p.nodesInInternalLayers, p.internalLayers, p.maxIterations, p.epsilon)
+      with PerceptronWithSquareInput {
+      val patternSize = p.patternSize
+    }
   }
 
 }
