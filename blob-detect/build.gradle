@@ -22,7 +22,7 @@ clean.doFirst {
     delete "test-img"
 }
 
-task run(type: JavaExec, dependsOn: classes) {
+task runBlobDetect(type: JavaExec, dependsOn: classes) {
     main = 'imgproc.GUI'
     classpath sourceSets.main.runtimeClasspath
     classpath configurations.runtime

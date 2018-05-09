@@ -1,6 +1,8 @@
 package imgproc.ocr.perceptron
 
+import java.text.SimpleDateFormat
 import java.util
+import java.util.Date
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import imgproc.ocr.OneLetterOCR.{LetterProb, LetterResult}
@@ -116,8 +118,8 @@ abstract class Perceptron( val nodesInInputLayer : Int, nodesInInternalLayers: I
     }
 
 
-
-    ann.create(layerSizes(data.size), activateFunc, alpha, beta)
+    val sizes = layerSizes(data.size)
+    ann.create(sizes, activateFunc, alpha, beta)
 
     val (input,labels,weights) = trainDataset
     val params = {
@@ -131,7 +133,22 @@ abstract class Perceptron( val nodesInInputLayer : Int, nodesInInternalLayers: I
 
     val flags = 0// CvANN_MLP.NO_INPUT_SCALE | CvANN_MLP.NO_OUTPUT_SCALE
 
-    ann.train( input, labels, weights, new Mat(), params, flags )
+    logger.error( s"Train:")
+    logger.error( s"  sizes: $sizes")
+    for( r <- 0 until sizes.rows()){
+      logger.error( s"    ${sizes.get(r,0)(0)}")
+    }
+    logger.error( s"  labels: $labels")
+    logger.error( s"  inputs: $input")
+
+
+    val date = new SimpleDateFormat("YYYY-MM-dd-HH-mm").format(new Date)
+    ann.save(s"./untrained-one-letter-ocr-name-$date.xml", "one-letter-ocr")
+    val ret = ann.train( input, labels, weights, new Mat(), params, flags )
+    ann.save(s"./trained-one-letter-ocr-name-$date.xml", "one-letter-ocr")
+    logger.error( s"  TRAINED")
+
+    ret
   }
 
 
@@ -160,6 +177,10 @@ abstract class Perceptron( val nodesInInputLayer : Int, nodesInInternalLayers: I
     fillRowWithArray( mInput, 0, input )
     val mOutput = new Mat
     ann.predict(mInput,mOutput)
+
+    val date = new SimpleDateFormat("YYYY-MM-dd-HH-mm").format(new Date)
+    ann.save(s"./predict-one-letter-ocr-name-$date.xml", "one-letter-ocr")
+
 
     val letters = (0 until mOutput.cols()).map( letterOfLabel )
     letters.map{ l =>

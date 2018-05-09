@@ -73,7 +73,7 @@ object VideoSource {
         //println( "Primera lectura")
         _lastRead = BufferedImage2Mat(image)
         //println( "convertido")
-        _someRead = true
+        _someRead = false // PARA NO SOBREESCRIBIR CON LA SIGUIENTE LECTURA
       }
       else {
         //println( "otras lecturas")
