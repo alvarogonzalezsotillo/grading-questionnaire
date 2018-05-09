@@ -17,9 +17,10 @@ class ShapeTest extends FlatSpec {
 
   it should "grows" in {
     val s = new MatOfPoint( (0.0, 0.0), (0.0, 1.0), (1.0, 1.0), (1.0, 0.0))
-    val grown = s.grow(2)
+    val grown: MatOfPoint = s.grow(2)
     println( grown.points.mkString(",") )
-    assert(grown.points(0).x ~= -sqrt(2)/2 )
+    println( (-sqrt(2)).toInt )
+    assert(grown.points(0).x ~= (-sqrt(2)).toInt )
 
 
   }

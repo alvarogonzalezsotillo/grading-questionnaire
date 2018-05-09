@@ -134,7 +134,7 @@ object Implicits {
         ret
       }
 
-      println( newPoints.mkString(","))
+      println( s"  grow: ${newPoints.mkString(",")}")
       new MatOfPoint(newPoints :_* )
     }
 

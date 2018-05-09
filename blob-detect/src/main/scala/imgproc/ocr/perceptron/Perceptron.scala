@@ -1,5 +1,6 @@
 package imgproc.ocr.perceptron
 
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util
 import java.util.Date
@@ -8,6 +9,7 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import imgproc.ocr.OneLetterOCR.{LetterProb, LetterResult}
 import imgproc.ocr.Pattern
 import imgproc.ocr.Pattern.TrainingPatterns
+import imgproc.ocr.perceptron.Perceptron.imageToSignal
 import org.opencv.core.{CvType, Mat, TermCriteria}
 import org.opencv.ml.{CvANN_MLP, CvANN_MLP_TrainParams}
 
@@ -25,7 +27,7 @@ object Perceptron{
   def signalToImage(s: Float ) : Byte = (s*255).toByte
 
 
-  private def fillRowWithArray( m: Mat, row: Int, b: Array[Float] ){
+  def fillRowWithArray( m: Mat, row: Int, b: Array[Float] ){
     assert(m.cols() == b.size )
     val buffer = new Array[Float](1)
     for( i <- 0 until m.cols() ){
@@ -36,7 +38,85 @@ object Perceptron{
 
 }
 
-abstract class Perceptron( val nodesInInputLayer : Int, nodesInInternalLayers: Int, internalLayers: Int, maxIterations: Int, epsilon: Double) extends LazyLogging{
+trait Perceptron extends LazyLogging{
+  import Perceptron._
+
+  protected def patternToInputData( pattern: Mat ) : Array[Float]
+  val ann = new CvANN_MLP
+
+  def trained : Boolean
+
+  /*
+  If you are using the default cvANN_MLP::SIGMOID_SYM activation function with
+   the default parameter values fparam1=0 and fparam2=0 then the function used is y = 1.7159*tanh(2/3 * x),
+   so the output will range from [-1.7159, 1.7159], instead of [0,1].
+
+   BUT I GET -0.0039,0.0039, DONT KNOW WHY
+ */
+  def normalizeProbability(d: Double) = {
+    val min = -0.0041
+    val max = -min
+    val norm = (d - min)/(max-min)
+    val ret = (norm min 1) max 0
+    ret
+  }
+
+  var characters : IndexedSeq[Char]
+
+  def labelOfLetter( le: Char ) : Int = characters.indexOf(le)
+  def letterOfLabel( la: Int ) : Char = characters(la)
+
+
+
+  def predict( pattern: Mat ) : LetterResult = {
+    assert( trained )
+    val input = patternToInputData(pattern)
+    // logger.error(s"predict:${input.toList}")
+    val mInput = new Mat(1,input.size,CvType.CV_32FC1)
+    fillRowWithArray( mInput, 0, input )
+    val mOutput = new Mat
+    ann.predict(mInput,mOutput)
+
+    val date = new SimpleDateFormat("YYYY-MM-dd-HH-mm").format(new Date)
+    ann.save(s"./predict-one-letter-ocr-name-$date.xml", "one-letter-ocr")
+
+
+    val letters = (0 until mOutput.cols()).map( letterOfLabel )
+    letters.map{ l =>
+      val doubles: Array[Double] = mOutput.get(0, labelOfLetter(l) )
+      val out = doubles(0)/255
+      val prob = normalizeProbability( out )
+      LetterProb(l, prob )
+    }
+  }
+
+}
+
+trait PerceptronWithSquareInput{
+
+  def patternSize : Int
+
+  protected def patternToInputData( pattern: Mat ) : Array[Float] = {
+    assert( pattern.rows() == patternSize )
+    assert( pattern.cols() == patternSize )
+
+    val nodesInInputLayer = patternSize*patternSize
+    val ret = new Array[Float](nodesInInputLayer)
+    val buffer = new Array[Byte](1)
+    for( c <- 0 until patternSize ; r <- 0 until patternSize ){
+      pattern.get(r,c,buffer)
+      ret(patternSize*c+r) = imageToSignal(buffer(0))
+    }
+    ret
+  }
+
+}
+
+trait TrainedPerceptron extends Perceptron{
+
+}
+
+abstract class UntrainedPerceptron(val nodesInInputLayer : Int, nodesInInternalLayers: Int, internalLayers: Int, maxIterations: Int, epsilon: Double) extends Perceptron{
 
   import Perceptron._
 
@@ -51,13 +131,9 @@ abstract class Perceptron( val nodesInInputLayer : Int, nodesInInternalLayers: I
     m
   }
 
-  protected def patternToInputData( pattern: Mat ) : Array[Float]
 
-  val ann = new CvANN_MLP
   var characters : IndexedSeq[Char] = null
 
-  def labelOfLetter( le: Char ) : Int = characters.indexOf(le)
-  def letterOfLabel( la: Int ) : Char = characters(la)
 
 
   def train( data: TrainingPatterns, alpha: Double = 1,  beta: Double = 1, activateFunc : Int = CvANN_MLP.SIGMOID_SYM) : Int = {
@@ -152,44 +228,9 @@ abstract class Perceptron( val nodesInInputLayer : Int, nodesInInternalLayers: I
   }
 
 
-  /*
-  If you are using the default cvANN_MLP::SIGMOID_SYM activation function with
-   the default parameter values fparam1=0 and fparam2=0 then the function used is y = 1.7159*tanh(2/3 * x),
-   so the output will range from [-1.7159, 1.7159], instead of [0,1].
 
-   BUT I GET -0.0039,0.0039, DONT KNOW WHY
-   */
-  def normalizeProbability(d: Double) = {
-    val min = -0.0041
-    val max = -min
-    val norm = (d - min)/(max-min)
-    val ret = (norm min 1) max 0
-    ret
-  }
+  override def trained = characters != null
 
-  def trained = characters != null
-
-  def predict( pattern: Mat ) : LetterResult = {
-    assert( trained )
-    val input = patternToInputData(pattern)
-    // logger.error(s"predict:${input.toList}")
-    val mInput = new Mat(1,nodesInInputLayer,CvType.CV_32FC1)
-    fillRowWithArray( mInput, 0, input )
-    val mOutput = new Mat
-    ann.predict(mInput,mOutput)
-
-    val date = new SimpleDateFormat("YYYY-MM-dd-HH-mm").format(new Date)
-    ann.save(s"./predict-one-letter-ocr-name-$date.xml", "one-letter-ocr")
-
-
-    val letters = (0 until mOutput.cols()).map( letterOfLabel )
-    letters.map{ l =>
-      val doubles: Array[Double] = mOutput.get(0, labelOfLetter(l) )
-      val out = doubles(0)/255
-      val prob = normalizeProbability( out )
-      LetterProb(l, prob )
-    }
-  }
 }
 
 object LetterPerceptron{
@@ -197,26 +238,14 @@ object LetterPerceptron{
 
   val defaultParams = LetterPerceptronParams()
 
-  def apply( p: LetterPerceptronParams = defaultParams) : Perceptron = new LetterPerceptron(p.nodesInInternalLayers,p.internalLayers,p.patternSize, p.maxIterations, p.epsilon)
 
-  private class LetterPerceptron( nodesInInternalLayers: Int, internalLayers: Int, patternSize : Int, maxIterations: Int, epsilon: Double )
-    extends Perceptron(patternSize*patternSize,nodesInInternalLayers,internalLayers, maxIterations, epsilon){
 
-    import Perceptron._
+  def apply( p: LetterPerceptronParams = defaultParams) : UntrainedPerceptron = new LetterUntrainedPerceptron(p.nodesInInternalLayers,p.internalLayers,p.patternSize, p.maxIterations, p.epsilon)
 
-    protected def patternToInputData( pattern: Mat ) : Array[Float] = {
-      assert( pattern.rows() == patternSize )
-      assert( pattern.cols() == patternSize )
-
-      val ret = new Array[Float](nodesInInputLayer)
-      val buffer = new Array[Byte](1)
-      for( c <- 0 until patternSize ; r <- 0 until patternSize ){
-        pattern.get(r,c,buffer)
-        ret(patternSize*c+r) = imageToSignal(buffer(0))
-      }
-      ret
-    }
-
+  private class LetterUntrainedPerceptron(nodesInInternalLayers: Int, internalLayers: Int, override val patternSize : Int, maxIterations: Int, epsilon: Double )
+    extends UntrainedPerceptron(patternSize*patternSize,nodesInInternalLayers,internalLayers, maxIterations, epsilon)
+    with PerceptronWithSquareInput {
   }
+
 }
 

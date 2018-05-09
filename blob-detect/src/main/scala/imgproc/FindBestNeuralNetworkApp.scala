@@ -2,7 +2,7 @@ package imgproc
 
 import imgproc.ocr.Pattern.TrainingPatterns
 import imgproc.ocr.perceptron.LetterPerceptron.LetterPerceptronParams
-import imgproc.ocr.perceptron.{LetterPerceptron, Perceptron}
+import imgproc.ocr.perceptron.{LetterPerceptron, UntrainedPerceptron}
 import imgproc.ocr.{OneLetterOCR, Pattern}
 import org.opencv.core.Mat
 
