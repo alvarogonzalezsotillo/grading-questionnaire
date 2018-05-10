@@ -18,7 +18,7 @@ object Classifier extends App{
 
   def log(a: Any) = println(a)
 
-  val baseDir = new File("/home/alvaro/github/grading-questionnaire/blob-detect/20171026-procesado")
+  val baseDir = new File("/home/alvaro/github/grading-questionnaire/build/test-img/ExtractLettersApp")
 
   case class PatternImage(file:File){
     val image : BufferedImage = {

@@ -120,21 +120,21 @@ object Implicits {
 
     def grow( inc: Double ) : MatOfPoint = {
       val c = center
-      println( s"Center:$center")
+      //println( s"Center:$center")
       val newPoints = points.map {p =>
-        println( s"  p:$p")
+        //println( s"  p:$p")
         val v = p - c
-        println( s"  v:$v")
+        //println( s"  v:$v")
         val modulus = v.modulus + inc
-        println( s"  modulus:$modulus")
+        //println( s"  modulus:$modulus")
 
         val ret = c + v.withModulus( modulus )
-        println( s"  ret:$ret")
-        println()
+        //println( s"  ret:$ret")
+        //println()
         ret
       }
 
-      println( s"  grow: ${newPoints.mkString(",")}")
+      //println( s"  grow: ${newPoints.mkString(",")}")
       new MatOfPoint(newPoints :_* )
     }
 
