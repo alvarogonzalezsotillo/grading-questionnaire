@@ -9,7 +9,7 @@ import javax.imageio.ImageIO
 import javax.swing._
 import javax.swing.border.TitledBorder
 
-import imgproc.ocr.DefaultTrainedOneLetterOCR
+import imgproc.ocr.{DefaultTrainedOneLetterOCR, OneLetterOCR}
 import org.opencv.imgproc.Imgproc
 
 import scala.util.Try
@@ -18,7 +18,8 @@ object Classifier extends App{
 
   def log(a: Any) = println(a)
 
-  val baseDir = new File("/home/alvaro/github/grading-questionnaire/build/test-img/ExtractLettersApp")
+  val baseDir = new File("/home/alvaro/github/grading-questionnaire/blob-detect/src/main/resources/training-models")
+  //val baseDir = new File("/home/alvaro/github/grading-questionnaire/build/test-img/ExtractLettersApp")
 
   case class PatternImage(file:File){
     val image : BufferedImage = {
@@ -30,7 +31,16 @@ object Classifier extends App{
       image
     }
 
+    val normalizedImage = {
+      import imgproc.Implicits._
+      val img : Image = OneLetterOCR.normalizeLetter(image)
+      img
+    }
+
     val icon = new ImageIcon(image)
+
+    val normalizedIcon = new ImageIcon(normalizedImage)
+
     def moveToDir( dir: File ) = {
       log( s"moveToDir:$dir")
       val newFile = new File( dir, file.getName)
@@ -59,11 +69,16 @@ object Classifier extends App{
 
   object ImagesRenderer extends ListCellRenderer[PatternImage] {
 
+    private var _normalized = false
+
+    def normalized = _normalized
+    def normalized_=(value: Boolean) = _normalized = value
+
     val peerRenderer: ListCellRenderer[Icon] = (new DefaultListCellRenderer).asInstanceOf[ListCellRenderer[Icon]]
 
-    override def getListCellRendererComponent (list: JList[_ <: PatternImage], task: PatternImage, index: Int, isSelected: Boolean, cellHasFocus: Boolean): Component = {
-
-      peerRenderer.getListCellRendererComponent(list.asInstanceOf[JList[Icon]], task.icon, index, isSelected, cellHasFocus)
+    override def getListCellRendererComponent (list: JList[_ <: PatternImage], patternImage: PatternImage, index: Int, isSelected: Boolean, cellHasFocus: Boolean): Component = {
+      val icon = if( normalized ) patternImage.normalizedIcon else patternImage.icon
+      peerRenderer.getListCellRendererComponent(list.asInstanceOf[JList[Icon]], icon, index, isSelected, cellHasFocus)
     }
   }
 
@@ -133,6 +148,22 @@ object Classifier extends App{
     }
   }
 
+  object NormalizedButton extends JButton( "Ver normalizado" ){
+    val listener = new ActionListener{
+      override def actionPerformed(e: ActionEvent): Unit ={
+        ImagesRenderer.normalized = !ImagesRenderer.normalized
+        println( s"normalized:${ImagesRenderer.normalized}")
+        ImagesList.letterToList.values.foreach{ l =>
+          l.invalidate()
+          l.validate()
+          l.revalidate()
+          l.repaint(100)
+        }
+      }
+    }
+    addActionListener(listener)
+  }
+
   object ClassifyButton extends JButton("Clasificar automáticamente los que aún no estén clasificados"){
     val listener = new ActionListener{
       override def actionPerformed(e: ActionEvent): Unit = {
@@ -159,14 +190,15 @@ object Classifier extends App{
 
   import javax.swing.UIManager
 
+  nu.pattern.OpenCV.loadLibrary()
   UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName)
   val frame = new JFrame("Clasificador")
   frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
   frame.add(ListsPanel, BorderLayout.CENTER)
   frame.add(ClassifyButton,BorderLayout.SOUTH)
+  frame.add(NormalizedButton,BorderLayout.NORTH)
   frame.pack
   frame.setVisible( true )
-  nu.pattern.OpenCV.loadLibrary()
 
 
 

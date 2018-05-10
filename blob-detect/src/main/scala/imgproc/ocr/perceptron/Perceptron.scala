@@ -77,10 +77,6 @@ trait Perceptron extends LazyLogging{
     val mOutput = new Mat
     ann.predict(mInput,mOutput)
 
-    val date = new SimpleDateFormat("YYYY-MM-dd-HH-mm").format(new Date)
-    ann.save(s"./predict-one-letter-ocr-name-$date.xml", "one-letter-ocr")
-
-
     val letters = (0 until mOutput.cols()).map( letterOfLabel )
     letters.map{ l =>
       val doubles: Array[Double] = mOutput.get(0, labelOfLetter(l) )
@@ -112,8 +108,8 @@ trait PerceptronWithSquareInput{
 
 }
 
-trait TrainedPerceptron extends Perceptron{
-
+abstract class PretrainedPerceptron( file: File ) extends Perceptron{
+  ann.load(file.getAbsolutePath)
 }
 
 abstract class UntrainedPerceptron(val nodesInInputLayer : Int, nodesInInternalLayers: Int, internalLayers: Int, maxIterations: Int, epsilon: Double) extends Perceptron{
@@ -209,20 +205,12 @@ abstract class UntrainedPerceptron(val nodesInInputLayer : Int, nodesInInternalL
 
     val flags = 0// CvANN_MLP.NO_INPUT_SCALE | CvANN_MLP.NO_OUTPUT_SCALE
 
-    logger.error( s"Train:")
-    logger.error( s"  sizes: $sizes")
-    for( r <- 0 until sizes.rows()){
-      logger.error( s"    ${sizes.get(r,0)(0)}")
-    }
-    logger.error( s"  labels: $labels")
-    logger.error( s"  inputs: $input")
 
 
-    val date = new SimpleDateFormat("YYYY-MM-dd-HH-mm").format(new Date)
-    ann.save(s"./untrained-one-letter-ocr-name-$date.xml", "one-letter-ocr")
     val ret = ann.train( input, labels, weights, new Mat(), params, flags )
-    ann.save(s"./trained-one-letter-ocr-name-$date.xml", "one-letter-ocr")
-    logger.error( s"  TRAINED")
+
+    //val date = new SimpleDateFormat("YYYY-MM-dd-HH-mm-ss").format(new Date)
+    //ann.save(s"./trained-${getClass.getSimpleName}-$date.xml")
 
     ret
   }

@@ -17,9 +17,9 @@ object FindBestNeuralNetworkApp extends App{
   nu.pattern.OpenCV.loadLibrary()
 
   val internalLayersRange = 1 to 4
-  val maxIterationsRange = Seq(1000)
-  val epsilonRange = Seq(0.01)
-  val internalLayerNodesRange = Pattern.patternSize to Pattern.patternSize*9 by 30
+  val maxIterationsRange = Seq(100,1000)
+  val epsilonRange = Seq(0.05, 0.01)
+  val internalLayerNodesRange = Pattern.patternSize to Pattern.patternSize*Pattern.patternSize by Pattern.patternSize*4
 
 
 
@@ -28,7 +28,7 @@ object FindBestNeuralNetworkApp extends App{
 
   val random = new Random
 
-  def accuracyOfOCR(params: LetterPerceptronParams, trainPercentage: Double = 0.9) : (Double,Double) = {
+  def accuracyOfOCR(params: LetterPerceptronParams, trainPercentage: Double = 0.9) : Double = {
 
     val ocr = LetterPerceptron(params)
 
@@ -53,7 +53,9 @@ object FindBestNeuralNetworkApp extends App{
 
     val normalizedTrainingPatterns = OneLetterOCR.normalizeTrainingPatterns(trainingPatterns)
 
+    println( s"   $params: Training start")
     ocr.train(normalizedTrainingPatterns)
+    println( s"   $params: Training end")
 
 
 
@@ -64,9 +66,9 @@ object FindBestNeuralNetworkApp extends App{
     }
 
     val stTest = statistics(testPatterns)
-    val stTraining = statistics(trainingPatterns)
+    println( s"   $params: stTest:$stTest")
 
-    (stTest.sum / stTest.size, stTraining.sum/stTraining.size)
+    stTest.sum / stTest.size
 
   }
 
@@ -76,11 +78,11 @@ object FindBestNeuralNetworkApp extends App{
     (probes, probes.sum / implicitly[Fractional[T]].fromInt(times))
   }
 
-  val accuracies = for(l <- internalLayersRange.par ; maxIterations <- maxIterationsRange ; epsilon <- epsilonRange; n <- internalLayerNodesRange ) yield{
+  val accuracies = for(l <- internalLayersRange.par ; n <- internalLayerNodesRange; maxIterations <- maxIterationsRange ; epsilon <- epsilonRange ) yield{
     val params = LetterPerceptronParams(n,l,maxIterations,epsilon)
-    val (_,accuracy) = average(10){
+    val (_,accuracy) = average(1){
       //println( s"For average: $params")
-      accuracyOfOCR(params)._1
+      accuracyOfOCR(params)
     }
 
     println( s"** Params:$params  accuracy:$accuracy")
