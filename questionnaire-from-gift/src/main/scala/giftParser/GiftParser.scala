@@ -6,6 +6,7 @@ package giftParser
 
 import java.io._
 
+import com.typesafe.scalalogging.slf4j.LazyLogging
 import giftParser.GiftParser.{GiftError, GiftFile}
 import giftToLatex.GiftToLatex
 
@@ -54,7 +55,7 @@ class GiftParser extends RegexParsers {
   def questionnaire: Parser[Questions] = rep(question)
 }
 
-object GiftParser {
+object GiftParser extends LazyLogging{
 
   type Questions = List[GiftFile.Question]
 
@@ -82,6 +83,7 @@ object GiftParser {
     case class OpenQuestion(text: String) extends Question{
       private val fullPageHTMLTags = Seq( "table", "li" ).map( "</" + _ + ">")
       def fullPageQuestion = fullPageHTMLTags.exists( text.contains )
+      logger.error("OpenQuestion:" + text )
     }
 
     case class QuestionnaireQuestion(text: String, answers: List[Answer]) extends Question {
@@ -95,6 +97,7 @@ object GiftParser {
           super.equals(o)
       }
       assert(answers.count(_.correct) == 1, s"Incorrect number of correct answers:$this")
+      logger.error("QuestionnaireQuestion:" + text )
     }
 
     def apply(questions: Questions, file: Option[File]) = new GiftFile(questions, file)
@@ -152,9 +155,14 @@ object GiftParser {
   case class GiftError(msg: String, line: Int, column: Int, lineContents: String) extends GiftParserResult
 
   private def processResult(parser: GiftParser, ret: GiftParser#ParseResult[Questions], file: Option[File]): GiftParserResult = ret match {
-    case parser.Success(_, _) => GiftFile(ret.get, file).reorder()
-    case parser.Error(msg, next) => GiftError(msg, next.pos.line, next.pos.column, next.pos.longString.takeWhile(_ != '\n'))
-    case parser.Failure(msg, next) => GiftError(msg, next.pos.line, next.pos.column, next.pos.longString.takeWhile(_ != '\n'))
+    case parser.Success(_, _) =>
+      GiftFile(ret.get, file).reorder()
+    case parser.Error(msg, next) =>
+      logger.error( "parser.Error:" + msg + " " + next )
+      GiftError(msg, next.pos.line, next.pos.column, next.pos.longString.takeWhile(_ != '\n'))
+    case parser.Failure(msg, next) =>
+      logger.error( "parser.Failure:" + msg + " " + next )
+      GiftError(msg, next.pos.line, next.pos.column, next.pos.longString.takeWhile(_ != '\n'))
     case _ => throw new IllegalStateException()
   }
 

@@ -9,9 +9,9 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import imgproc.ocr.OneLetterOCR.{LetterProb, LetterResult}
 import imgproc.ocr.Pattern
 import imgproc.ocr.Pattern.TrainingPatterns
-import imgproc.ocr.perceptron.Perceptron.imageToSignal
+import imgproc.ocr.perceptron.Perceptron.{fillRowWithArray, imageToSignal}
 import org.opencv.core.{CvType, Mat, TermCriteria}
-import org.opencv.ml.{CvANN_MLP, CvANN_MLP_TrainParams}
+import org.opencv.ml.{CvANN_MLP, CvANN_MLP_TrainParams, CvKNearest}
 
 /**
  * Created by alvaro on 6/04/16.
@@ -38,13 +38,56 @@ object Perceptron{
 
 }
 
-trait Perceptron extends LazyLogging{
+trait Perceptron extends LazyLogging {
+
   import Perceptron._
 
   protected def patternToInputData( pattern: Mat ) : Array[Float]
-  val ann = new CvANN_MLP
 
-  def trained : Boolean
+  var characters: IndexedSeq[Char]
+
+  def labelOfLetter(le: Char): Int = characters.indexOf(le)
+
+  def letterOfLabel(la: Int): Char = characters(la)
+
+  def trained: Boolean
+
+  def predict(pattern: Mat): LetterResult
+
+}
+
+trait KnnPerceptron extends Perceptron{
+
+  import Perceptron._
+
+  val knn = new CvKNearest()
+
+  val k = 10
+
+  override def predict(pattern: Mat): LetterResult = {
+
+    val input = patternToInputData(pattern)
+
+    assert(trained)
+    val samples = new Mat(1, input.size, CvType.CV_32FC1)
+    fillRowWithArray(samples, 0, input)
+    val results = new Mat
+    val ret = knn.find_nearest(samples, k, results, new Mat, new Mat)
+
+    val predicted = results.get(0,0)(0).toInt
+
+    LetterResult(
+      Seq(
+        LetterProb(
+          characters(predicted),
+          1.0 ) ) )
+  }
+}
+
+trait AnnPerceptron extends Perceptron{
+  import Perceptron._
+
+  val ann = new CvANN_MLP
 
   /*
   If you are using the default cvANN_MLP::SIGMOID_SYM activation function with
@@ -53,7 +96,7 @@ trait Perceptron extends LazyLogging{
 
    BUT I GET -0.0039,0.0039, DONT KNOW WHY
  */
-  def normalizeProbability(d: Double) = {
+  private def normalizeProbability(d: Double) = {
     val min = -0.0041
     val max = -min
     val norm = (d - min)/(max-min)
@@ -61,14 +104,8 @@ trait Perceptron extends LazyLogging{
     ret
   }
 
-  var characters : IndexedSeq[Char]
 
-  def labelOfLetter( le: Char ) : Int = characters.indexOf(le)
-  def letterOfLabel( la: Int ) : Char = characters(la)
-
-
-
-  def predict( pattern: Mat ) : LetterResult = {
+  override def predict( pattern: Mat ) : LetterResult = {
     assert( trained )
     val input = patternToInputData(pattern)
     // logger.error(s"predict:${input.toList}")
@@ -108,11 +145,73 @@ trait PerceptronWithSquareInput{
 
 }
 
-abstract class PretrainedPerceptron( file: File ) extends Perceptron{
-  ann.load(file.getAbsolutePath)
+
+abstract class UntrainedKnnPerceptron() extends KnnPerceptron {
+
+  override var characters : IndexedSeq[Char] = null
+
+  def train( data: TrainingPatterns ) : Boolean = {
+    val letters = data.keys.toList
+
+    // logger.error( s"data: ${data}" )
+
+    characters = letters.toIndexedSeq
+
+    def trainDataset : (Mat,Mat) = {
+
+      val labels = {
+        val labelsArray = letters.flatMap{ l =>
+          val label = labelOfLetter(l)
+          val size = data(l).size
+          Iterator.continually(label).take(size)
+        }.toArray
+        val ret = new Mat(labelsArray.size, letters.size,CvType.CV_32FC1)
+        val buffer = new Array[Float](letters.size)
+        for( r <- 0 until labelsArray.size ){
+          util.Arrays.fill(buffer,-1f)
+          buffer(labelsArray(r)) = 1f
+          ret.put(r,0,buffer)
+        }
+        ret
+      }
+
+      val input = {
+        val patterns = letters.flatMap( l => data(l).toList ).toArray
+        val nodesInInputLayer = patternToInputData(patterns(0)).size
+        val n = patterns.size
+        val ret = new Mat(n,nodesInInputLayer,CvType.CV_32FC1)
+        for( r <- 0 until n ; inputData = patternToInputData(patterns(r)) ){
+          fillRowWithArray(ret,r,inputData)
+        }
+        ret
+      }
+
+      // logger.error( s"trainData: input: ${input.size()} labels: ${labels.size()} weights: ${weights.size()}")
+
+      (input,labels)
+    }
+
+
+
+    val (input,labels) = trainDataset
+
+
+
+    val ret = knn.train(input,labels)
+
+    //val date = new SimpleDateFormat("YYYY-MM-dd-HH-mm-ss").format(new Date)
+    //ann.save(s"./trained-${getClass.getSimpleName}-$date.xml")
+
+    ret
+  }
+
+
+
+  override def trained = characters != null
+
 }
 
-abstract class UntrainedPerceptron(val nodesInInputLayer : Int, nodesInInternalLayers: Int, internalLayers: Int, maxIterations: Int, epsilon: Double) extends Perceptron{
+abstract class UntrainedAnnPerceptron(val nodesInInputLayer : Int, nodesInInternalLayers: Int, internalLayers: Int, maxIterations: Int, epsilon: Double) extends AnnPerceptron{
 
   import Perceptron._
 
@@ -222,16 +321,17 @@ abstract class UntrainedPerceptron(val nodesInInputLayer : Int, nodesInInternalL
 }
 
 object LetterPerceptron{
-  case class LetterPerceptronParams(nodesInInternalLayers: Int = Pattern.patternSize*4, internalLayers: Int = 2, maxIterations: Int = 1000, epsilon: Double = 0.01, patternSize : Int = Pattern.patternSize)
+  case class AnnPerceptronParams(nodesInInternalLayers: Int = Pattern.patternSize*4, internalLayers: Int = 2, maxIterations: Int = 1000, epsilon: Double = 0.01, patternSize : Int = Pattern.patternSize)
 
-  val defaultParams = LetterPerceptronParams()
+  val defaultParams = AnnPerceptronParams()
 
-  def apply( p: LetterPerceptronParams = defaultParams) : UntrainedPerceptron = {
-    new UntrainedPerceptron(p.patternSize * p.patternSize, p.nodesInInternalLayers, p.internalLayers, p.maxIterations, p.epsilon)
+  def apply( p: AnnPerceptronParams = defaultParams) : UntrainedAnnPerceptron = {
+    new UntrainedAnnPerceptron(p.patternSize * p.patternSize, p.nodesInInternalLayers, p.internalLayers, p.maxIterations, p.epsilon)
       with PerceptronWithSquareInput {
       val patternSize = p.patternSize
     }
   }
+
 
 }
 

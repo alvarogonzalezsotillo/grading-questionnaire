@@ -5,11 +5,11 @@ import javax.imageio.ImageIO
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import imgproc.ocr.Pattern.TrainingPatterns
-import imgproc.ocr.perceptron.{LetterPerceptron, Perceptron, PerceptronWithSquareInput, UntrainedPerceptron}
+import imgproc.ocr.perceptron.{LetterPerceptron, Perceptron, PerceptronWithSquareInput, UntrainedAnnPerceptron}
 import imgproc.{AnswerMatrixMeasures, ImageProcessing}
 import imgproc.ImageProcessing._
 import imgproc.ocr.OneLetterOCR.LetterResult
-import imgproc.ocr.perceptron.LetterPerceptron.LetterPerceptronParams
+import imgproc.ocr.perceptron.LetterPerceptron.AnnPerceptronParams
 import org.opencv.contrib.Contrib
 import org.opencv.core.Core.MinMaxLocResult
 import org.opencv.core._
@@ -160,7 +160,7 @@ abstract class OneLetterOCR extends LazyLogging {
   import OneLetterOCR._
   import imgproc.Implicits._
 
-  protected val perceptron: UntrainedPerceptron
+  protected val perceptron: UntrainedAnnPerceptron
 
   def predict(pattern: Mat): LetterResult = {
     if (DefaultEmptyRecognizer.isEmpty(pattern)) {
@@ -175,7 +175,7 @@ abstract class OneLetterOCR extends LazyLogging {
 }
 
 
-class TrainedOneLetterOCR(trainingPatterns: TrainingPatterns, perceptronParams : LetterPerceptronParams = LetterPerceptron.defaultParams ) extends OneLetterOCR {
+class TrainedOneLetterOCR(trainingPatterns: TrainingPatterns, perceptronParams : AnnPerceptronParams = LetterPerceptron.defaultParams ) extends OneLetterOCR {
 
   import OneLetterOCR._
 

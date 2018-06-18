@@ -1,8 +1,8 @@
 package imgproc
 
 import imgproc.ocr.Pattern.TrainingPatterns
-import imgproc.ocr.perceptron.LetterPerceptron.LetterPerceptronParams
-import imgproc.ocr.perceptron.{LetterPerceptron, UntrainedPerceptron}
+import imgproc.ocr.perceptron.LetterPerceptron.AnnPerceptronParams
+import imgproc.ocr.perceptron.{LetterPerceptron, UntrainedAnnPerceptron}
 import imgproc.ocr.{OneLetterOCR, Pattern}
 import org.opencv.core.Mat
 
@@ -28,7 +28,7 @@ object FindBestNeuralNetworkApp extends App{
 
   val random = new Random
 
-  def accuracyOfOCR(params: LetterPerceptronParams, trainPercentage: Double = 0.9) : Double = {
+  def accuracyOfOCR(params: AnnPerceptronParams, trainPercentage: Double = 0.9) : Double = {
 
     val ocr = LetterPerceptron(params)
 
@@ -79,7 +79,7 @@ object FindBestNeuralNetworkApp extends App{
   }
 
   val accuracies = for(l <- internalLayersRange.par ; n <- internalLayerNodesRange; maxIterations <- maxIterationsRange ; epsilon <- epsilonRange ) yield{
-    val params = LetterPerceptronParams(n,l,maxIterations,epsilon)
+    val params = AnnPerceptronParams(n,l,maxIterations,epsilon)
     val (_,accuracy) = average(1){
       //println( s"For average: $params")
       accuracyOfOCR(params)
@@ -90,7 +90,7 @@ object FindBestNeuralNetworkApp extends App{
     (accuracy,params)
   }
 
-  for( (a,LetterPerceptronParams(nodes,layers,maxIterations,epsilon,_)) <- accuracies ){
+  for( (a,AnnPerceptronParams(nodes,layers,maxIterations,epsilon,_)) <- accuracies ){
     println( s"nodes:$nodes\t layers:$layers\t iterations:$maxIterations\t epsilon:$epsilon\t  $a" )
   }
 

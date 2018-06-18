@@ -2,7 +2,7 @@ package imgproc.ocr.perceptron
 
 import imgproc.ImageProcessing
 import imgproc.ocr.Pattern
-import imgproc.ocr.perceptron.LetterPerceptron.LetterPerceptronParams
+import imgproc.ocr.perceptron.LetterPerceptron.AnnPerceptronParams
 import org.junit.runner.RunWith
 import org.opencv.core.Mat
 import org.scalatest.FlatSpec
@@ -73,7 +73,7 @@ class PerceptronTest extends FlatSpec {
     val data = letters.map{ case(l,f) => l -> Iterator.continually[Mat]( noise(f()) ).take(samples).toSeq}
 
 
-    val p = LetterPerceptron( LetterPerceptronParams(patternSize, 2, patternSize) )
+    val p = LetterPerceptron( AnnPerceptronParams(patternSize, 2, patternSize) )
     val iterations = p.train(data)
     println(s"iterations:$iterations")
 
