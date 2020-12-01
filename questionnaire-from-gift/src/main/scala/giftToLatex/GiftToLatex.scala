@@ -2,7 +2,7 @@ package giftToLatex
 
 import java.io.{OutputStream, ByteArrayOutputStream, File, InputStream}
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import common.{QuestionnaireVersion, BinaryConverter}
 import giftParser.GiftParser
 import giftParser.GiftParser.GiftFile._

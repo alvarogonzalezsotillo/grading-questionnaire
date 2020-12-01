@@ -2,7 +2,7 @@ package imgproc.ocr
 
 import javax.imageio.ImageIO
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import imgproc.ocr.Pattern.TrainingPatterns
 import imgproc.ocr.perceptron.{LetterPerceptron, Perceptron}
 import imgproc.{AnswerMatrixMeasures, ImageProcessing}

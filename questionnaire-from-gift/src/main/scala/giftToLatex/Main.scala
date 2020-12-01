@@ -3,7 +3,7 @@ package giftToLatex
 import java.io.{InputStream, FileOutputStream, File}
 import java.nio.channels.Channels
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.util.Random
 
@@ -63,9 +63,7 @@ object Main extends App with LazyLogging {
         c.copy( horizontalTable = !v )
       }
 
-      opt[Unit]('h',"help") text("Shows this help") action { (_,c) =>
-        c.copy(help = true)
-      }
+      help('h',"help") text("Shows this help")
 
     }
 
@@ -97,9 +95,6 @@ object Main extends App with LazyLogging {
     }
 
     parser.parse(args, Config()) match {
-      case Some(c) if c.help =>
-        parser.showUsage
-
       case Some(c) =>
 
         logger.error(c.toString)

@@ -1,6 +1,7 @@
 package common
 
-import sun.misc.BASE64Decoder
+// import sun.misc.BASE64Decoder
+import java.util.Base64
 
 object BinaryConverter {
 
@@ -41,13 +42,13 @@ object BinaryConverter {
   }
 
   def toBase64(buffer: Array[Byte]): String = {
-    val encoder = new sun.misc.BASE64Encoder()
-    encoder.encode(buffer)
+    val encoder = Base64.getEncoder()
+    encoder.encodeToString(buffer)
   }
 
   def fromBase64( s: String ): Array[Byte] = {
-    val decoder = new BASE64Decoder()
-    decoder.decodeBuffer(s)
+    val decoder = Base64.getDecoder()
+    decoder.decode(s)
   }
 
 
