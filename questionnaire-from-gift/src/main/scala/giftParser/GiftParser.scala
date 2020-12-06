@@ -6,7 +6,7 @@ package giftParser
 
 import java.io._
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import giftParser.GiftParser.{GiftError, GiftFile}
 import giftToLatex.GiftToLatex
 
@@ -156,7 +156,7 @@ object GiftParser extends LazyLogging{
 
   private def processResult(parser: GiftParser, ret: GiftParser#ParseResult[Questions], file: Option[File]): GiftParserResult = ret match {
     case parser.Success(_, _) =>
-      GiftFile(ret.get, file).reorder()
+      GiftFile(ret.get, file)
     case parser.Error(msg, next) =>
       logger.error( "parser.Error:" + msg + " " + next )
       GiftError(msg, next.pos.line, next.pos.column, next.pos.longString.takeWhile(_ != '\n'))

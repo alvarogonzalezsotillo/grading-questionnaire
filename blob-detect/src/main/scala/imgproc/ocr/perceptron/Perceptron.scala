@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat
 import java.util
 import java.util.Date
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import imgproc.ocr.OneLetterOCR.{LetterProb, LetterResult}
 import imgproc.ocr.Pattern
 import imgproc.ocr.Pattern.TrainingPatterns

@@ -4,8 +4,8 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
-import common.{BinaryConverter, HKey, HMap, Sounds}
+import com.typesafe.scalalogging.LazyLogging
+import common.{BinaryConverter, HMap, Sounds}
 import imgproc.steps.AnswersInfo.{cells, cellsLocation, studentAnswers}
 import imgproc.steps.ContoursInfo.{answerColumns, biggestQuadrilaterals}
 import imgproc.steps.LocationInfo.locatedMat

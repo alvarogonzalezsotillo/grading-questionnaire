@@ -3,10 +3,10 @@ package giftToLatex
 import java.io.{File, FileOutputStream, InputStream}
 import java.nio.channels.Channels
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
 import giftParser.GiftParser
 import giftParser.GiftParser.{GiftError, GiftFile}
 import giftToLatex.GiftToLatex.{GiftToLatexConfig, logger}
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.util.Random
 
@@ -77,6 +77,8 @@ object Main extends App with LazyLogging {
         c.copy(help = true)
       }
 
+      help('h',"help") text("Shows this help")
+
     }
 
     def createTempFileFrom( in: InputStream ) = {
@@ -107,16 +109,16 @@ object Main extends App with LazyLogging {
     }
 
     parser.parse(args, Config()) match {
-      case Some(c) if c.help =>
-        parser.showUsage
-
       case Some(c) =>
 
         logger.error(c.toString)
 
         val g = GiftParser.parse(c.giftFile).get
-          val giftParsedFile = g.reduce(c.maxQuestionnaireQuestions)
-          (0 until c.numberOfVariations).map(v => (v + 'A').toChar).foreach( v => generateQuestionnarieVersion(giftParsedFile, Some(v.toString))(c))
+        val giftParsedFile = g.reduce(c.maxQuestionnaireQuestions)
+        (0 until c.numberOfVariations).map(v => (v + 'A').toChar).foreach{ v =>
+          val version = giftParsedFile.reorder()
+          generateQuestionnarieVersion(version, Some(v.toString))(c)
+        }
 
       case None =>
     }

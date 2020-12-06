@@ -2,8 +2,8 @@ package giftToLatex
 
 import java.io.{ByteArrayOutputStream, File, InputStream, OutputStream}
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
-import common.{BinaryConverter, QuestionnaireVersion}
+import com.typesafe.scalalogging.LazyLogging
+import common.{QuestionnaireVersion, BinaryConverter}
 import giftParser.GiftParser
 import giftParser.GiftParser.GiftFile._
 import giftParser.GiftParser._

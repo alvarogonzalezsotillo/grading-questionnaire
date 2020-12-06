@@ -2,7 +2,7 @@ package giftToLatex
 
 import java.io.{InputStream, File}
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.sys.process.{Process, ProcessIO}
 
