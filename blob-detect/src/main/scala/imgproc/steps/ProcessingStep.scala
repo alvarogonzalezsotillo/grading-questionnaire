@@ -77,6 +77,8 @@ trait ProcessingStep {
     }
   }
 
+  import common.{HKey, HMap}
+
   def withSaveMatrix( hkey: HKey[Mat] = mat, name: String = "Grabando:" + stepName): ProcessingStep = {
     var lastInfo: Info = HMap()
     extend(name) { psi =>

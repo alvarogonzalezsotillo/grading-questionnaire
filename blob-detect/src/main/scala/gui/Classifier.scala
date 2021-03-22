@@ -190,10 +190,10 @@ object Classifier extends App{
 
   import javax.swing.UIManager
 
-  nu.pattern.OpenCV.loadLibrary()
+  imgproc.OpenCVLib.loadLibrary()
   UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName)
   val frame = new JFrame("Clasificador")
-  frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
+  frame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE)
   frame.add(ListsPanel, BorderLayout.CENTER)
   frame.add(ClassifyButton,BorderLayout.SOUTH)
   frame.add(NormalizedButton,BorderLayout.NORTH)

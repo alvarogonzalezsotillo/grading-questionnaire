@@ -66,7 +66,7 @@ class ProcessingStepTest extends FlatSpec {
   import ProcessingStepTest._
   import imgproc.Implicits._
 
-  nu.pattern.OpenCV.loadLibrary()
+  imgproc.OpenCVLib.loadLibrary()
 
   import imgproc.steps.ProcessingStep.Implicits._
 

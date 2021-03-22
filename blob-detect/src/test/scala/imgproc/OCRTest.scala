@@ -30,7 +30,7 @@ import scala.util.Random
 class OCRTest extends FlatSpec {
 
 
-  nu.pattern.OpenCV.loadLibrary()
+  imgproc.OpenCVLib.loadLibrary()
 
   private def cellsOfTestImage(f: String) = {
     val img = readImageFromResources(f)

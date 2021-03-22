@@ -85,7 +85,7 @@ object GUI extends App {
   }
 
 
-  nu.pattern.OpenCV.loadLibrary()
+  imgproc.OpenCVLib.loadLibrary()
 
   import ProcessingStep._
 
@@ -110,7 +110,7 @@ object GUI extends App {
   ))
 
   frame.setSize(640, 480)
-  frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
+  frame.setDefaultCloseOperation( javax.swing.WindowConstants.EXIT_ON_CLOSE)
   frame.setVisible(true)
 
   Logging.disableLogging()

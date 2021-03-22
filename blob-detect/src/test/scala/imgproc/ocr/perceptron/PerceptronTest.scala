@@ -13,7 +13,7 @@ import scala.util.Random
 @RunWith(classOf[JUnitRunner])
 class PerceptronTest extends FlatSpec {
 
-  nu.pattern.OpenCV.loadLibrary()
+  imgproc.OpenCVLib.loadLibrary()
 
   import imgproc.Implicits._
 

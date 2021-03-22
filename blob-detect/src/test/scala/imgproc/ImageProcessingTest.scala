@@ -20,7 +20,7 @@ class ImageProcessingTest extends FlatSpec {
   import imgproc.Implicits._
   import scala.collection.JavaConversions._
 
-  nu.pattern.OpenCV.loadLibrary()
+  imgproc.OpenCVLib.loadLibrary()
 
 
 

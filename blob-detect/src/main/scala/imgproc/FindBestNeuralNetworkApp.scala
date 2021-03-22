@@ -14,7 +14,7 @@ import scala.util.Random
   */
 object FindBestNeuralNetworkApp extends App{
 
-  nu.pattern.OpenCV.loadLibrary()
+  imgproc.OpenCVLib.loadLibrary()
 
   val internalLayersRange = 1 to 4
   val maxIterationsRange = Seq(100,1000)

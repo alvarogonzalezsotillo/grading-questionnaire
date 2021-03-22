@@ -242,5 +242,5 @@ protected class EmptyRecognizer extends LazyLogging {
 }
 
 object DefaultEmptyRecognizer extends EmptyRecognizer with App {
-  nu.pattern.OpenCV.loadLibrary()
+  imgproc.OpenCVLib.loadLibrary()
 }

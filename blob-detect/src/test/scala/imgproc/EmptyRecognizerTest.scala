@@ -27,7 +27,7 @@ import scala.util.Random
 @RunWith(classOf[JUnitRunner])
 class EmptyRecognizerTest extends FlatSpec {
 
-  nu.pattern.OpenCV.loadLibrary()
+  imgproc.OpenCVLib.loadLibrary()
 
 
   "Empty recognizer" should "recognize an empty pattern" in{

@@ -26,7 +26,7 @@ import scala.util.Random
 class KnnPerceptronTest extends FlatSpec {
 
 
-  nu.pattern.OpenCV.loadLibrary()
+  imgproc.OpenCVLib.loadLibrary()
 
 
   behavior of "Knn perceptron"

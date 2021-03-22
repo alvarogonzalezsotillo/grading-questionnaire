@@ -51,7 +51,7 @@ object ExtractLettersApp extends App {
     map(f => Sample(f)).
     filter(_.isOk)
 
-  nu.pattern.OpenCV.loadLibrary()
+  imgproc.OpenCVLib.loadLibrary()
 
 
 

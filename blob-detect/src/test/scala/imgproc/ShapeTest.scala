@@ -11,7 +11,7 @@ class ShapeTest extends FlatSpec {
 
   import imgproc.Implicits._
 
-  nu.pattern.OpenCV.loadLibrary()
+  imgproc.OpenCVLib.loadLibrary()
 
   behavior of "Shape"
 
