@@ -10,16 +10,15 @@ import org.junit.runner.RunWith
 import org.opencv.core.{Mat, Core, MatOfPoint, Point}
 import org.opencv.imgproc.Imgproc
 import org.opencv.utils.Converters
-import org.scalatest.FlatSpec
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.flatspec.{AnyFlatSpec => FlatSpec}
+import org.scalatestplus.junit.JUnitRunner
 
 
 @RunWith(classOf[JUnitRunner])
 class ImageProcessingTest extends FlatSpec {
 
   import imgproc.Implicits._
-  import scala.collection.JavaConversions._
-
+  import scala.jdk.CollectionConverters._
   nu.pattern.OpenCV.loadLibrary()
 
 
@@ -44,7 +43,7 @@ class ImageProcessingTest extends FlatSpec {
     testHomography(pointsInImage)
   }
 
-  def testHomography(pointsInImage: MatOfPoint) {
+  def testHomography(pointsInImage: MatOfPoint) : Unit = {
     val questions = 35
     val v = 1
     val H = ImageProcessing.findHomography(pointsInImage,AnswerMatrixMeasures(questions,v).answerTableRect.toOpenCV)

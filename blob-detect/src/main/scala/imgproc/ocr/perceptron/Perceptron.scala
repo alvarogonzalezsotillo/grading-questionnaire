@@ -23,7 +23,7 @@ object Perceptron{
   def signalToImage(s: Float ) : Byte = (s*255).toByte
 
 
-  private def fillRowWithArray( m: Mat, row: Int, b: Array[Float] ){
+  private def fillRowWithArray( m: Mat, row: Int, b: Array[Float] ): Unit ={
     assert(m.cols() == b.size )
     val buffer = new Array[Float](1)
     for( i <- 0 until m.cols() ){

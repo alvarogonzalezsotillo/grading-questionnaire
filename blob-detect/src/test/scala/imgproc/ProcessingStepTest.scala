@@ -14,8 +14,8 @@ import imgproc.steps.ProcessingStep._
 import imgproc.steps.QRInfo.{answerMatrixMeasures, qrLocation, qrText, qrVersion}
 import org.junit.runner.RunWith
 import org.opencv.core.{Mat, Point}
-import org.scalatest.FlatSpec
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.flatspec.{AnyFlatSpec => FlatSpec}
+import org.scalatestplus.junit.JUnitRunner
 
 
 object ProcessingStepTest{

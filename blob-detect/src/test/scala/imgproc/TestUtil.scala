@@ -66,7 +66,7 @@ object TestUtil {
       results.filter(_._2.isFailure)
     }
 
-    def reportFailures[T](failures: Seq[(I, Try[T])], out: PrintStream = System.out) {
+    def reportFailures[T](failures: Seq[(I, Try[T])], out: PrintStream = System.out) : Unit = {
       for ((file, failure) <- failures) {
         out.println(file)
         failure.failed.get.printStackTrace(out)

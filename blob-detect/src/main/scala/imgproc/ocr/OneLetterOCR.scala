@@ -62,7 +62,7 @@ object OneLetterOCR {
             bBoxes(i) = bBoxes(i) union bBoxes(j)
             bBoxes.remove(j)
             finish = false
-            break
+            break()
           }
         }
       }

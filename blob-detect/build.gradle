@@ -33,3 +33,9 @@ tasks.withType(Test) {
     systemProperty "java.library.path", "./lib"
 }
 
+task repl(type:JavaExec) {
+  main = "scala.tools.nsc.MainGenericRunner"
+  classpath = sourceSets.main.runtimeClasspath
+  standardInput System.in
+  args '-usejavacp'
+}

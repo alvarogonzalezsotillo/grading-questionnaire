@@ -5,8 +5,9 @@ package imgproc
   */
 
 import org.junit.runner.RunWith
-import org.scalatest.FlatSpec
-import org.scalatest.junit.JUnitRunner
+
+import org.scalatest.flatspec.{AnyFlatSpec => FlatSpec}
+import org.scalatestplus.junit.JUnitRunner
 
 
 @RunWith(classOf[JUnitRunner])

@@ -58,7 +58,7 @@ object ExtractPatternsFromStudentInfo extends App{
   for( f <- studentInfoFiles ; maybeCells <- cellsOfImage(f) ; c <- maybeCells ){
     val candidates = extractPossibleLettersImage(c).map( Pattern.resizeToPatterSize )
     for( candidate <- candidates ) {
-      saveImage(s"${counter.next}-${f.getName}", candidate)
+      saveImage(s"${counter.next()}-${f.getName}", candidate)
     }
 
   }

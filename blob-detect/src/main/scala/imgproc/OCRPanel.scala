@@ -17,9 +17,9 @@ class OCRPanel(cell: Mat) extends JPanel {
   import OneLetterOCR._
   import Implicits._
 
-  case class ImageView[A<%Image]( image: A ) extends JLabel( new ImageIcon(image) )
+  case class ImageView[A]( image: A )(implicit ev: A => Image) extends JLabel( new ImageIcon(image) )
 
-  case class LabelAndImagesPanel[A<%Image]( label: String, images: Seq[A] ) extends JPanel {
+  case class LabelAndImagesPanel[A]( label: String, images: Seq[A] )(implicit ev: A=> Image) extends JPanel {
     setLayout( new FlowLayout(FlowLayout.LEFT,4,4) )
     add( new JLabel(label) )
     images.foreach( i => add( ImageView(i) ) )

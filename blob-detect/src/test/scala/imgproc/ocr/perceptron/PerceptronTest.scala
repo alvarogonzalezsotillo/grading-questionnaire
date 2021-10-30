@@ -4,8 +4,8 @@ import imgproc.ImageProcessing
 import imgproc.ocr.Pattern
 import org.junit.runner.RunWith
 import org.opencv.core.Mat
-import org.scalatest.FlatSpec
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.flatspec.{AnyFlatSpec => FlatSpec}
+import org.scalatestplus.junit.JUnitRunner
 
 import scala.util.Random
 
@@ -39,28 +39,28 @@ class PerceptronTest extends FlatSpec {
       for( _ <- 1 to times ) {
         val f = Random.nextInt(matrix.length)
         val c = Random.nextInt(matrix(0).length)
-        val v = if (Random.nextBoolean) 255 else 0
+        val v = if (Random.nextBoolean()) 255 else 0
         matrix(f)(c) = v
       }
       matrix
     }
 
-    def a = Array.tabulate[Int](patternSize, patternSize) { (f, c) =>
+    def a() = Array.tabulate[Int](patternSize, patternSize) { (f, c) =>
       if (f < c) 255 else 0
     }
-    def b = Array.tabulate[Int](patternSize, patternSize) { (f, c) =>
+    def b() = Array.tabulate[Int](patternSize, patternSize) { (f, c) =>
       if (f > c) 255 else 0
     }
 
-    def c = Array.tabulate[Int](patternSize, patternSize) { (f, c) =>
+    def c() = Array.tabulate[Int](patternSize, patternSize) { (f, c) =>
       if (f == 0) 255 else 0
     }
 
-    def d = Array.tabulate[Int](patternSize, patternSize) { (f, c) =>
+    def d() = Array.tabulate[Int](patternSize, patternSize) { (f, c) =>
       if (c == 0) 255 else 0
     }
 
-    def unrecognizable = Array.tabulate[Int](patternSize, patternSize) { (f, c) =>
+    def unrecognizable() = Array.tabulate[Int](patternSize, patternSize) { (f, c) =>
       0
     }
 
@@ -86,7 +86,7 @@ class PerceptronTest extends FlatSpec {
     }
 
 
-    dump(noise(a))
+    dump(noise(a()))
   }
 
 

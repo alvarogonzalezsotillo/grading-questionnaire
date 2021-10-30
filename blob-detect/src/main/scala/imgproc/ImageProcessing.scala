@@ -6,7 +6,6 @@ import org.opencv.core._
 import org.opencv.highgui.Highgui
 import org.opencv.imgproc.Imgproc
 
-import scala.collection.TraversableLike
 import scala.collection.generic.CanBuildFrom
 
 /**
@@ -31,7 +30,7 @@ object ImageProcessing {
       if( url != null ) javax.imageio.ImageIO.read(url) else null
     }
 
-    imageio
+    imageio()
   }
 
   def toGrayscaleImage( src: Mat ) = {
@@ -116,7 +115,7 @@ object ImageProcessing {
   def findContours(m: Mat): Seq[MatOfPoint] = {
     import java.util.ArrayList
 
-    import scala.collection.JavaConversions._
+    import scala.jdk.CollectionConverters._
 
     /*
     val mPyrDownMat = new Mat
@@ -130,7 +129,8 @@ object ImageProcessing {
     val contours = new ArrayList[MatOfPoint]()
     val mHierarchy = new Mat
     Imgproc.findContours(mPyrDownMat, contours, mHierarchy, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_TC89_KCOS)
-    contours.map { c => Core.multiply(c, scale, c); c}
+    val ret : Seq[MatOfPoint] = contours.asScala.toSeq;
+    ret.map { c => Core.multiply(c, scale, c); c}
   }
 
   def approximateContoursToQuadrilaterals(epsilon: Double = 10)(contours: Seq[MatOfPoint]): Seq[MatOfPoint] = {
@@ -163,9 +163,10 @@ object ImageProcessing {
   private val defaultColor = new Scalar(0,255,0)
 
   def drawContours(dst: Mat, contours: Seq[MatOfPoint], color: Scalar = defaultColor, thickness: Int = 3, drawCenters: Boolean = false): Mat = {
-    import scala.collection.JavaConversions._
-    Imgproc.drawContours(dst, contours, -1, color, thickness)
-    Imgproc.drawContours(dst, contours.map(c => new MatOfPoint(c.center)), -1, color, thickness) If drawCenters
+    import scala.jdk.CollectionConverters._
+
+    Imgproc.drawContours(dst, contours.asJava, -1, color, thickness)
+    Imgproc.drawContours(dst, contours.map(c => new MatOfPoint(c.center)).asJava, -1, color, thickness) If drawCenters
     dst
   }
 
@@ -196,7 +197,7 @@ object ImageProcessing {
     ret
   }
 
-  def warpContours[C<:Traversable[MatOfPoint]]( contours: C with TraversableLike[MatOfPoint,C], H: Mat )(implicit cbf: CanBuildFrom[C, MatOfPoint, C]) : C = {
+  def warpContours( contours: Seq[MatOfPoint], H: Mat ) : Seq[MatOfPoint] = {
     val ret = contours.map { integerContours =>
       val dst = new MatOfPoint()
       val c = new MatOfPoint2f()

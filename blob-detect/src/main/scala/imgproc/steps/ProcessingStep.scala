@@ -128,7 +128,7 @@ object ProcessingStep extends LazyLogging {
   }
 
 
-  private def saveMatrix(m: Mat, suffix: String = "") {
+  private def saveMatrix(m: Mat, suffix: String = "") : Unit ={
     val shortDateFormat = new SimpleDateFormat("yyyyMMdd")
     val longDateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss-SSS")
     val date = new Date
