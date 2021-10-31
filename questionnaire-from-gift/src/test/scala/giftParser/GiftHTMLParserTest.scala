@@ -9,8 +9,8 @@ import GiftToLatex.GiftHTMLParser
 import giftParser.TestGiftGenerator._
 import giftParser.Util._
 import org.junit.runner.RunWith
-import org.scalatest.FlatSpec
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.flatspec.{AnyFlatSpec => FlatSpec}
+import org.scalatestplus.junit.JUnitRunner
 
 import scala.util.Try
 

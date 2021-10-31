@@ -41,6 +41,7 @@ class GiftParser extends RegexParsers {
   def answer: Parser[Answer] = indent ~> startOfAnswer ~ answerBody ^^ {
     case "=" ~ b => Answer(unescapeGiftText(b.trim), true)
     case "~" ~ b => Answer(unescapeGiftText(b.trim), false)
+    case _ => ???
   } | failure("An answer starts with = or ~")
 
   // A QUESTION HAS A TEXT, AND MAYBE SOME ANSWERS

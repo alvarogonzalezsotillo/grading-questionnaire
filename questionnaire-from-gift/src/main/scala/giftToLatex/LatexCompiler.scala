@@ -18,7 +18,7 @@ object LatexCompiler extends LazyLogging{
 
   private def compile(f: File, showLog: Boolean ): Process = {
 
-    def consumeInputStream(in:InputStream){
+    def consumeInputStream(in:InputStream): Unit = {
       new Thread{
         var c = in.read
         while( c != -1 ){
@@ -41,7 +41,7 @@ object LatexCompiler extends LazyLogging{
     Process( cmd, f.getParentFile).run(io)
   }
 
-  private def move(src: File, dst: File){
+  private def move(src: File, dst: File) : Unit = {
     dst.delete()
 
     logger.error( s"movig:${src.toPath} to:${dst.toPath}")

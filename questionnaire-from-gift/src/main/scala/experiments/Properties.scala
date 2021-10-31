@@ -41,7 +41,7 @@ object Properties {
 
     def derive[U](f: (T) => U): Prop[U] = new DerivedProp(this, f)
 
-    def apply = get
+    def apply() = get
   }
 
 

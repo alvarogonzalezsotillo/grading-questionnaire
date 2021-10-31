@@ -51,7 +51,7 @@ object Main extends App with LazyLogging {
         c.copy(numberOfVariations = n)
       }
 
-      opt[String]('t',"header-text") text ("Header text") required() action{ (t,c) =>
+      opt[String]('t',"header-text").text("Header text").required().action{ (t,c) =>
         c.copy(headerText = t)
       }
 
