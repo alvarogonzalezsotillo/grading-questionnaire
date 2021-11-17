@@ -1,9 +1,9 @@
 package common
 
-import java.io.{IOException, File}
+import java.io.{File, IOException}
 import javax.sound.sampled._
-
-import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 /**
  * Created by alvaro on 24/01/16.
@@ -13,12 +13,14 @@ object Sounds extends App {
   private val BUFFER_SIZE: Int = 128000
 
 
-  def playSound2( resource: String ) = {
+  def playSound2( resource: String ) : Unit = {
     val clip = AudioSystem.getClip()
     val soundFileUrl = getClass().getResource(resource)
     val inputStream = AudioSystem.getAudioInputStream(soundFileUrl);
     clip.open(inputStream)
     clip.start()
+    clip.flush()
+    clip.close()
   }
 
   def playSound(resource: String) : Unit = {
@@ -56,10 +58,10 @@ object Sounds extends App {
     import scala.concurrent.ExecutionContext.Implicits.global
     val BEEP_FILE = "/sounds/Censored_Beep.wav"
     Future {
-      playSound2(BEEP_FILE)
-      Thread.sleep(2000)
+      playSound(BEEP_FILE)
     }
   }
 
+  Await.ready( beep(), Duration.Inf)
 
 }
