@@ -21,7 +21,7 @@ object Sounds extends App {
     clip.start()
   }
 
-  def playSound(resource: String) {
+  def playSound(resource: String) : Unit = {
 
     val soundFileUrl = getClass().getResource(resource)
     val audioStream = AudioSystem.getAudioInputStream(soundFileUrl)

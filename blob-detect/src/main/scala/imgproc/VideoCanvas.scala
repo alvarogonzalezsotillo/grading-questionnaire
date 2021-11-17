@@ -3,8 +3,7 @@ package imgproc
 import java.awt.{BorderLayout, GridLayout}
 import java.util
 import javax.swing.event.{ChangeEvent, ChangeListener}
-import javax.swing.{JFrame, JPanel, JSlider, SwingWorker}
-
+import javax.swing.{JFrame, JPanel, JSlider, SwingWorker, WindowConstants}
 import org.opencv.core.{Mat, Scalar}
 
 /**
@@ -124,7 +123,7 @@ object VideoCanvasApp extends App {
 
 
   f.pack()
-  f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
+  f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
   f.setVisible(true)
 
 }

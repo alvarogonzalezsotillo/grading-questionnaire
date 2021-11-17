@@ -38,7 +38,7 @@ object BinaryConverter {
       solutionIndexes(i) = sol >> (bitsPerIndex * indexInByte)
       //println(s"i:$i indexInByte:$indexInByte mask:$mask data():${data(i / valuesPerByte)} sol:$sol solutionIndexes:${solutionIndexes(i)}")
     }
-    (solutionIndexes,version)
+    (solutionIndexes.toSeq,version)
   }
 
   def toBase64(buffer: Array[Byte]): String = {

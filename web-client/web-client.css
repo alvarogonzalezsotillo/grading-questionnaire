@@ -3,3 +3,8 @@
 #video{
     max-height: 200px;
 }
+
+#canvas{
+    display: block;
+    
+}

@@ -14,23 +14,6 @@ object CosasPorHacer extends App with DSL{
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 trait DSL{
 
   trait Cosa

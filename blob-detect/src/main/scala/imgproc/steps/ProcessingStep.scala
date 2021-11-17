@@ -207,7 +207,7 @@ object ProcessingStep extends LazyLogging {
     val quads = findBiggestAlignedQuadrilaterals()(quadrilaterals()).map { quads =>
       val sortedQuads = quads.sortBy(_.center.x)
       val orientation = sortedQuads.last.center - sortedQuads.head.center
-      sortedQuads.map(q => toMatOfPoint(findProbableQuadrilateral(q.points, orientation)))
+      sortedQuads.map(q => toMatOfPoint(findProbableQuadrilateral(q.points.toSeq, orientation)))
     }
 
 

@@ -1,9 +1,8 @@
 package imgproc
 
-import java.awt.{Graphics, Image}
+import java.awt.{Frame, Graphics, Image}
 import javax.swing._
 import javax.swing.event.{ChangeEvent, ChangeListener}
-
 import common.Logging
 import imgproc.steps.AnswersInfo.cellsLocation
 import imgproc.steps.ContoursInfo.{biggestQuadrilaterals, contours, quadrilaterals}
@@ -109,7 +108,7 @@ object GUI extends App {
   ))
 
   frame.setSize(640, 480)
-  frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
+  frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
   frame.setVisible(true)
 
   Logging.disableLogging()

@@ -2,10 +2,9 @@ package imgproc
 
 import java.awt.{FlowLayout, GridLayout, Image}
 import javax.imageio.ImageIO
-import javax.swing.{JFrame, ImageIcon, JLabel, JPanel}
-
+import javax.swing.{ImageIcon, JFrame, JLabel, JPanel, WindowConstants}
 import imgproc.ocr.{OneLetterOCR, TrainedOneLetterOCR}
-import org.opencv.core.{Rect, Scalar, MatOfPoint, Mat}
+import org.opencv.core.{Mat, MatOfPoint, Rect, Scalar}
 
 
 
@@ -70,6 +69,6 @@ object OCRPanel extends App{
   val frame = new JFrame(file.getName)
   frame.add( new OCRPanel(ImageIO.read(file) ) )
   frame.pack()
-  frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
+  frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
   frame.setVisible(true)
 }
