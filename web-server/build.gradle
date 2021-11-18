@@ -1,0 +1,31 @@
+plugins {
+    id 'org.gradle.playframework' version '0.12'
+}
+
+
+repositories {
+    maven {
+        name "lightbend-maven-release"
+        url "https://repo.lightbend.com/lightbend/maven-releases"
+    }
+    ivy {
+        name "lightbend-ivy-release"
+        url "https://repo.lightbend.com/lightbend/ivy-releases"
+        layout "ivy"
+    }
+}
+
+dependencies{
+    compile project(':common')
+    implementation "com.typesafe.play:play-guice_2.13:2.8.8"
+}
+
+
+play {
+    platform {
+        playVersion = '2.8.8'
+        scalaVersion = '2.13.7'
+        javaVersion = JavaVersion.VERSION_1_8
+    }
+}
+
