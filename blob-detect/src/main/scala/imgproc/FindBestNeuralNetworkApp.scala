@@ -16,7 +16,7 @@ object FindBestNeuralNetworkApp extends App{
 
   imgproc.OpenCVLib.loadLibrary()
 
-  val internalLayersRange = 1 to 4
+  val internalLayersRange = 1 to 10
   val maxIterationsRange = Seq(100,1000)
   val epsilonRange = Seq(0.05, 0.01)
   val internalLayerNodesRange = Pattern.patternSize to Pattern.patternSize*Pattern.patternSize by Pattern.patternSize*4
@@ -86,7 +86,7 @@ object FindBestNeuralNetworkApp extends App{
     }
 
     println( s"** Params:$params  accuracy:$accuracy")
-
+nternalLayerNodesRange
     (accuracy,params)
   }
 
