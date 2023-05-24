@@ -17,8 +17,8 @@ object FindBestNeuralNetworkApp extends App{
   imgproc.OpenCVLib.loadLibrary()
 
   val internalLayersRange = 1 to 10
-  val maxIterationsRange = Seq(100,1000)
-  val epsilonRange = Seq(0.05, 0.01)
+  val maxIterationsRange = Seq(100,10000)
+  val epsilonRange = Seq(0.05, 0.01, 0.005)
   val internalLayerNodesRange = Pattern.patternSize to Pattern.patternSize*Pattern.patternSize by Pattern.patternSize*4
 
 
@@ -28,7 +28,7 @@ object FindBestNeuralNetworkApp extends App{
 
   val random = new Random
 
-  def accuracyOfOCR(params: AnnPerceptronParams, trainPercentage: Double = 0.9) : Double = {
+  def accuracyOfOCR(params: AnnPerceptronParams, trainPercentage: Double = 0.8) : Double = {
 
     val ocr = LetterPerceptron(params)
 
@@ -86,7 +86,7 @@ object FindBestNeuralNetworkApp extends App{
     }
 
     println( s"** Params:$params  accuracy:$accuracy")
-nternalLayerNodesRange
+
     (accuracy,params)
   }
 
@@ -98,5 +98,10 @@ nternalLayerNodesRange
 
 
   println( "best: " + best )
+  val bestParams = best._2
+  println( "   nodes:" + bestParams.nodesInInternalLayers )
+  println( "   layers:" + bestParams.internalLayers )
+  println( "   maxIterations:" + bestParams.maxIterations )
+  println( "   epsilon:" + bestParams.epsilon )
 
 }
