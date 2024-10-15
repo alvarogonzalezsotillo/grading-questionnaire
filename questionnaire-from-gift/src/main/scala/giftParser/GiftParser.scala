@@ -25,6 +25,7 @@ class GiftParser extends RegexParsers {
     escaped.foldLeft(s)((ret, esc) => ret.replaceAll( """\\""" + esc._1, esc._2))
   }
 
+  def lineComment: Parser[String] = """//.*""".r
 
   // ANY NUMBER OF BLANKS
   def indent: Parser[String] = """\s*""".r
@@ -40,13 +41,13 @@ class GiftParser extends RegexParsers {
   def questionText: Parser[String] = """[^\{]*""".r | failure("{ expected")
 
   // AN ANSWER CAN BE INDENTED, HAS A START AND A BODY
-  def answer: Parser[Answer] = indent ~> startOfAnswer ~ answerBody ^^ {
+  def answer: Parser[Answer] = rep(lineComment) ~> indent ~> startOfAnswer ~ answerBody ^^ {
     case "=" ~ b => Answer(unescapeGiftText(b.trim), true)
     case "~" ~ b => Answer(unescapeGiftText(b.trim), false)
   } | failure("An answer starts with = or ~")
 
   // A QUESTION HAS A TEXT, AND MAYBE SOME ANSWERS
-  def question: Parser[Question] = (questionText <~ "{") ~ (rep(answer) <~ "}") ^^ {
+  def question: Parser[Question] = rep(lineComment) ~> (questionText <~ "{") ~ (rep(answer) <~ "}") ^^ {
     case t ~ Nil => OpenQuestion(unescapeGiftText(t.trim))
     case t ~ a => QuestionnaireQuestion(unescapeGiftText(t.trim), a)
   } | failure("A question has some text, and maybe some answers surrounded by {}")
