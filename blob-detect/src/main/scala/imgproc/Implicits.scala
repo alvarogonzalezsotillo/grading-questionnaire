@@ -36,11 +36,6 @@ object Implicits {
   }
 
 
-  implicit def BufferedImage2Mat( image: BufferedImage ) : Mat = {
-    val ret = new Mat(image.getHeight,image.getWidth,CvType.CV_8UC3)
-    BufferedImage2Mat(image, ret)
-    ret
-  }
 
 
   def toBufferedImageOfType(original:BufferedImage, typeI: Int) = {
@@ -67,7 +62,13 @@ object Implicits {
     }
   }
 
-  def BufferedImage2Mat( src: BufferedImage, dst: Mat ): Unit ={
+  implicit def BufferedImage2Mat( image: BufferedImage ) : Mat = {
+    val ret = new Mat(image.getHeight,image.getWidth,CvType.CV_8UC3)
+    BufferedImage2Mat(image, ret)
+    ret
+  }
+
+  def BufferedImage2Mat( src: BufferedImage, dst: Mat ) : Unit {
     val image = toBufferedImageOfType(src,BufferedImage.TYPE_3BYTE_BGR)
     try {
       assert(image.getType == BufferedImage.TYPE_3BYTE_BGR)
@@ -103,7 +104,7 @@ object Implicits {
     lazy val points = contour.toArray
     def apply(index:Int) = points(index)
     lazy val center = {
-      val c = points.foldLeft( new Point(0,0) ) {
+      val c = points.tail.foldLeft( points(0) ) {
         (p, center) => p+center
       }
       c / points.size
@@ -115,6 +116,26 @@ object Implicits {
       val maxX = points.map(_.x).max.toInt
       val maxY = points.map(_.y).max.toInt
       new Rect(minX,minY,maxX-minX,maxY-minY)
+    }
+
+    def grow( inc: Double ) : MatOfPoint = {
+      val c = center
+      //println( s"Center:$center")
+      val newPoints = points.map {p =>
+        //println( s"  p:$p")
+        val v = p - c
+        //println( s"  v:$v")
+        val modulus = v.modulus + inc
+        //println( s"  modulus:$modulus")
+
+        val ret = c + v.withModulus( modulus )
+        //println( s"  ret:$ret")
+        //println()
+        ret
+      }
+
+      //println( s"  grow: ${newPoints.mkString(",")}")
+      new MatOfPoint(newPoints :_* )
     }
 
     lazy val area = Imgproc.contourArea(contour)
@@ -205,6 +226,14 @@ object Implicits {
     def +(p:Point) = plus( p )
 
     def ~=(p:Point)(implicit e: Epsilon) = (point.x ~= p.x) && (point.y ~= p.y)
+
+    def distanceToLine( p1: Point, p2: Point ) : Double = {
+      // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+      val v = (p1-p2)
+      val lambda = (this * v - p2*v )/(v*v)
+      val projectionOfThisOnP1P2 = v*lambda + p2
+      (this - projectionOfThisOnP1P2).modulus
+    }
 
   }
 

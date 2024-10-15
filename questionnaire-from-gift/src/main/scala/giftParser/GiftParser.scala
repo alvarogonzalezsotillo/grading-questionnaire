@@ -6,9 +6,11 @@ package giftParser
 
 import java.io._
 
+import com.typesafe.scalalogging.LazyLogging
+import giftParser.GiftParser.{GiftError, GiftFile}
 import giftToLatex.GiftToLatex
 
-import scala.util.{Random}
+import scala.util.Random
 import scala.util.parsing.combinator._
 
 // SEE https://docs.moodle.org/23/en/GIFT_format
@@ -23,6 +25,7 @@ class GiftParser extends RegexParsers {
     escaped.foldLeft(s)((ret, esc) => ret.replaceAll( """\\""" + esc._1, esc._2))
   }
 
+  def lineComment: Parser[String] = """//.*""".r
 
   // ANY NUMBER OF BLANKS
   def indent: Parser[String] = """\s*""".r
@@ -38,14 +41,14 @@ class GiftParser extends RegexParsers {
   def questionText: Parser[String] = """[^\{]*""".r | failure("{ expected")
 
   // AN ANSWER CAN BE INDENTED, HAS A START AND A BODY
-  def answer: Parser[Answer] = indent ~> startOfAnswer ~ answerBody ^^ {
+  def answer: Parser[Answer] = rep(lineComment) ~> indent ~> startOfAnswer ~ answerBody ^^ {
     case "=" ~ b => Answer(unescapeGiftText(b.trim), true)
     case "~" ~ b => Answer(unescapeGiftText(b.trim), false)
     case _ => ???
   } | failure("An answer starts with = or ~")
 
   // A QUESTION HAS A TEXT, AND MAYBE SOME ANSWERS
-  def question: Parser[Question] = (questionText <~ "{") ~ (rep(answer) <~ "}") ^^ {
+  def question: Parser[Question] = rep(lineComment) ~> (questionText <~ "{") ~ (rep(answer) <~ "}") ^^ {
     case t ~ Nil => OpenQuestion(unescapeGiftText(t.trim))
     case t ~ a => QuestionnaireQuestion(unescapeGiftText(t.trim), a)
   } | failure("A question has some text, and maybe some answers surrounded by {}")
@@ -54,12 +57,19 @@ class GiftParser extends RegexParsers {
   def questionnaire: Parser[Questions] = rep(question)
 }
 
-object GiftParser {
+object GiftParser extends LazyLogging{
 
   type Questions = List[GiftFile.Question]
 
   trait GiftParserResult {
     val successful = false
+    def get : GiftFile = this match{
+      case GiftError(msg, line, column, lineContents) =>
+        throw new IllegalArgumentException(s"Error:$msg, at $line,$column\n$lineContents")
+
+      case g: GiftFile =>
+        g
+    }
   }
 
   object GiftFile {
@@ -75,6 +85,7 @@ object GiftParser {
     case class OpenQuestion(text: String) extends Question{
       private val fullPageHTMLTags = Seq( "table", "li" ).map( "</" + _ + ">")
       def fullPageQuestion = fullPageHTMLTags.exists( text.contains )
+      logger.error("OpenQuestion:" + text )
     }
 
     case class QuestionnaireQuestion(text: String, answers: List[Answer]) extends Question {
@@ -88,6 +99,7 @@ object GiftParser {
           super.equals(o)
       }
       assert(answers.count(_.correct) == 1, s"Incorrect number of correct answers:$this")
+      logger.error("QuestionnaireQuestion:" + text )
     }
 
     def apply(questions: Questions, file: Option[File]) = new GiftFile(questions, file)
@@ -145,9 +157,14 @@ object GiftParser {
   case class GiftError(msg: String, line: Int, column: Int, lineContents: String) extends GiftParserResult
 
   private def processResult(parser: GiftParser, ret: GiftParser#ParseResult[Questions], file: Option[File]): GiftParserResult = ret match {
-    case parser.Success(_, _) => GiftFile(ret.get, file).reorder()
-    case parser.Error(msg, next) => GiftError(msg, next.pos.line, next.pos.column, next.pos.longString.takeWhile(_ != '\n'))
-    case parser.Failure(msg, next) => GiftError(msg, next.pos.line, next.pos.column, next.pos.longString.takeWhile(_ != '\n'))
+    case parser.Success(_, _) =>
+      GiftFile(ret.get, file)
+    case parser.Error(msg, next) =>
+      logger.error( "parser.Error:" + msg + " " + next )
+      GiftError(msg, next.pos.line, next.pos.column, next.pos.longString.takeWhile(_ != '\n'))
+    case parser.Failure(msg, next) =>
+      logger.error( "parser.Failure:" + msg + " " + next )
+      GiftError(msg, next.pos.line, next.pos.column, next.pos.longString.takeWhile(_ != '\n'))
     case _ => throw new IllegalStateException()
   }
 

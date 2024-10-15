@@ -62,13 +62,13 @@ object OCRPanel extends App{
   import java.io.File
   import Implicits._
 
-  nu.pattern.OpenCV.loadLibrary()
+  imgproc.OpenCVLib.loadLibrary()
 
   val file = new File("/home/alvaro/github/grading-questionnaire/blob-detect/A-con-ruido.png")
 
   val frame = new JFrame(file.getName)
   frame.add( new OCRPanel(ImageIO.read(file) ) )
   frame.pack()
-  frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
+  frame.setDefaultCloseOperation( javax.swing.WindowConstants.EXIT_ON_CLOSE)
   frame.setVisible(true)
 }

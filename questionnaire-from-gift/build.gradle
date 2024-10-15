@@ -28,10 +28,11 @@ shadowJar {
 }
 
 task install(dependsOn: shadowJar) doLast {
-    def stub = "MYSELF=`which \"\$0\" 2>/dev/null`\n" +
+    def stub = "#!/bin/sh\n" +
+        "MYSELF=`which \"\$0\" 2>/dev/null`\n" +
         "[ \$? -gt 0 -a -f \"\$0\" ] && MYSELF=\"./\$0\"\n" +
         "exec java -jar \$MYSELF \"\$@\"\n" +
-        "exit \$?"
+        "exit \$?\n"
 
     def file = new File("./questionnaire-from-gift/build/libs/shadow.jar")
     def executable = new File("gifttolatex")

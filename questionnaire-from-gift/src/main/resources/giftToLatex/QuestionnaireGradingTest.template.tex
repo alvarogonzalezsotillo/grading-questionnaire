@@ -58,6 +58,7 @@
 \newcommand{\HalfWidth}{0.46\textwidth}
 \newcommand{\Height}{0.95\textheight}
 \newcommand{\HalfHeight}{0.45\textheight}
+\newcommand{\QuarterHeight}{0.20\textheight}
 
 
 
@@ -103,6 +104,21 @@
   \item #1
 }
 
+\newenvironment{QuarterPageOpenQuestion}
+{
+
+  \begin{minipage}[t][\QuarterHeight][t]{\Width}
+    \HorizontalLine
+    \arabic{QuestionCounter}.
+}
+{
+    \vfill
+  \end{minipage}
+  \stepcounter{QuestionCounter}
+  \\
+}
+
+
 \newenvironment{HalfPageOpenQuestion}
 {
 
@@ -132,9 +148,18 @@
 }
 
 
+\newcommand{\TickedInstructions}[2]
+{
+  \Instructions{#1}{#2}{\item Un aspa marca una respuesta. Se puede desmarcar una respuesta con un círculo sobre el aspa.}
+}
+
+\newcommand{\LetterInstructions}[2]
+{
+  \Instructions{#1}{#2}{\item Escribe la respuesta con letras MAYÚSCULAS. Para cambiar la respuesta, tacha y escribe la nueva respuesta.}
+}
 
 
-\newcommand{\Instructions}[2]
+\newcommand{\Instructions}[3]
 {
   \begin{small}
     \begin{multicols}{2}
@@ -144,7 +169,7 @@
       \item Todas las preguntas tienen el mismo valor.
       \item Hay una, y sólo una, respuesta correcta en cada pregunta.
       \item Responde solo a aquellas preguntas de las que estés seguro. Una respuesta incorrecta resta un tercio del valor de una respuesta acertada, pero una pregunta sin responder no resta puntos.
-      \item Un aspa marca una respuesta. Se puede desmarcar una respuesta con un círculo sobre el aspa.
+      #3  
     \end{itemize}
     \vfill\columnbreak
 
@@ -216,25 +241,33 @@
   {}%
 }%
 
+\usepackage{array}
 
 \definecolor{light-gray}{gray}{0.60}
 \newcommand{\LetterAnswerCellTemplate}[1]{%
   \setlength{\arrayrulewidth}{.02em}%
-  %\setlength{\tabcolsep}{20pt}
-  \begin{tabular}{p{0.7cm}@{\hskip 0.4cm}!{\color{light-gray}\vrule}p{1.3cm}!{\color{light-gray}\vrule}}%
+  \setlength{\tabcolsep}{1pt}
+  \begin{tabular}{m{0.9cm}@{\hskip 0.15cm}!{\color{light-gray}\vrule}p{2cm}!{\color{light-gray}\vrule}}%
     \arrayrulecolor{light-gray}\cline{2-2}%
-    \cellcolor{black}\textcolor{white}{\hfill #1 \hfill} &  \hfill \\[2pt]%
+    \vspace{5pt}\cellcolor{black}\textcolor{white}{\hfill {#1} \hfill} &  {\hfill}\\%
     \arrayrulecolor{light-gray}\cline{2-2}%
   \end{tabular}%
 }
 
 \newcommand{\TickWidth}{0.5cm}
 \usepackage{array}
+\definecolor{sep-gray}{gray}{0.60}
 \newcolumntype{x}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}b{#1}}
 \newcommand{\TickedAnswerCellTemplate}[5]{%
   \setlength{\tabcolsep}{0pt}
-  \begin{tabular}{x{1.0cm}@{\hskip 0.1cm}!{\color{light-gray}\vrule}@{}x{\TickWidth}@{}!{\color{light-gray}\vrule}@{}x{\TickWidth}@{}!{\color{light-gray}\vrule}@{}x{\TickWidth}@{}!{\color{light-gray}\vrule}@{}x{\TickWidth}@{}!{\color{light-gray}\vrule}}%
-    \arrayrulecolor{light-gray}\cline{2-5}%
+  \begin{tabular}{
+    x{1.0cm}
+    @{\hskip 0.1cm}!{\color{sep-gray}\vrule}
+    @{}x{\TickWidth}@{}!{\color{sep-gray}\vrule}
+    @{}x{\TickWidth}@{}!{\color{sep-gray}\vrule}
+    @{}x{\TickWidth}@{}!{\color{sep-gray}\vrule}
+    @{}x{\TickWidth}@{}!{\color{sep-gray}\vrule}}%
+    \arrayrulecolor{sep-gray}\cline{2-5}%
     \ifthenelse{\equal{#2}{}}
     {
     \cellcolor{black}\textcolor{white}{ #1 } & #2 &#3&#4& {#5}\\[2pt]%
@@ -247,6 +280,51 @@
 }
 
 
+\newcommand{\TickedVerticalAnswerTable}[1]
+{
+
+  \newcounter{AnswerTableC}
+  \newcounter{DummyAnswerCounter}
+  \setcounter{AnswerTableC}{1}
+  \newcommand{\HeaderCell}
+  {
+    \TickedAnswerCellTemplate{}{a}{b}{c}{d}
+    \hspace{0mm}
+    \addtocounter{AnswerTableC}{0}
+  }
+
+  \newcommand{\AnswerCell}
+  {
+    \ifthenelse{\value{AnswerTableC}>#1}{\TickedAnswerCellTemplate{}{}{}{}{}}{\TickedAnswerCellTemplate{\arabic{AnswerTableC}}{}{}{}{}}
+    \addtocounter{AnswerTableC}{1}
+  }
+
+
+
+  \begin{multicols}{5}%
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+  \end{multicols}
+
+  \begin{multicols}{5}%
+    \forloop[5]{DummyAnswerCounter}{1}{\value{DummyAnswerCounter}<#1 \OR \value{AnswerTableC}=#1}%
+    {      
+      \AnswerCell \AnswerCell \AnswerCell \AnswerCell \AnswerCell
+     }%
+   \end{multicols}%
+
+   \begin{multicols}{5}%
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+  \end{multicols}
+
+}
 
 \newcommand{\TickedHorizontalAnswerTable}[1]
 {
@@ -290,12 +368,22 @@
 
   }
 
+  {
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+
+  }
 
 }
 
 
 \newcommand{\LetterHorizontalAnswerTable}[1]
 {
+  \definecolor{sep-gray}{gray}{0.00}
+
   \vspace{0.5cm}
 
   \newcounter{AnswerTableC}
@@ -308,6 +396,23 @@
     \ifthenelse{\value{AnswerTableC}>#1}{\LetterAnswerCellTemplate{}}{\LetterAnswerCellTemplate{\arabic{AnswerTableC}}}
     \hspace{0mm}
     \addtocounter{AnswerTableC}{1}
+  }
+
+  \newcommand{\HeaderCell}
+  {
+    \TickedAnswerCellTemplate{}{\hfill}{}{}{}
+    \hspace{0.0mm}
+    \addtocounter{AnswerTableC}{0}
+  }
+
+  
+  {
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+
   }
 
 
@@ -317,13 +422,25 @@
     \AnswerCell \hfill
     \AnswerCell \hfill
     \AnswerCell \hfill
-    \AnswerCell
+    \AnswerCell \hfill
 
   }
+
+    {
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+
+  }
+
 }
 
 \newcommand{\LetterVerticalAnswerTable}[1]
 {
+  \definecolor{sep-gray}{gray}{0.00}
+
   \vspace{0.5cm}
   \newcounter{AnswerTableC}
   \setcounter{AnswerTableC}{1}
@@ -337,6 +454,22 @@
     \addtocounter{AnswerTableC}{1}
   }
 
+
+  \newcommand{\HeaderCell}
+  {
+    \TickedAnswerCellTemplate{}{\hfill}{}{}{}
+    \hspace{0mm}
+    \addtocounter{AnswerTableC}{0}
+  }
+
+  \begin{multicols}{5}%
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+  \end{multicols}
+  
   \begin{multicols}{5}%
 
   \forloop[5]{DummyAnswerCounter}{1}{\value{DummyAnswerCounter}<#1 \OR \value{AnswerTableC}=#1}
@@ -349,28 +482,6 @@
 
   }
   \end{multicols}%
-
-}
-
-\newcommand{\TickedVerticalAnswerTable}[1]
-{
-
-  \newcounter{AnswerTableC}
-  \newcounter{DummyAnswerCounter}
-  \setcounter{AnswerTableC}{1}
-  \newcommand{\HeaderCell}
-  {
-    \TickedAnswerCellTemplate{}{a}{b}{c}{d}
-    \hspace{0mm}
-    \addtocounter{AnswerTableC}{0}
-  }
-
-  \newcommand{\AnswerCell}
-  {
-    \ifthenelse{\value{AnswerTableC}>#1}{\TickedAnswerCellTemplate{}{}{}{}{}}{\TickedAnswerCellTemplate{\arabic{AnswerTableC}}{}{}{}{}}
-    \addtocounter{AnswerTableC}{1}
-  }
-
 
   \begin{multicols}{5}%
     \HeaderCell
@@ -380,13 +491,8 @@
     \HeaderCell
   \end{multicols}
 
-  \begin{multicols}{5}%
-    \forloop[5]{DummyAnswerCounter}{1}{\value{DummyAnswerCounter}<#1 \OR \value{AnswerTableC}=#1}%
-    {      
-      \AnswerCell     \AnswerCell     \AnswerCell     \AnswerCell     \AnswerCell
-     }%
-  \end{multicols}%
 }
+
 
 \newcommand{\AnswerTable}[3]{
   %\begin{center}%
@@ -417,13 +523,18 @@
 
 \newcommand{\FirstPage}[5]{
 
+  % 1 -> Peso abiertas
+  % 2 -> Peso cerradas
+  % 3 -> Número de preguntas cerradas
+  % 4 -> horizontal
+  % 5 -> ticked
   \FileAutoref \OriginalGiftFile{$GiftFile$}
 
   \StudentData
   \AnswerTable{#3}{#4}{#5}
   \vfill
 
-  \Instructions{#1}{#2}
+  \ifthenelse{\equal{#5}{true}}{\TickedInstructions{#1}{#2}}{\LetterInstructions{#1}{#2}}
   \newpage
 }
 
@@ -432,11 +543,11 @@
 
 \IndentOff
 
+\setlength{\multicolsep}{3px}
 
 $GeneratedContent$
 
-%\FirstPage{30}{70}{51}{false}{true}% horizontal ticked
-
+  %\FirstPage{30}{70}{120}{false}{false}% horizontal ticked
 
 
 

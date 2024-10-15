@@ -1,6 +1,6 @@
 package giftToLatex
 
-import java.io.{OutputStream, ByteArrayOutputStream, File, InputStream}
+import java.io.{ByteArrayOutputStream, File, InputStream, OutputStream}
 
 import com.typesafe.scalalogging.LazyLogging
 import common.{QuestionnaireVersion, BinaryConverter}
@@ -8,6 +8,7 @@ import giftParser.GiftParser
 import giftParser.GiftParser.GiftFile._
 import giftParser.GiftParser._
 import giftParser.Util._
+import giftToLatex.Main.Config
 
 import scala.util.parsing.combinator.RegexParsers
 
@@ -104,7 +105,15 @@ object GiftToLatex extends LazyLogging{
 
       // SIZES
       """<font size="\+1">""" -> "\\\\begin{large}\n",
-      """</font>""" -> "\\\\end{large}\n"
+      """</font>""" -> "\\\\end{large}\n",
+
+      // FORMAT
+      "<i>" -> """\\textit{""",
+      "</i>" -> "} ",
+      "<b>" -> """\\textbf{""",
+      "</b>" -> "} "
+
+
     )
 
 
@@ -122,9 +131,17 @@ object GiftToLatex extends LazyLogging{
     ret
   }
 
-  private def generateQuestionLatex(q: Question): String = q match {
+  private def generateQuestionLatex(q: Question, reduceOpenQuestions: Boolean ): String = q match {
     case question:OpenQuestion =>
-      val typeOfQuestion = if (question.fullPageQuestion) "FullPageOpenQuestion" else "HalfPageOpenQuestion"
+
+      val typeOfQuestion = {
+        if( !reduceOpenQuestions ) {
+          if (question.fullPageQuestion) "FullPageOpenQuestion" else "HalfPageOpenQuestion"
+        }
+        else{
+          if (question.fullPageQuestion) "HalfPageOpenQuestion" else "QuarterPageOpenQuestion"
+        }
+      }
       s"\\begin{${
         typeOfQuestion
       }}\n  ${
@@ -148,9 +165,9 @@ object GiftToLatex extends LazyLogging{
       begin + sa + end
   }
 
-  private def generateLatexForQuestions(g: GiftFile) = {
-    val qq = g.questionnaireQuestions.map(GiftToLatex.generateQuestionLatex).mkString("\n")
-    val oq = g.openQuestions.map(GiftToLatex.generateQuestionLatex).mkString("\n")
+  private def generateLatexForQuestions(g: GiftFile, reduceOpenQuestions: Boolean ) = {
+    val qq = g.questionnaireQuestions.map(GiftToLatex.generateQuestionLatex(_,reduceOpenQuestions)).mkString("\n")
+    val oq = g.openQuestions.map(GiftToLatex.generateQuestionLatex(_,reduceOpenQuestions)).mkString("\n")
 
     s"\\begin{QuestionnaireQuestions}\n$qq\n\\end{QuestionnaireQuestions}\n$oq"
   }
@@ -167,13 +184,13 @@ object GiftToLatex extends LazyLogging{
 
 
 
-  def generateLatex(f: GiftFile, headerText: String = "", questionnaireQuestionsWeight: Int = 60, horizontal: Boolean = true, ticked: Boolean = false, imagePath: Seq[String] = Seq() ): String = {
+  def generateLatex(f: GiftFile, headerText: String = "", questionnaireQuestionsWeight: Int = 60, horizontal: Boolean = true, ticked: Boolean = false, imagePath: Seq[String] = Seq(), reduceOpenQuestions: Boolean=false ): String = {
 
     val version = QuestionnaireVersion.version(horizontal,ticked)
 
     val openQuestionsWeight = 100 - questionnaireQuestionsWeight
     val firstPage = s"\\FirstPage{$questionnaireQuestionsWeight}{$openQuestionsWeight}{${f.questionnaireQuestions.size}}{$horizontal}{$ticked}"
-    val questions = generateLatexForQuestions(f)
+    val questions = generateLatexForQuestions(f,reduceOpenQuestions)
     val solutionIndexes = generateSolutionIndexes(f)
     val solutions = solutionIndexes.map(i => (i.toChar + 'a').toChar).mkString(",")
     val qrCodeData = BinaryConverter.toBase64( BinaryConverter.toBinarySolutions(solutionIndexes,version) )
@@ -196,18 +213,33 @@ object GiftToLatex extends LazyLogging{
     substitutions.foldLeft(latexTemplate){ case (latex,(k,v)) => latex.replace(k,v) }
   }
 
+  trait GiftToLatexConfig {
+    val giftFile: File
+    val headerText: String = "headerText"
+    val horizontalTable: Boolean = true
+    val tickedTable: Boolean = false
+    val reduceOpenQuestions: Boolean = false
+    val questionnaireQuestionsWeight: Int = 60
+    val imagePath : Seq[String] = Seq()
+  }
 
-  def apply(f: File, headerText: String = "", questionnaireQuestionsWeight: Int = 60, maxQuestionnaireQuestions: Int = Integer.MAX_VALUE, horizontal: Boolean = true, ticked: Boolean = false, imagePath: Seq[String] = Seq() ): String = {
-    GiftParser.parse(f) match {
-      case GiftError(msg, line, column, lineContents) =>
-        throw new IllegalArgumentException(s"Error:$msg, at $line,$column\n$lineContents")
 
-      case g: GiftFile =>
-        val additionalImagePath = f.getAbsoluteFile.getParent
-        val ip = additionalImagePath +: imagePath
-        logger.debug( ip.toString )
-        generateLatex( g.reduce(maxQuestionnaireQuestions), headerText, questionnaireQuestionsWeight, horizontal, ticked, ip )
-    }
+
+  def apply(giftParsedFile: GiftFile)(implicit c: GiftToLatexConfig ) : String = {
+
+    val headerText = c.headerText
+    val questionnaireQuestionsWeight = c.questionnaireQuestionsWeight
+    val horizontal = c.horizontalTable
+    val reduceOpenQuestions = c.reduceOpenQuestions
+    val ticked = c.tickedTable
+    val imagePath = c.imagePath
+
+
+    val additionalImagePath = c.giftFile.getAbsoluteFile.getParent
+    val ip = additionalImagePath +: imagePath
+    logger.debug( ip.toString )
+    generateLatex( giftParsedFile, headerText, questionnaireQuestionsWeight, horizontal, ticked, ip, reduceOpenQuestions )
+
 
   }
 

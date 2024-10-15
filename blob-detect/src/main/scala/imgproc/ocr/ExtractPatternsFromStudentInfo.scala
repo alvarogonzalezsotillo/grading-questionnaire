@@ -13,7 +13,7 @@ import org.opencv.core.Mat
  */
 object ExtractPatternsFromStudentInfo extends App{
 
-  nu.pattern.OpenCV.loadLibrary()
+  imgproc.OpenCVLib.loadLibrary()
 
 
   val baseDir = new File("blob-detect/src/main/resources/training-models/")

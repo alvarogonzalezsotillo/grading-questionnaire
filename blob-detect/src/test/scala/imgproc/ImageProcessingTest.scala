@@ -18,8 +18,9 @@ import org.scalatestplus.junit.JUnitRunner
 class ImageProcessingTest extends FlatSpec {
 
   import imgproc.Implicits._
-  import scala.jdk.CollectionConverters._
-  nu.pattern.OpenCV.loadLibrary()
+  import scala.collection.JavaConversions._
+
+  imgproc.OpenCVLib.loadLibrary()
 
 
 

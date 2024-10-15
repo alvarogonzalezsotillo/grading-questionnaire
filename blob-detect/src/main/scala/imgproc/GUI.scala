@@ -4,11 +4,11 @@ import java.awt.{Frame, Graphics, Image}
 import javax.swing._
 import javax.swing.event.{ChangeEvent, ChangeListener}
 import common.Logging
-import imgproc.steps.AnswersInfo.cellsLocation
+import imgproc.steps.AnswersInfo.{cells, cellsLocation}
 import imgproc.steps.ContoursInfo.{biggestQuadrilaterals, contours, quadrilaterals}
 import imgproc.steps.LocationInfo.location
 import imgproc.steps.MainInfo.mat
-import imgproc.steps.ProcessingStep
+import imgproc.steps.{AnswersInfo, LocationInfo, ProcessingStep}
 import imgproc.steps.QRInfo.{qrLocation, qrText}
 import org.opencv.core._
 import org.opencv.imgproc.Imgproc
@@ -84,7 +84,7 @@ object GUI extends App {
   }
 
 
-  nu.pattern.OpenCV.loadLibrary()
+  imgproc.OpenCVLib.loadLibrary()
 
   import ProcessingStep._
 
@@ -104,11 +104,12 @@ object GUI extends App {
     extractQRStep,
     decodeQRStep.withDrawString( _(qrText) ),
     cellsLocationStep.withDrawContours( _(cellsLocation) ),
-    cellsLocationStep.withFilter()(_(mat).isDefined).withSaveMatrix()
+    studentAnswersStep,
+    cellsLocationStep.withFilter()(_(cellsLocation).isDefined).withSaveMatrix(LocationInfo.locatedMat)
   ))
 
   frame.setSize(640, 480)
-  frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
+  frame.setDefaultCloseOperation( javax.swing.WindowConstants.EXIT_ON_CLOSE)
   frame.setVisible(true)
 
   Logging.disableLogging()

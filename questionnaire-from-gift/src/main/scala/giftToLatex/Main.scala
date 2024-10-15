@@ -1,8 +1,11 @@
 package giftToLatex
 
-import java.io.{InputStream, FileOutputStream, File}
+import java.io.{File, FileOutputStream, InputStream}
 import java.nio.channels.Channels
 
+import giftParser.GiftParser
+import giftParser.GiftParser.{GiftError, GiftFile}
+import giftToLatex.GiftToLatex.{GiftToLatexConfig, logger}
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.util.Random
@@ -15,15 +18,17 @@ object Main extends App with LazyLogging {
 
   val invalidFile = new File(".")
 
-  case class Config(giftFile: File = invalidFile,
+  case class Config(override val giftFile: File = invalidFile,
                     keepTexFile: Boolean = false,
-                    help :Boolean = false,
-                    headerText: String = "",
+                    help: Boolean = false,
+                    override val headerText: String = "",
                     maxQuestionnaireQuestions: Int = Integer.MAX_VALUE,
                     numberOfVariations: Int = 2,
-                    horizontalTable: Boolean = true,
-                    tickedTable: Boolean = false,
-                    questionnaireQuestionsWeight: Int = 60)
+                    override val horizontalTable: Boolean = true,
+                    override val tickedTable: Boolean = false,
+                    override val reduceOpenQuestions: Boolean = false,
+                    override val questionnaireQuestionsWeight: Int = 60) extends GiftToLatex.GiftToLatexConfig
+
   realMain
 
   def realMain = {
@@ -63,6 +68,15 @@ object Main extends App with LazyLogging {
         c.copy( horizontalTable = !v )
       }
 
+      opt[Boolean]('r', "reduce-open-questions") text ("Reserved half the space for open questions") action{ (r,c) =>
+        c.copy( reduceOpenQuestions = r )
+      }
+
+
+      opt[Unit]('h',"help") text("Shows this help") action { (_,c) =>
+        c.copy(help = true)
+      }
+
       help('h',"help") text("Shows this help")
 
     }
@@ -76,8 +90,8 @@ object Main extends App with LazyLogging {
       file.getAbsolutePath
     }
 
-    def generateQuestionnarieVersion(c: Config, version: Option[String]) = {
-      val latex = GiftToLatex(c.giftFile, c.headerText, c.questionnaireQuestionsWeight, c.maxQuestionnaireQuestions, c.horizontalTable, c.tickedTable )
+    def generateQuestionnarieVersion(giftParsedFile: GiftFile, version: Option[String])(implicit c: Config ) = {
+      val latex = GiftToLatex(giftParsedFile)(c)
       def computeOutFile: File = {
         val name = if( c.giftFile == invalidFile ){
           createTempFileFrom(System.in)
@@ -91,7 +105,7 @@ object Main extends App with LazyLogging {
         new File(f)
       }
       val outFile = computeOutFile
-      LatexCompiler(latex, outFile, c.keepTexFile)
+      LatexCompiler.apply(latex, outFile, c.keepTexFile)
     }
 
     parser.parse(args, Config()) match {
@@ -99,7 +113,12 @@ object Main extends App with LazyLogging {
 
         logger.error(c.toString)
 
-        (0 until c.numberOfVariations).map(v => (v + 'A').toChar).foreach( v => generateQuestionnarieVersion(c, Some(v.toString)))
+        val g = GiftParser.parse(c.giftFile).get
+        val giftParsedFile = g.reduce(c.maxQuestionnaireQuestions)
+        (0 until c.numberOfVariations).map(v => (v + 'A').toChar).foreach{ v =>
+          val version = giftParsedFile.reorder()
+          generateQuestionnarieVersion(version, Some(v.toString))(c)
+        }
 
       case None =>
     }
@@ -109,7 +128,14 @@ object Main extends App with LazyLogging {
 
     implicit def toFile(s: String) = new File(s)
 
-    val latex = GiftToLatex("/home/alvaro/SincronizadoCloud/copy/2014-2015-Alonso de Avellaneda/aplicaciones-web-ampliada/Examenes/AW-A-EvaluacionExtraordinaria.gift", "Aplicaciones Web - Evaluacion Extraordinaria", 50)
+    val c = new GiftToLatexConfig {
+      override val giftFile  : File = "/home/alvaro/SincronizadoCloud/copy/2014-2015-Alonso de Avellaneda/aplicaciones-web-ampliada/Examenes/AW-A-EvaluacionExtraordinaria.gift"
+      override val headerText = "Aplicaciones Web - Evaluacion Extraordinaria"
+    }
+
+    val giftParsedFile = GiftParser.parse(c.giftFile).get
+    val latex = GiftToLatex(giftParsedFile)(c)
     LatexCompiler(latex, "AW-A-EvaluacionExtraordinaria.pdf", true)
+
   }
 }

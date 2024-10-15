@@ -122,7 +122,7 @@ object AnswerMatrixMeasures {
 }
 
 
-abstract class AnswerMatrixMeasures(questionsO: Option[Int], val columns: Int, val possibleAnswers: Int) extends LazyLogging {
+abstract class AnswerMatrixMeasures(val columns: Int, val possibleAnswers: Int, questionsO: Option[Int] = None ) extends LazyLogging {
 
   val cellCorrector: CellCorrector
 
@@ -232,23 +232,23 @@ trait LetterMeasures {
   }
 }
 
-class AnswerMatrixMeasuresHorizontalTicked(questionsO: Option[Int], columns: Int = 5, possibleAnswers: Int = 4)
-  extends AnswerMatrixMeasures(questionsO, columns, possibleAnswers)
+class AnswerMatrixMeasuresHorizontalTicked(questionsO: Option[Int] = None,columns: Int = 5,  possibleAnswers: Int = 4)
+  extends AnswerMatrixMeasures(columns, possibleAnswers, questionsO )
     with HorizontalMeasures
     with TickedMeasures {
 
 
 }
 
-class AnswerMatrixMeasuresVerticalTicked(questionsO: Option[Int], columns: Int = 5, possibleAnswers: Int = 4)
-  extends AnswerMatrixMeasures(questionsO, columns, possibleAnswers)
+class AnswerMatrixMeasuresVerticalTicked( questionsO: Option[Int], columns: Int = 5, possibleAnswers: Int = 4)
+  extends AnswerMatrixMeasures(columns, possibleAnswers, questionsO)
     with VerticalMeasures
     with TickedMeasures {
 
 }
 
 class AnswerMatrixMeasuresHorizontalLetter(questionsO: Option[Int], columns: Int = 5, possibleAnswers: Int = 4)
-  extends AnswerMatrixMeasures(questionsO, columns, possibleAnswers)
+  extends AnswerMatrixMeasures(columns, possibleAnswers, questionsO)
     with HorizontalMeasures
     with LetterMeasures {
 
@@ -257,7 +257,7 @@ class AnswerMatrixMeasuresHorizontalLetter(questionsO: Option[Int], columns: Int
 }
 
 class AnswerMatrixMeasuresVerticalLetter(questionsO: Option[Int], columns: Int = 5, possibleAnswers: Int = 4)
-  extends AnswerMatrixMeasures(questionsO, columns, possibleAnswers)
+  extends AnswerMatrixMeasures(columns, possibleAnswers, questionsO)
     with VerticalMeasures
     with LetterMeasures {
 

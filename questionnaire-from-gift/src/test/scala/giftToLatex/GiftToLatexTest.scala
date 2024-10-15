@@ -10,6 +10,7 @@ import common.BinaryConverter
 import giftParser.GiftParser.{GiftError, GiftFile}
 import giftParser.TestGiftGenerator._
 import giftParser.{GiftParser, Util}
+import giftToLatex.GiftToLatex.GiftToLatexConfig
 import org.junit.runner.RunWith
 import org.scalatest.flatspec.{AnyFlatSpec => FlatSpec}
 import org.scalatestplus.junit.JUnitRunner
@@ -25,7 +26,13 @@ class GiftToLatexTest extends FlatSpec {
     val s = generateGift(40,5)
     val f = Util.createFile(renderGift(s), testFile("generated.gift"))
 
-    val latex = GiftToLatex(f, imagePath = Seq("src/test/resources/giftParser/") )
+    val c  = new GiftToLatexConfig {
+      override val giftFile = f
+      override val imagePath = Seq("src/test/resources/giftParser/")
+    }
+
+    val g = GiftParser.parse(c.giftFile).get
+    val latex = GiftToLatex(g)(c)
     LatexCompiler.compile( latex, testFile( "generated.pdf"), true, 2, true )
 
   }

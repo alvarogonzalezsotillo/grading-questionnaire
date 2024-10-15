@@ -8,12 +8,15 @@ import com.typesafe.scalalogging.LazyLogging
 import common.{BinaryConverter, HMap, Sounds}
 import imgproc.steps.AnswersInfo.{cells, cellsLocation, studentAnswers}
 import imgproc.steps.ContoursInfo.{answerColumns, biggestQuadrilaterals}
+import imgproc.steps.LocationInfo.locatedMat
 import imgproc.steps.MainInfo._
 import imgproc.steps.ProcessingStep.{ExtendedStep, Info}
 import imgproc.steps.QRInfo.{answerMatrixMeasures, qrVersion}
 import imgproc.{AnswerMatrixMeasures, ImageProcessing, QRScanner}
 import org.opencv.core.{MatOfPoint, _}
 import org.opencv.highgui.Highgui
+
+import scala.collection.SeqView
 
 
 /**
@@ -46,15 +49,7 @@ trait ProcessingStep {
     val matWithContours = for (m <- p(mat); contours <- extractContours(p)) yield {
       val newM = m.clone
       ImageProcessing.drawContours(newM, contours)
-
-      for ((c, i) <- contours.zipWithIndex) {
-        ImageProcessing.drawString(newM, s"$i", c.center)
-        for (pairs <- c.toArray.grouped(2)) {
-          val p = pairs.head
-          ImageProcessing.drawString(newM, s"$p", p, new Scalar(255, 0, 0))
-        }
-      }
-
+      ImageProcessing.drawVertices(newM, contours)
       newM
     }
     p(mat, matWithContours)
@@ -82,12 +77,14 @@ trait ProcessingStep {
     }
   }
 
-  def withSaveMatrix(name: String = "Grabando:" + stepName): ProcessingStep = {
+  import common.{HKey, HMap}
+
+  def withSaveMatrix( hkey: HKey[Mat] = mat, name: String = "Grabando:" + stepName): ProcessingStep = {
     var lastInfo: Info = HMap()
     extend(name) { psi =>
       if (!(psi eq lastInfo)) {
         lastInfo = psi
-        for (m <- lastInfo(mat)) {
+        for (m <- lastInfo(hkey)) {
           ProcessingStep.saveMatrix(m)
         }
         for (m <- lastInfo(originalMat)) {
@@ -186,35 +183,139 @@ object ProcessingStep extends LazyLogging {
   val biggestQuadrilateralsStep = quadrilateralStep.extend("Los mayores cinco cuadriláteros") { implicit csi =>
     import ContoursInfo._
 
-    def findBiggestAlignedQuadrilaterals(number: Int = COLUMNS)(contours: Seq[MatOfPoint]): Option[IndexedSeq[MatOfPoint]] = {
-      val ordered = contours.sortBy(_.area).reverse
 
-      def similarQuadrilaterals(quad: MatOfPoint) = {
-        implicit val epsilon = Epsilon(quad.area * 0.25)
-        contours.filter(_.area ~= quad.area)
+    class Quadrilateral( val toMatOfPoint: MatOfPoint ){
+      val asSet = toMatOfPoint.toArray.toSet
+
+      override val hashCode: Int = asSet.map(_.hashCode()).sum
+
+      override def equals(obj: scala.Any): Boolean = obj match{
+        case q: Quadrilateral  => q.asSet == asSet
+        case _ => false
       }
 
-      if (false) {
-        println("Similar quadrilaterals:")
-        println(" area:" + ordered.map(_.area).mkString(", "))
+      lazy val center = {
+        val c = asSet.foldLeft( new Point(0,0) ) {
+          (p, center) => p+center
+        }
+        c / asSet.size
       }
 
-      val ret = ordered.view.map(similarQuadrilaterals).filter(_.size == number).headOption
-      ret.map(_.sortBy(_.boundingBox.minX).toIndexedSeq)
     }
 
+    implicit def toMatOfPoint(q:Quadrilateral) = q.toMatOfPoint
 
-    val quads = findBiggestAlignedQuadrilaterals()(quadrilaterals()).map { quads =>
-      val sortedQuads = quads.sortBy(_.center.x)
-      val orientation = sortedQuads.last.center - sortedQuads.head.center
-      sortedQuads.map(q => toMatOfPoint(findProbableQuadrilateral(q.points.toSeq, orientation)))
+    def sameArea(q1: MatOfPoint)(q2: MatOfPoint)(factor: Double = 0.2) = {
+      val average = (q1.area + q2.area )/2
+      implicit val epsilon = Epsilon( average * factor)
+      q1.area ~= q2.area
     }
 
+    def similarShape( quads: Iterable[Quadrilateral] ) = {
+      val rects = quads.toSeq.map(q => ImageProcessing.boundingRect(q))
 
-    csi(biggestQuadrilaterals, quads)
+      val first = rects.head
+      val w = first.width
+      val h = first.height
+      val epsilon = 0.3
+
+      def similarW(r: Rect) = {
+        implicit val wepsilon = Epsilon(w * epsilon)
+        r.width.toDouble ~= w
+      }
+
+      def similarH(r: Rect) = {
+        implicit val hepsilon = Epsilon(h * epsilon)
+        r.height.toDouble ~= h
+      }
+
+      val similars = rects.map(r => Seq(similarW(r), similarH(r)))
+
+      val ret = similars.forall(_.forall(s => s))
+      if(false){
+        println(quads.size)
+        println(quads)
+        println(rects)
+        println(similars)
+        println(ret)
+      }
+      ret
+    }
+
+    def centersAligned(quads: Iterable[Quadrilateral] ) = {
+      import imgproc.Implicits.MyPoint;
+
+      val centers = quads.map( _.center )
+      val first = centers.minBy(_.x)
+      val last = centers.maxBy(_.x)
+      implicit val epsilon = Epsilon(quads.head.height() * 1.0)
+      centers.forall( _.distanceToLine(first,last) ~= 0.0 )
+    }
+
+    val quads = quadrilaterals().map( new Quadrilateral(_) )
+
+    val groupsByArea = quads.map(q => quads.filter(sameArea(q)(_)()).toSet ).toSet
+
+    def debugSeqsOfQuadrilateral( suffix: String, ps: Iterable[Iterable[Quadrilateral]] ){
+      debugSeqsOfMatsOfPoints(suffix,ps.map(_.map(_.toMatOfPoint)))
+    }
+
+    def debugSeqsOfMatsOfPoints( suffix: String, ps: Iterable[Iterable[MatOfPoint]] ){
+      if( false ) {
+        for ((g, i) <- ps.zipWithIndex) {
+          val m = csi(mat).get.clone
+          val file = csi(fileName).getOrElse("noname")
+          ImageProcessing.drawContours(m, g.toSeq)
+          new File("abq").mkdirs()
+          Highgui.imwrite(s"abq/$file-$suffix-$i.png", m)
+        }
+      }
+
+    }
+
+    def fromLeftToRigth( rects: IndexedSeq[MatOfPoint] ) = rects.sortBy(_.center.x)
+
+    debugSeqsOfQuadrilateral("groupsbyarea", groupsByArea)
+
+
+    val subsets: Set[Set[Quadrilateral]] = groupsByArea.flatMap( _.subsets(COLUMNS) )
+
+
+    val alignedGroups = subsets.filter(centersAligned)
+
+    debugSeqsOfQuadrilateral("alignedGroups", alignedGroups)
+
+
+    val similar = alignedGroups.filter(similarShape)
+
+    debugSeqsOfQuadrilateral("similar", similar)
+
+
+    def orderVertices( quadrilaterals: IndexedSeq[MatOfPoint] ) = {
+      val orientation = quadrilaterals.last.center - quadrilaterals.head.center
+      for( q <- quadrilaterals ) yield{
+        val points = orderVerticesOfQuadrilateral(q.toArray,orientation)
+        new MatOfPoint(points:_*)
+      }
+    }
+
+    val ret = similar.
+      map(g => g.map(_.toMatOfPoint).toIndexedSeq ).
+      map(fromLeftToRigth).
+      map(orderVertices).
+      toSeq
+
+    val sortedByY = ret.sortBy( qs => qs.map(_.center.y).sum )
+    val middle = if( sortedByY.size > 1 ) sortedByY.tail.headOption else None
+
+    csi(biggestQuadrilaterals, middle )(allBiggestQuadrilaterals,ret)
   }
 
-  private def findProbableQuadrilateral(points: Seq[Point], orientation: Point): Seq[Point] = {
+
+  /*
+  FIND THE CORNERS OF A SHAPE, AND ORDER THEM CLOCKWISE STARTING AT UPPER LEFT
+   */
+  private def orderVerticesOfQuadrilateral(points: Seq[Point], orientation: Point): Seq[Point] = {
     val center = new Shape(points).center
     val unit = orientation.normalize
     val diffs = points.map(_ - center)
@@ -230,14 +331,30 @@ object ProcessingStep extends LazyLogging {
   }
 
 
+
   val locateQRStep = biggestQuadrilateralsStep.extend("Localización del código QR") { psi =>
     import QRInfo._
 
+    def debugMats( ps: Iterable[MatOfPoint] ){
+      if ( false ) {
+        val m = psi(mat).get.clone
+        val file = psi(fileName).getOrElse("noname")
+        ImageProcessing.drawVertices(m, ps.toSeq)
+        new File("lqs").mkdirs()
+        Highgui.imwrite(s"lqs/$file-axis.png", m)
+      }
+
+    }
+
     def locateQR(cellHeaders: Seq[MatOfPoint]): MatOfPoint = {
-      val tl = cellHeaders(0)(0)
-      val tr = cellHeaders(COLUMNS - 1)(1)
+      val first = cellHeaders(0)
+      val last = cellHeaders(COLUMNS - 1)
+      val tl = first(0)
+      val tr = last(1)
       val xAxis = (tr - tl)
       val yAxis = new Point(-xAxis.y, xAxis.x)
+
+      debugMats( Seq( new MatOfPoint(xAxis,yAxis,xAxis), first, last ) )
 
       val topLeft = tl -
         (yAxis * AnswerMatrixMeasures.matrixWithToTopOfQRRatio) -
@@ -343,6 +460,7 @@ object ProcessingStep extends LazyLogging {
 
   val cellsLocationStep = answerColumnsStep.extend("Localización de celdas (basada en columnas)") { psi =>
     import imgproc.steps.AnswersInfo._
+    import imgproc.Implicits._
 
     val ret = for (cellHeaderColumns <- psi(answerColumns);
                    measures <- psi(answerMatrixMeasures);
@@ -359,12 +477,12 @@ object ProcessingStep extends LazyLogging {
         val bl = interpolateInLine(rect(0), rect(3), rows, row + 1)
         val br = interpolateInLine(rect(1), rect(2), rows, row + 1)
 
-        new MatOfPoint(tl, tr, br, bl)
-
+        val cell = new MatOfPoint(tl, tr, br, bl)
+        cell.grow(-10)
       }
     }
 
-    psi(cellsLocation, ret.get)
+    psi(cellsLocation, ret)
   }
 
   val cellsStep = cellsLocationStep.extend("Celdas individuales") { info =>
@@ -387,7 +505,7 @@ object ProcessingStep extends LazyLogging {
   }
 
   val studentAnswersStep = cellsStep.extend("Respuestas del alumno ") { info =>
-    val ret = for (measures <- info(answerMatrixMeasures);
+      val ret = for (measures <- info(answerMatrixMeasures);
                    cellRecognizer = measures.cellCorrector;
                    cells <- info(cells)) yield {
       val r = for (cell <- cells) yield {
@@ -395,6 +513,8 @@ object ProcessingStep extends LazyLogging {
       }
       r.zipWithIndex.map(_.toString)
     }
+
+    println( ret )
 
     info(studentAnswers,  ret)
   }

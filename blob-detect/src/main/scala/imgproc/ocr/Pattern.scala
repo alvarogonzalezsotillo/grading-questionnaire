@@ -46,9 +46,11 @@ object Pattern extends LazyLogging{
 
   lazy val letterTrainingPatterns:  TrainingPatterns = {
 
+    val maxPatterns = 50;
+
     def loadPatterns( letters: Seq[Char]  ) = {
 
-      def loadPatternsFromLetter( letter: Char ) = loadImagesFromDir(s"uppercase-${letter.toLower}" )
+      def loadPatternsFromLetter( letter: Char ) = loadImagesFromDir(s"uppercase-${letter.toLower}" ).take(maxPatterns)
 
       val pairs = for( l <- letters ) yield{
         l -> loadPatternsFromLetter(l).map(m => resizeToPatterSize(m)).toSeq

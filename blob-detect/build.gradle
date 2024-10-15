@@ -22,7 +22,7 @@ clean.doFirst {
     delete "test-img"
 }
 
-task run(type: JavaExec, dependsOn: classes) {
+task runBlobDetect(type: JavaExec, dependsOn: classes) {
     main = 'imgproc.GUI'
     classpath sourceSets.main.runtimeClasspath
     classpath configurations.runtime
@@ -38,4 +38,12 @@ task repl(type:JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
   standardInput System.in
   args '-usejavacp'
+}
+
+task findBestNeuralNetwork( type: JavaExec, dependsOn: classes){
+    main = 'imgproc.FindBestNeuralNetworkApp'
+    classpath sourceSets.main.runtimeClasspath
+    classpath configurations.runtime
+    jvmArgs "-Xmx24G"
+    systemProperty "java.library.path", "./lib"
 }

@@ -28,6 +28,37 @@ class GiftParserTest extends FlatSpec {
     assert(giftFile.size == 0)
   }
 
+  "A line comment" should "be ignored outside question" in{
+    val s =
+      """  // un comentario de linea
+        |hola como estás yo bien gracias{
+        |=bien
+        |~mal
+        |}""".stripMargin
+    val ret = GiftParser.parse(s)
+    assert(ret.successful)
+    val giftFile = ret.asInstanceOf[GiftFile].questions
+    assert(giftFile.size == 1)
+    assert(!giftFile(0).text.contains("comentario"))
+
+  }
+
+  "A line comment" should "be ignored inside question" in {
+    val s =
+      """  // un comentario de linea
+        |hola como estás yo bien gracias{
+        |=bien
+        |// comentario
+        |~mal
+        |}""".stripMargin
+    val ret = GiftParser.parse(s)
+    assert(ret.successful)
+    val giftFile = ret.asInstanceOf[GiftFile].questions
+    assert(giftFile.size == 1)
+    assert(giftFile.forall(!_.text.contains("comentario") ))
+
+  }
+
   val singleOpenQuestion =
     """hola
       |{

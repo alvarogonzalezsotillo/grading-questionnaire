@@ -68,7 +68,7 @@ object VideoCanvasApp extends App {
 
 
 
-  nu.pattern.OpenCV.loadLibrary()
+  imgproc.OpenCVLib.loadLibrary()
 
   val f = new JFrame("Video")
   f.setLayout(new BorderLayout())
@@ -123,7 +123,7 @@ object VideoCanvasApp extends App {
 
 
   f.pack()
-  f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
+  f.setDefaultCloseOperation( javax.swing.WindowConstants.EXIT_ON_CLOSE)
   f.setVisible(true)
 
 }

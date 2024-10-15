@@ -27,7 +27,7 @@ trait DSL{
 
   object y{
     def después( ascca: AccionSobreCosaConArticulo ) = {
-      print( s"y al rato después " )
+      print( s"y al rato " )
       ascca
     }
 

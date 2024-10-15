@@ -13,8 +13,11 @@ import scala.collection.generic.CanBuildFrom
  */
 object ImageProcessing {
 
+
+
   import imgproc.Implicits._
 
+  def boundingRect(shape: MatOfPoint) : Rect = Imgproc.boundingRect(shape)
 
   def readImageFromResources[T](f: String, clazz: java.lang.Class[T] = ImageProcessing.getClass ): Mat = {
     def mat() = {
@@ -72,7 +75,7 @@ object ImageProcessing {
   }
 
 
-  def canny(t1: Int = 1, t2: Int = 20)(m: Mat) = {
+  def canny(t1: Int = 10, t2: Int = 20)(m: Mat) = {
     val ret = new Mat
     Imgproc.Canny(m, ret, t1, t2)
     ret
@@ -87,7 +90,7 @@ object ImageProcessing {
 
   private def newMatrixIfNull(m:Mat) = if( m == null ) new Mat else m
 
-  def clean(iterations: Int = 3, sizeOpen: Int = 9, sizeClose: Int = 9)(dst: Mat = null)(src: Mat): Mat = {
+  def clean(iterations: Int = 3, sizeOpen: Int = 9, sizeClose: Int = 6)(dst: Mat = null)(src: Mat): Mat = {
 
     val ret = newMatrixIfNull(dst)
     val open = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(sizeOpen, sizeOpen))
@@ -170,7 +173,19 @@ object ImageProcessing {
     dst
   }
 
-
+  def drawVertices( dst:Mat, contours: Seq[MatOfPoint], id: String = "", color: Scalar = new Scalar(255, 0, 0) ): Mat = {
+    for ((c, i) <- contours.zipWithIndex) {
+      ImageProcessing.drawString(dst, s"$id:$i", c.center)
+//      for (pairs <- c.toArray.grouped(2)) {
+//        val p = pairs.head
+//        ImageProcessing.drawString(dst, s"$p", p, color)
+//      }
+      for( (p,j) <- c.toArray.zipWithIndex ){
+        ImageProcessing.drawString(dst, s"$j", p, color)
+      }
+    }
+    dst
+  }
 
   def drawString(dst: Mat, string: String, point: Point, color: Scalar = defaultColor): Mat = {
     val fontFace = Core.FONT_HERSHEY_PLAIN
@@ -178,9 +193,6 @@ object ImageProcessing {
     Core.putText(dst,string,point,fontFace,fontScale,color)
     dst
   }
-
-
-
 
   def findHomography(srcPoints: MatOfPoint, dstPoints : MatOfPoint) = {
     val dstPoints2f = new MatOfPoint2f()
@@ -236,5 +248,48 @@ object ImageProcessing {
       ret
     }
   }
+
+  def histogram( m: Mat, binSize : Int ) : Array[Int]= {
+    assert(m.`type`() == CvType.CV_8UC1)
+    val rangesArray: Array[Float] = Iterator.from(binSize, binSize).takeWhile(_ <= 256).map(_.toFloat).toArray
+
+    val slowHistogram = {
+      val h = new Array[Int](rangesArray.size)
+      val ranges = rangesArray.zipWithIndex
+      for( x <- 0 until m.width() ; y <- 0 until m.height() ){
+        val v = m.get(y,x)(0).toInt
+        val index = ranges.find{ case (f,_) => v <= f }.get._2
+        h(index) += 1
+      }
+      h
+    }
+
+    val fastHistogram = {
+      val channels: MatOfInt = new MatOfInt(0)
+      val mask: Mat = new Mat
+      val hist: Mat = new Mat()
+      val histSize: MatOfInt = new MatOfInt(rangesArray.size)
+      val ranges: MatOfFloat = new MatOfFloat(0, 256)
+      import scala.collection.JavaConversions._
+      org.opencv.imgproc.Imgproc.calcHist(Seq(m), channels, mask, hist, histSize, ranges)
+
+      Array.tabulate(rangesArray.size) { i =>
+        hist.get(i, 0)(0).toInt
+      }
+    }
+
+    //assert( slowHistogram.toSeq == fastHistogram.toSeq)
+
+    fastHistogram
+
+  }
+
+  def derivate( src: Mat, order: Int = 1 ) = {
+    assert(src.`type`() == CvType.CV_8UC1)
+    val ret = new Mat()
+    org.opencv.imgproc.Imgproc.Sobel(src,ret,-1,order,order)
+    ret
+  }
+
 
 }
