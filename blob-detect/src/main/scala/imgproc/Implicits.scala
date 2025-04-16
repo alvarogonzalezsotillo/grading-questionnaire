@@ -68,7 +68,7 @@ object Implicits {
     ret
   }
 
-  def BufferedImage2Mat( src: BufferedImage, dst: Mat ) : Unit {
+  def BufferedImage2Mat( src: BufferedImage, dst: Mat ) : Unit = {
     val image = toBufferedImageOfType(src,BufferedImage.TYPE_3BYTE_BGR)
     try {
       assert(image.getType == BufferedImage.TYPE_3BYTE_BGR)

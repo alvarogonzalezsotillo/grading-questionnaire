@@ -1,0 +1,443 @@
+
+
+\documentclass[8pt,a4paper,spanish,openany]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{enumitem}
+\usepackage{multicol}
+\usepackage{setspace}
+\usepackage[top=2.0cm,left=1.2cm,right=1.2cm,bottom=2.0cm,a4paper]{geometry}
+\usepackage[spanish]{babel}
+\usepackage{forloop}
+\usepackage{attachfile}
+\usepackage{color}
+\usepackage{colortbl}
+\usepackage{graphicx}
+\usepackage{qrcode}
+\usepackage{fancyhdr} % Required for custom headers
+\usepackage{lastpage} % Required to determine the last page for the footer
+\usepackage{extramarks} % Required for headers and footers
+\usepackage{ctable} % for \specialrule command
+\usepackage{grffile} % spaces in graphics file
+\IfFileExists{currfile.sty}{\usepackage{currfile}}{}
+
+
+
+
+% Set up the header and footer
+\pagestyle{fancy}
+\lhead{\scriptsize{$HeaderText$}} % Top left header
+\rhead{\scriptsize{Impreso el \today}} % Top right header
+\chead{} % Top center head
+\lfoot{\scriptsize{\currfilename}} % Bottom left footer
+\cfoot{} % Bottom center footer
+\rfoot{ \scriptsize{\thepage\ / \protect\pageref{LastPage}}} % Bottom right footer
+\renewcommand\headrulewidth{0pt} % Size of the header rule
+\renewcommand\footrulewidth{0.4pt} % Size of the footer rule
+
+\graphicspath{$ImagePath$}
+
+\newcommand{\Solutions}{$Solutions$}
+
+\hypersetup{
+  colorlinks,
+  citecolor=black,
+  filecolor=black,
+  linkcolor=black,
+  urlcolor=blue,
+  pdfauthor={Álvaro González Sotillo},%
+  pdftitle={$HeaderText$},%
+  pdfsubject={\Solutions},%
+  pdfkeywords={GIFT,Latex,Scala},%
+  pdfproducer={LaTeX},%
+  pdfcreator={pdfLaTeX}
+}
+
+
+\newcommand{\Width}{\textwidth}
+\newcommand{\HalfWidth}{0.46\textwidth}
+\newcommand{\Height}{0.95\textheight}
+\newcommand{\HalfHeight}{0.45\textheight}
+
+
+
+\newcommand{\HorizontalLine}
+{
+  \noindent\makebox[\linewidth]{\rule{\Width}{0.4pt}}
+}
+
+\newcommand{\IndentOn}{\setlength{\parindent}{12pt}}
+\newcommand{\IndentOff}{\setlength{\parindent}{0pt}}
+
+\newcounter{QuestionCounter}
+\setcounter{QuestionCounter}{1}
+
+\newenvironment{QuestionnaireQuestions}
+{
+  \begin{small}
+    \setlength{\columnsep}{1cm}
+    \setlength{\parskip}{12pt plus 0pt minus 9pt} % ELASTIC SPACE BETWEEN QUESTIONS
+    \noindent \begin{multicols}{2}
+}
+{
+    \end{multicols}
+  \end{small}
+  \newpage
+}
+
+\newenvironment{QuestionnaireQuestion}[1][]
+{
+  \begin{minipage}{\HalfWidth}
+    \HorizontalLine\\
+    \arabic{QuestionCounter}. #1
+    \begin{enumerate}[label=\alph*)]
+}
+{
+    \end{enumerate}
+  \end{minipage}
+
+  \stepcounter{QuestionCounter}
+}
+
+\newcommand{\Answer}[1]{
+  \item #1
+}
+
+\newenvironment{HalfPageOpenQuestion}
+{
+
+  \begin{minipage}[t][\HalfHeight][t]{\Width}
+    \HorizontalLine
+    \arabic{QuestionCounter}.
+}
+{
+    \vfill
+  \end{minipage}
+  \stepcounter{QuestionCounter}
+  \\
+}
+
+\newenvironment{FullPageOpenQuestion}
+{
+  \clearpage
+  \begin{minipage}[t][\Height][t]{\Width}
+    \HorizontalLine
+    \arabic{QuestionCounter}.
+}
+{
+    \vfill
+  \end{minipage}
+  \stepcounter{QuestionCounter}
+  \\
+}
+
+
+
+
+\newcommand{\Instructions}[2]
+{
+  \begin{small}
+    \begin{multicols}{2}
+    \textbf{Instrucciones generales para las preguntas cerradas:}
+    \begin{itemize}
+      \item No se tendrán en cuenta anotaciones fuera de la tabla de respuestas, excepto para alumnos con derecho a adaptaciones en la evaluación.
+      \item Todas las preguntas tienen el mismo valor.
+      \item Hay una, y sólo una, respuesta correcta en cada pregunta.
+      \item Responde solo a aquellas preguntas de las que estés seguro. Una respuesta incorrecta resta un tercio del valor de una respuesta acertada, pero una pregunta sin responder no resta puntos.
+      \item Un aspa marca una respuesta. Se puede desmarcar una respuesta con un círculo sobre el aspa.
+    \end{itemize}
+    \vfill\columnbreak
+
+    \textbf{Instrucciones generales para las preguntas abiertas:}
+    \begin{itemize}
+      \item Es necesario responder a la pregunta y justificar dicha respuesta.
+      \item Todas las preguntas tienen el mismo valor.
+    \end{itemize}
+    \textbf{Puntuación:}
+    \begin{itemize}
+      \item La parte tipo test es un  #1\% de la nota.
+      \item La parte de preguntas abiertas es un #2\% de la nota.
+      \item Se necesita un mínimo de 3,5 en cada parte del examen para que hagan media.
+    \end{itemize}
+    \end{multicols}
+    \vspace{0.3cm}
+    El estudiante dispone de 90 minutos para entregar el examen. Los estudiantes con derecho a adaptaciones en la evaluación pueden utilizar hasta 110 minutos
+  \end{small}
+}
+
+\usepackage{fancybox}
+
+\newenvironment{ShadowBox}[2][0.04cm]
+{
+  \fboxrule=#1
+  \newsavebox{\fmboxx}
+  \begin{lrbox}{\fmboxx}
+    \begin{minipage}{#2}
+
+}
+{
+    \end{minipage}
+  \end{lrbox}
+  \fbox{\usebox{\fmboxx}}
+}
+
+\newcommand{\StudentData}{
+  \qrcode[height=2.3cm]{$QRCodeData$}
+  \begin{ShadowBox}{0.85\Width}
+    \vspace{0.3cm}
+    \large{
+      \textbf{Apellidos:} \hrulefill \\
+      \textbf{Nombre:} \hrulefill \\
+      \textbf{Fecha:} \hrulefill \hspace{1cm} \textbf{Grupo:} \hrulefill \\
+    }
+    %\vspace{0.2cm}
+  \end{ShadowBox}
+}
+
+
+\newcommand{\FileAutoref}[0]{
+  \attachfile[mimetype={text/plain},
+            print=false,
+            appearance=false,
+            zoom=false,
+            description={El fichero TEX original para crear este documento},
+            subject={El fichero TEX original para crear este documento}]
+    {\currfilename}%
+}%
+
+\newcommand{\OriginalGiftFile}[1]{
+  \IfFileExists{#1}
+  {\attachfile[print=false,
+            appearance=false,
+            zoom=false,
+            description={El fichero GIFT original para crear este documento},
+            subject={El fichero GIFT original para crear este documento}]
+    {#1}}%
+  {}%
+}%
+
+
+\definecolor{light-gray}{gray}{0.60}
+\newcommand{\LetterAnswerCellTemplate}[1]{%
+  \setlength{\arrayrulewidth}{.02em}%
+  %\setlength{\tabcolsep}{20pt}
+  \begin{tabular}{p{0.7cm}@{\hskip 0.4cm}!{\color{light-gray}\vrule}p{1.3cm}!{\color{light-gray}\vrule}}%
+    \arrayrulecolor{light-gray}\cline{2-2}%
+    \cellcolor{black}\textcolor{white}{\hfill #1 \hfill} &  \hfill \\[2pt]%
+    \arrayrulecolor{light-gray}\cline{2-2}%
+  \end{tabular}%
+}
+
+\newcommand{\TickWidth}{0.5cm}
+\usepackage{array}
+\newcolumntype{x}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}b{#1}}
+\newcommand{\TickedAnswerCellTemplate}[5]{%
+  \setlength{\tabcolsep}{0pt}
+  \begin{tabular}{x{1.0cm}@{\hskip 0.1cm}!{\color{light-gray}\vrule}@{}x{\TickWidth}@{}!{\color{light-gray}\vrule}@{}x{\TickWidth}@{}!{\color{light-gray}\vrule}@{}x{\TickWidth}@{}!{\color{light-gray}\vrule}@{}x{\TickWidth}@{}!{\color{light-gray}\vrule}}%
+    \arrayrulecolor{light-gray}\cline{2-5}%
+    \ifthenelse{\equal{#2}{}}
+    {
+    \cellcolor{black}\textcolor{white}{ #1 } & #2 &#3&#4& {#5}\\[2pt]%
+    }
+    {
+    \cellcolor{white}\textcolor{black}{ #1 } & \cellcolor{black}\textcolor{white}#2 &\cellcolor{black}\textcolor{white}#3&\cellcolor{black}\textcolor{white}#4& \cellcolor{black}\textcolor{white}{#5}\\[2pt]%
+    }
+    \arrayrulecolor{light-gray}\cline{2-5}%
+  \end{tabular}%
+}
+
+
+
+\newcommand{\TickedHorizontalAnswerTable}[1]
+{
+  \newcounter{AnswerTableC}
+  \setcounter{AnswerTableC}{1}
+  \newcounter{DummyAnswerCounter}
+
+
+  \newcommand{\AnswerCell}
+  {
+    \ifthenelse{\value{AnswerTableC}>#1}{\TickedAnswerCellTemplate{}{}{}{}{}}{\TickedAnswerCellTemplate{\arabic{AnswerTableC}}{}{}{}{}}
+    \hspace{0mm}
+    \addtocounter{AnswerTableC}{1}
+  }
+
+  \newcommand{\HeaderCell}
+  {
+    \TickedAnswerCellTemplate{}{a}{b}{c}{d}
+    \hspace{0mm}
+    \addtocounter{AnswerTableC}{0}
+  }
+
+
+  {
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+
+  }
+
+
+  \forloop[5]{DummyAnswerCounter}{1}{\value{DummyAnswerCounter}<#1 \OR \value{AnswerTableC}=#1}
+  {
+    \AnswerCell 
+    \AnswerCell 
+    \AnswerCell 
+    \AnswerCell 
+    \AnswerCell
+
+  }
+
+
+}
+
+
+\newcommand{\LetterHorizontalAnswerTable}[1]
+{
+  \vspace{0.5cm}
+
+  \newcounter{AnswerTableC}
+  \setcounter{AnswerTableC}{1}
+  \newcounter{DummyAnswerCounter}
+
+
+  \newcommand{\AnswerCell}
+  {
+    \ifthenelse{\value{AnswerTableC}>#1}{\LetterAnswerCellTemplate{}}{\LetterAnswerCellTemplate{\arabic{AnswerTableC}}}
+    \hspace{0mm}
+    \addtocounter{AnswerTableC}{1}
+  }
+
+
+  \forloop[5]{DummyAnswerCounter}{1}{\value{DummyAnswerCounter}<#1 \OR \value{AnswerTableC}=#1}
+  {
+    \AnswerCell \hfill
+    \AnswerCell \hfill
+    \AnswerCell \hfill
+    \AnswerCell \hfill
+    \AnswerCell
+
+  }
+}
+
+\newcommand{\LetterVerticalAnswerTable}[1]
+{
+  \vspace{0.5cm}
+  \newcounter{AnswerTableC}
+  \setcounter{AnswerTableC}{1}
+  \newcounter{DummyAnswerCounter}
+
+
+  \newcommand{\AnswerCell}
+  {
+    \ifthenelse{\value{AnswerTableC}>#1}{\LetterAnswerCellTemplate{}}{\LetterAnswerCellTemplate{\arabic{AnswerTableC}}}
+    \hspace{0mm}
+    \addtocounter{AnswerTableC}{1}
+  }
+
+  \begin{multicols}{5}%
+
+  \forloop[5]{DummyAnswerCounter}{1}{\value{DummyAnswerCounter}<#1 \OR \value{AnswerTableC}=#1}
+  {
+    \AnswerCell
+    \AnswerCell
+    \AnswerCell
+    \AnswerCell
+    \AnswerCell
+
+  }
+  \end{multicols}%
+
+}
+
+\newcommand{\TickedVerticalAnswerTable}[1]
+{
+
+  \newcounter{AnswerTableC}
+  \newcounter{DummyAnswerCounter}
+  \setcounter{AnswerTableC}{1}
+  \newcommand{\HeaderCell}
+  {
+    \TickedAnswerCellTemplate{}{a}{b}{c}{d}
+    \hspace{0mm}
+    \addtocounter{AnswerTableC}{0}
+  }
+
+  \newcommand{\AnswerCell}
+  {
+    \ifthenelse{\value{AnswerTableC}>#1}{\TickedAnswerCellTemplate{}{}{}{}{}}{\TickedAnswerCellTemplate{\arabic{AnswerTableC}}{}{}{}{}}
+    \addtocounter{AnswerTableC}{1}
+  }
+
+
+  \begin{multicols}{5}%
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+    \HeaderCell
+  \end{multicols}
+
+  \begin{multicols}{5}%
+    \forloop[5]{DummyAnswerCounter}{1}{\value{DummyAnswerCounter}<#1 \OR \value{AnswerTableC}=#1}%
+    {      
+      \AnswerCell     \AnswerCell     \AnswerCell     \AnswerCell     \AnswerCell
+     }%
+  \end{multicols}%
+}
+
+\newcommand{\AnswerTable}[3]{
+  %\begin{center}%
+
+  \ifthenelse{\equal{#2}{true}}% HORIZONTAL
+  {
+    \ifthenelse{\equal{#3}{true}}% TICKED
+    {
+      \TickedHorizontalAnswerTable{#1}%
+    }
+    {
+      \LetterHorizontalAnswerTable{#1}
+    }
+  }
+  {
+    \ifthenelse{\equal{#3}{true}}% TICKED
+    {
+      \TickedVerticalAnswerTable{#1}%
+    }
+    {
+      \LetterVerticalAnswerTable{#1}
+    }
+  }
+  %\end{center}%
+}
+
+
+
+\newcommand{\FirstPage}[5]{
+
+  \FileAutoref \OriginalGiftFile{$GiftFile$}
+
+  \StudentData
+  \AnswerTable{#3}{#4}{#5}
+  \vfill
+
+  \Instructions{#1}{#2}
+  \newpage
+}
+
+\begin{document}
+
+
+\IndentOff
+
+
+$GeneratedContent$
+
+%\FirstPage{30}{70}{51}{false}{true}% horizontal ticked
+
+
+
+
+\end{document}

@@ -8,6 +8,7 @@ import org.opencv.core.Mat
 
 import scala.collection.immutable.IndexedSeq
 import scala.util.Random
+import scala.collection.parallel.CollectionConverters._
 
 /**
   * Created by alvaro on 13/07/17.

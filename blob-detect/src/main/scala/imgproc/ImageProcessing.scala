@@ -270,8 +270,8 @@ object ImageProcessing {
       val hist: Mat = new Mat()
       val histSize: MatOfInt = new MatOfInt(rangesArray.size)
       val ranges: MatOfFloat = new MatOfFloat(0, 256)
-      import scala.collection.JavaConversions._
-      org.opencv.imgproc.Imgproc.calcHist(Seq(m), channels, mask, hist, histSize, ranges)
+      import scala.collection.JavaConverters._
+      org.opencv.imgproc.Imgproc.calcHist( Seq(m).asJava, channels, mask, hist, histSize, ranges)
 
       Array.tabulate(rangesArray.size) { i =>
         hist.get(i, 0)(0).toInt
