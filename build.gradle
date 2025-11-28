@@ -35,18 +35,18 @@ subprojects{
 
 
     dependencies {
-        compile group: 'org.scala-lang', name: 'scala-library', version: '2.13.6'
-        compile group: 'org.scala-lang.modules', name: 'scala-parser-combinators_2.13', version: '2.1.0'
+        implementation group: 'org.scala-lang', name: 'scala-library', version: '2.13.6'
+        implementation group: 'org.scala-lang.modules', name: 'scala-parser-combinators_2.13', version: '2.1.0'
 
-        compile group: 'com.github.scopt', name: 'scopt_2.13', version: '4.0.0'
-        testCompile group: "org.scalatest", name: "scalatest_2.13", version: "3.2.0"
-        testCompile 'junit:junit:4.13'
+        implementation group: 'com.github.scopt', name: 'scopt_2.13', version: '4.0.0'
+        testImplementation group: "org.scalatest", name: "scalatest_2.13", version: "3.2.0"
+        testImplementation 'junit:junit:4.13'
 
         // logging
         // compile 'com.typesafe.scala-logging:scala-logging-slf4j_2.11:2.0.4'
-        compile group: 'com.typesafe.scala-logging', name: 'scala-logging_2.13', version: '3.9.2'
-        compile 'org.slf4j:slf4j-api:1.7.7'
-        runtime 'org.slf4j:slf4j-jdk14:1.7.7'
+        testImplementation group: 'com.typesafe.scala-logging', name: 'scala-logging_2.13', version: '3.9.2'
+        testImplementation 'org.slf4j:slf4j-api:1.7.7'
+        runtimeOnly 'org.slf4j:slf4j-jdk14:1.7.7'
 
 
         // https://mvnrepository.com/artifact/org.scalatestplus/junit-4-13

@@ -3,6 +3,6 @@
 dependencies {
 
     // SEE https://github.com/PatternConsulting/opencv
-    compile 'nu.pattern:opencv:2.4.9-6'
+    implementation 'nu.pattern:opencv:2.4.9-6'
 
 }

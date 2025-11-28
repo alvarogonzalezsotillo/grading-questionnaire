@@ -2,7 +2,7 @@
 apply plugin: 'application'
 
 dependencies{
-    compile project(':common')
+    implementation project(':common')
 }
 
 def mainClass = "giftToLatex.Main"

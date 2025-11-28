@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies{
-    compile project(':common')
+    implementation project(':common')
     implementation "com.typesafe.play:play-guice_2.13:2.8.8"
 }
 

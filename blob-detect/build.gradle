@@ -2,22 +2,22 @@
 dependencies {
 
 
-    compile project(':common')
+    implementation project(':common')
 
-    compile 'org.scala-lang.modules:scala-parallel-collections_2.13:1.0.0'
+    implementation 'org.scala-lang.modules:scala-parallel-collections_2.13:1.0.0'
 
     // SEE https://github.com/PatternConsulting/opencv
-    compile 'nu.pattern:opencv:2.4.9-6'
+    implementation 'nu.pattern:opencv:2.4.9-6'
 
     // QR SCANNER
-    compile 'com.google.zxing:core:3.2.1'
-    compile 'com.google.zxing:javase:3.2.1'
+    implementation 'com.google.zxing:core:3.2.1'
+    implementation 'com.google.zxing:javase:3.2.1'
 	
     // ON WINDOWS, OPENCV SHOULD BE INSTALLED SEPARATELY
     // http://sourceforge.net/projects/opencvlibrary/files/opencv-win/2.4.9/opencv-2.4.9.exe/download
 
     // Webcam interface (migth be replaced by openimaj)
-    compile group: 'com.github.sarxos', name: 'webcam-capture', version: '0.3.11'
+    implementation group: 'com.github.sarxos', name: 'webcam-capture', version: '0.3.11'
 }
 
 clean.doFirst {
@@ -27,7 +27,7 @@ clean.doFirst {
 task runBlobDetect(type: JavaExec, dependsOn: classes) {
     main = 'imgproc.GUI'
     classpath sourceSets.main.runtimeClasspath
-    classpath configurations.runtime
+    classpath configurations.runtimeClasspath
     systemProperty "java.library.path", "./lib"
 }
 
@@ -45,7 +45,7 @@ task repl(type:JavaExec) {
 task findBestNeuralNetwork( type: JavaExec, dependsOn: classes){
     main = 'imgproc.FindBestNeuralNetworkApp'
     classpath sourceSets.main.runtimeClasspath
-    classpath configurations.runtime
+    classpath configurations.runtimeClasspath
     jvmArgs "-Xmx24G"
     systemProperty "java.library.path", "./lib"
 }
