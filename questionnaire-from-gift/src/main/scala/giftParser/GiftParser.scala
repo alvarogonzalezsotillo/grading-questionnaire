@@ -116,6 +116,8 @@ object GiftParser extends LazyLogging{
     val openQuestions = questions.filter(_.isInstanceOf[OpenQuestion])
     val questionnaireQuestions = questions.filter(_.isInstanceOf[QuestionnaireQuestion])
 
+    checkPossibleDuplicates()
+
     def reorder(reorderAnswer: Boolean = true, reorderQuestions: Boolean = false) = {
 
       var oQuestions = openQuestions
@@ -133,6 +135,13 @@ object GiftParser extends LazyLogging{
       }
 
       GiftFile(qQuestions ++ oQuestions, file)
+    }
+
+    def checkPossibleDuplicates() = {
+      val initialText = questions.map( _.text.trim ).sorted
+      for( List(t1,t2) <- initialText.sliding(2) if t1 == t2 ){
+        throw new IllegalArgumentException( "Posible duplicidad: " + t1 )
+      }
     }
 
     def reduce( questionnaireQuestionsNumber: Int = Int.MaxValue, openQuestionsNumber: Int = Int.MaxValue ) = {

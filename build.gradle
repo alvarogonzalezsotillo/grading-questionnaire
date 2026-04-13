@@ -7,7 +7,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.3'
+        classpath 'com.github.johnrengelman.shadow:com.github.johnrengelman.shadow.gradle.plugin:8.1.1'
     }
 }
 
@@ -43,7 +43,7 @@ subprojects{
         testImplementation 'junit:junit:4.13'
 
         // logging
-        // compile 'com.typesafe.scala-logging:scala-logging-slf4j_2.11:2.0.4'
+        implementation("com.typesafe.scala-logging:scala-logging_2.13:3.9.5")
         testImplementation group: 'com.typesafe.scala-logging', name: 'scala-logging_2.13', version: '3.9.2'
         testImplementation 'org.slf4j:slf4j-api:1.7.7'
         runtimeOnly 'org.slf4j:slf4j-jdk14:1.7.7'

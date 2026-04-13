@@ -34,7 +34,7 @@ task install(dependsOn: shadowJar) doLast {
         "exec java -jar \$MYSELF \"\$@\"\n" +
         "exit \$?\n"
 
-    def file = new File("./questionnaire-from-gift/build/libs/shadow.jar")
+    def file = new File("./questionnaire-from-gift/build/libs/shadow-all.jar")
     def executable = new File("gifttolatex")
     def os = new java.io.FileOutputStream( executable )
     def is =new java.io.FileInputStream(file)
