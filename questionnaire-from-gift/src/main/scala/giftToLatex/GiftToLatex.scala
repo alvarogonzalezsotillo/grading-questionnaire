@@ -189,13 +189,14 @@ object GiftToLatex extends LazyLogging{
     val version = QuestionnaireVersion.version(horizontal,ticked)
 
     val openQuestionsWeight = 100 - questionnaireQuestionsWeight
-    val bigFont = "\\fontfamily{qag}\\selectfont \\large % BIGFONT";
+    val bigFont = "\\fontfamily{qag}\\selectfont \\large % BIGFONT"
+    val spacing = """\onehalfspacing"""
     val firstPage = s"\\FirstPage{$questionnaireQuestionsWeight}{$openQuestionsWeight}{${f.questionnaireQuestions.size}}{$horizontal}{$ticked}"
     val questions = generateLatexForQuestions(f,reduceOpenQuestions)
     val solutionIndexes = generateSolutionIndexes(f)
     val solutions = solutionIndexes.map(i => (i.toChar + 'a').toChar).mkString(",")
     val qrCodeData = BinaryConverter.toBase64( BinaryConverter.toBinarySolutions(solutionIndexes,version) )
-    val generatedContent = List( bigFont, firstPage, questions ).mkString("\n")
+    val generatedContent = List( bigFont, firstPage, spacing, questions ).mkString("\n")
     
     def toImagePath(s: String ) = {
       s"{${if( s.last == '/' ) s else s + '/'}}"
