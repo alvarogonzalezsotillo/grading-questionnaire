@@ -14,7 +14,7 @@ import imgproc.steps.ProcessingStep.{ExtendedStep, Info}
 import imgproc.steps.QRInfo.{answerMatrixMeasures, qrVersion}
 import imgproc.{AnswerMatrixMeasures, ImageProcessing, QRScanner}
 import org.opencv.core.{MatOfPoint, _}
-import org.opencv.highgui.Highgui
+import org.opencv.imgcodecs.Imgcodecs
 
 import scala.collection.SeqView
 
@@ -133,7 +133,7 @@ object ProcessingStep extends LazyLogging {
     val sDate = shortDateFormat.format(date)
     new File(sDate).mkdirs
     val file = s"$sDate/$lDate$suffix.png"
-    Highgui.imwrite(file, m)
+    Imgcodecs.imwrite(file, m)
   }
 
 
@@ -267,7 +267,7 @@ object ProcessingStep extends LazyLogging {
           val file = csi(fileName).getOrElse("noname")
           ImageProcessing.drawContours(m, g.toSeq)
           new File("abq").mkdirs()
-          Highgui.imwrite(s"abq/$file-$suffix-$i.png", m)
+          Imgcodecs.imwrite(s"abq/$file-$suffix-$i.png", m)
         }
       }
 
@@ -341,7 +341,7 @@ object ProcessingStep extends LazyLogging {
         val file = psi(fileName).getOrElse("noname")
         ImageProcessing.drawVertices(m, ps.toSeq)
         new File("lqs").mkdirs()
-        Highgui.imwrite(s"lqs/$file-axis.png", m)
+        Imgcodecs.imwrite(s"lqs/$file-axis.png", m)
       }
 
     }

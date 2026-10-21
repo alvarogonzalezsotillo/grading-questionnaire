@@ -4,20 +4,19 @@ dependencies {
 
     implementation project(':common')
 
-    implementation 'org.scala-lang.modules:scala-parallel-collections_2.13:1.0.0'
+    implementation 'org.scala-lang.modules:scala-parallel-collections_2.13:1.2.0'
 
-    // SEE https://github.com/PatternConsulting/opencv
-    implementation 'nu.pattern:opencv:2.4.9-6'
+    // OpenCV via official artifacts or system; keep original logic but update
+    implementation 'org.openpnp:opencv:4.9.0-0'
 
     // QR SCANNER
-    implementation 'com.google.zxing:core:3.2.1'
-    implementation 'com.google.zxing:javase:3.2.1'
-	
+    implementation 'com.google.zxing:core:3.5.3'
+    implementation 'com.google.zxing:javase:3.5.3'
+ 	
     // ON WINDOWS, OPENCV SHOULD BE INSTALLED SEPARATELY
-    // http://sourceforge.net/projects/opencvlibrary/files/opencv-win/2.4.9/opencv-2.4.9.exe/download
 
-    // Webcam interface (migth be replaced by openimaj)
-    implementation group: 'com.github.sarxos', name: 'webcam-capture', version: '0.3.11'
+    // Webcam interface
+    implementation group: 'com.github.sarxos', name: 'webcam-capture', version: '0.3.12'
 }
 
 clean.doFirst {

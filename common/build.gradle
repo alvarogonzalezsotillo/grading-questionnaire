@@ -2,7 +2,6 @@
 
 dependencies {
 
-    // SEE https://github.com/PatternConsulting/opencv
-    implementation 'nu.pattern:opencv:2.4.9-6'
+    implementation 'org.openpnp:opencv:4.9.0-0'
 
 }

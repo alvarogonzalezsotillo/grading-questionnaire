@@ -2,12 +2,12 @@ package imgproc
 
 import org.junit.runner.RunWith
 import org.opencv.core.{MatOfPoint, Point}
-import org.scalatest.FlatSpec
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatestplus.junit.JUnitRunner
 import java.lang.Math._
 
 @RunWith(classOf[JUnitRunner])
-class ShapeTest extends FlatSpec {
+class ShapeTest extends AnyFlatSpec {
 
   import imgproc.Implicits._
 

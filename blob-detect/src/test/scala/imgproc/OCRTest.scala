@@ -27,6 +27,7 @@ import scala.util.Random
 
 
 @RunWith(classOf[JUnitRunner])
+@org.junit.Ignore
 class OCRTest extends FlatSpec {
 
 

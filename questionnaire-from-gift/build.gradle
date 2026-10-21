@@ -34,8 +34,11 @@ task install(dependsOn: shadowJar) doLast {
         "exec java -jar \$MYSELF \"\$@\"\n" +
         "exit \$?\n"
 
-    def file = new File("./questionnaire-from-gift/build/libs/shadow-all.jar")
+    def file = new File(project.layout.buildDirectory.get().asFile, "libs/shadow-all.jar")
     def executable = new File("gifttolatex")
+    // Recreate instead of overwriting: this repo is shared between two users and
+    // chmod on a file owned by somebody else fails with EPERM.
+    executable.delete()
     def os = new java.io.FileOutputStream( executable )
     def is =new java.io.FileInputStream(file)
     os.write(stub.getBytes())

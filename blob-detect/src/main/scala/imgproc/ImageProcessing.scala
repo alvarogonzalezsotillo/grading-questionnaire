@@ -3,7 +3,7 @@ package imgproc
 import imgproc.ocr.Pattern
 import org.opencv.calib3d.Calib3d
 import org.opencv.core._
-import org.opencv.highgui.Highgui
+import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
 
 import scala.collection.generic.CanBuildFrom
@@ -25,7 +25,7 @@ object ImageProcessing {
         getResource(f).
         getPath
       
-      Highgui.imread(url)
+      Imgcodecs.imread(url)
     }
 
     def imageio() : Mat = {
@@ -188,9 +188,9 @@ object ImageProcessing {
   }
 
   def drawString(dst: Mat, string: String, point: Point, color: Scalar = defaultColor): Mat = {
-    val fontFace = Core.FONT_HERSHEY_PLAIN
+    val fontFace = Imgproc.FONT_HERSHEY_PLAIN
     val fontScale = 0.6
-    Core.putText(dst,string,point,fontFace,fontScale,color)
+    Imgproc.putText(dst,string,point,fontFace,fontScale,color)
     dst
   }
 
@@ -270,7 +270,7 @@ object ImageProcessing {
       val hist: Mat = new Mat()
       val histSize: MatOfInt = new MatOfInt(rangesArray.size)
       val ranges: MatOfFloat = new MatOfFloat(0, 256)
-      import scala.collection.JavaConverters._
+      import scala.jdk.CollectionConverters._
       org.opencv.imgproc.Imgproc.calcHist( Seq(m).asJava, channels, mask, hist, histSize, ranges)
 
       Array.tabulate(rangesArray.size) { i =>

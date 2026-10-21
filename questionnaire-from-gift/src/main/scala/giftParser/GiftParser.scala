@@ -102,12 +102,12 @@ object GiftParser extends LazyLogging{
       logger.error("QuestionnaireQuestion:" + text )
     }
 
-    def apply(questions: Questions, file: Option[File]) = new GiftFile(questions, file)
+    def apply(questions: Questions, file: Option[File] ) = new GiftFile(questions, file )
 
     def unapply(gf: GiftFile): Option[Questions] = Some(gf.questions)
   }
 
-  class GiftFile(val questions: Questions, val file: Option[File]) extends GiftParserResult {
+  class GiftFile(val questions: Questions, val file: Option[File] ) extends GiftParserResult {
 
     import GiftFile._
 
@@ -115,8 +115,6 @@ object GiftParser extends LazyLogging{
 
     val openQuestions = questions.filter(_.isInstanceOf[OpenQuestion])
     val questionnaireQuestions = questions.filter(_.isInstanceOf[QuestionnaireQuestion])
-
-    checkPossibleDuplicates()
 
     def reorder(reorderAnswer: Boolean = true, reorderQuestions: Boolean = false) = {
 

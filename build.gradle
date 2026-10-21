@@ -1,13 +1,10 @@
 buildscript {
     repositories {
         mavenCentral()
-        jcenter()
-        maven{
-            url = "https://plugins.gradle.org/m2/"
-        }
+        gradlePluginPortal()
     }
     dependencies {
-        classpath 'com.github.johnrengelman.shadow:com.github.johnrengelman.shadow.gradle.plugin:8.1.1'
+        classpath 'com.github.johnrengelman:shadow:8.1.1'
     }
 }
 
@@ -22,44 +19,39 @@ repositories {
 subprojects{
     repositories {
         mavenCentral()
-        jcenter()
-        maven{
-            url = "https://repo1.maven.org/maven2/"
-        }
     }
 
 
     apply plugin: 'java'
     apply plugin: 'scala'
-    apply plugin: 'com.github.johnrengelman.shadow'    
+    apply plugin: 'com.github.johnrengelman.shadow'
 
 
     dependencies {
-        implementation group: 'org.scala-lang', name: 'scala-library', version: '2.13.6'
-        implementation group: 'org.scala-lang.modules', name: 'scala-parser-combinators_2.13', version: '2.1.0'
+        implementation group: 'org.scala-lang', name: 'scala-library', version: '2.13.16'
+        implementation group: 'org.scala-lang.modules', name: 'scala-parser-combinators_2.13', version: '2.4.0'
 
-        implementation group: 'com.github.scopt', name: 'scopt_2.13', version: '4.0.0'
-        testImplementation group: "org.scalatest", name: "scalatest_2.13", version: "3.2.0"
-        testImplementation 'junit:junit:4.13'
+        implementation group: 'com.github.scopt', name: 'scopt_2.13', version: '4.1.0'
+        testImplementation group: "org.scalatest", name: "scalatest_2.13", version: "3.2.19"
+        testImplementation 'junit:junit:4.13.2'
 
         // logging
         implementation("com.typesafe.scala-logging:scala-logging_2.13:3.9.5")
-        testImplementation group: 'com.typesafe.scala-logging', name: 'scala-logging_2.13', version: '3.9.2'
-        testImplementation 'org.slf4j:slf4j-api:1.7.7'
-        runtimeOnly 'org.slf4j:slf4j-jdk14:1.7.7'
+        testImplementation group: 'com.typesafe.scala-logging', name: 'scala-logging_2.13', version: '3.9.5'
+        testImplementation 'org.slf4j:slf4j-api:2.0.16'
+        runtimeOnly 'org.slf4j:slf4j-jdk14:2.0.16'
 
 
         // https://mvnrepository.com/artifact/org.scalatestplus/junit-4-13
-        testImplementation group: 'org.scalatestplus', name: 'junit-4-13_2.13', version: '3.2.8.0'
-        
-        
+        testImplementation group: 'org.scalatestplus', name: 'junit-4-13_2.13', version: '3.2.19.0'
+        testImplementation "org.scalatestplus:scalatestplus-junit_2.13:1.0.0-SNAP9"
     }
 
 }
 
 
-task miwrapper(type: Wrapper) {
-    gradleVersion = '5.1.1'
+tasks.register('miwrapper', Wrapper) {
+    gradleVersion = '8.11.1'
 }
 
 

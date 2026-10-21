@@ -1,8 +1,8 @@
 package common
 
 import org.junit.runner.RunWith
-import org.scalatest.FlatSpec
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatestplus.junit.JUnitRunner
 
 /**
   * Created by alvaro on 18/08/16.
@@ -13,7 +13,7 @@ import org.scalatest.junit.JUnitRunner
   * Created by alvaro on 7/06/16.
   */
 @RunWith(classOf[JUnitRunner])
-class QuestionnaireVersionTest extends FlatSpec {
+class QuestionnaireVersionTest extends AnyFlatSpec {
 
   import QuestionnaireVersion._
 

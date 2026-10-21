@@ -18,11 +18,10 @@ import imgproc.steps.ProcessingStep._
 import imgproc.steps.QRInfo.{answerMatrixMeasures, qrLocation, qrText, qrVersion}
 import org.junit.runner.RunWith
 import org.opencv.core.{Mat, Point}
-//import org.scalatest.flatspec.{AnyFlatSpec => FlatSpec}
-//import org.scalatestplus.junit.JUnitRunner
-import org.scalatest.FlatSpec
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.words.ResultOfStringPassedToVerb
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatestplus.junit.JUnitRunner
+import org.scalatest.wordspec.AnyWordSpecLike
+import org.scalatest.matchers.should.Matchers
 
 
 object ProcessingStepTest{
@@ -63,7 +62,7 @@ object ProcessingStepTest{
 }
 
 @RunWith(classOf[JUnitRunner])
-class ProcessingStepTest extends FlatSpec {
+class ProcessingStepTest extends AnyFlatSpec with Matchers {
 
   import ProcessingStepTest._
   import imgproc.Implicits._

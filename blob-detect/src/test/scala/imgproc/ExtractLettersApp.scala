@@ -32,10 +32,10 @@ object ExtractLettersApp extends App {
 
   val files = {
 
-    def descendantFiles(f: File): Stream[File] = {
+    def descendantFiles(f: File): LazyList[File] = {
       Option(f.listFiles()) match {
-        case Some(files) => files.toStream.flatMap(fi => fi #:: descendantFiles(fi))
-        case None => Stream.empty
+        case Some(files) => files.to(LazyList).flatMap(fi => fi #:: descendantFiles(fi))
+        case None => LazyList.empty
       }
     }
 

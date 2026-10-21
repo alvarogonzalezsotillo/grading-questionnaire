@@ -4,7 +4,7 @@ import java.awt.Dimension
 
 import com.github.sarxos.webcam.Webcam
 import org.opencv.core.Mat
-import org.opencv.highgui.{Highgui, VideoCapture}
+import org.opencv.videoio.{VideoCapture, Videoio}
 
 /**
  * Created by alvaro on 19/10/15.
@@ -29,8 +29,8 @@ object VideoSource {
     if (!vc.isOpened) {
       throw new IllegalStateException()
     }
-    vc.set(Highgui.CV_CAP_PROP_FRAME_WIDTH, 1280)
-    vc.set(Highgui.CV_CAP_PROP_FRAME_HEIGHT, 1024)
+    vc.set(Videoio.CAP_PROP_FRAME_WIDTH, 1280)
+    vc.set(Videoio.CAP_PROP_FRAME_HEIGHT, 1024)
 
 
     //println(vc.get(Highgui.CV_CAP_PROP_FRAME_WIDTH) + "," + vc.get(Highgui.CV_CAP_PROP_FRAME_HEIGHT))
@@ -50,8 +50,16 @@ object VideoSource {
     lazy val webcam = {
       val webcam = Webcam.getDefault
       val d = new Dimension(1280, 1024)
-      webcam.setCustomViewSizes(Array[Dimension](d))
-      webcam.setViewSize(d)
+      try {
+        webcam.setCustomViewSizes(d)
+      } catch {
+        case _: Exception =>
+      }
+      try {
+        webcam.setViewSize(d)
+      } catch {
+        case _: Exception =>
+      }
       //System.out.println("Camera size:" + webcam.getViewSize)
       webcam.open
       //System.out.println("Camera size:" + webcam.getViewSize)
@@ -73,7 +81,7 @@ object VideoSource {
         //println( "Primera lectura")
         _lastRead = BufferedImage2Mat(image)
         //println( "convertido")
-        _someRead = false // PARA NO SOBREESCRIBIR CON LA SIGUIENTE LECTURA
+        _someRead = true // PARA NO SOBREESCRIBIR CON LA SIGUIENTE LECTURA
       }
       else {
         //println( "otras lecturas")

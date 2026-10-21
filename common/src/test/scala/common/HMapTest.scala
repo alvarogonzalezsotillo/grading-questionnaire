@@ -1,14 +1,14 @@
 package common
 
 import org.junit.runner.RunWith
-import org.scalatest.FlatSpec
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatestplus.junit.JUnitRunner
 
 /**
   * Created by alvaro on 7/06/16.
   */
 @RunWith(classOf[JUnitRunner])
-class HMapTest extends FlatSpec {
+class HMapTest extends AnyFlatSpec {
 
   object stringK extends HKey[String]
 

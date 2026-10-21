@@ -11,7 +11,7 @@ import imgproc.ocr.Pattern
 import imgproc.ocr.Pattern.TrainingPatterns
 import imgproc.ocr.perceptron.Perceptron.{fillRowWithArray, imageToSignal}
 import org.opencv.core.{CvType, Mat, TermCriteria}
-import org.opencv.ml.{CvANN_MLP, CvANN_MLP_TrainParams, CvKNearest}
+import org.opencv.ml.{ANN_MLP, KNearest, TrainData}
 
 /**
  * Created by alvaro on 6/04/16.
@@ -60,7 +60,7 @@ trait KnnPerceptron extends Perceptron{
 
   import Perceptron._
 
-  val knn = new CvKNearest()
+  val knn = KNearest.create()
 
   val k = 10
 
@@ -72,9 +72,10 @@ trait KnnPerceptron extends Perceptron{
     val samples = new Mat(1, input.size, CvType.CV_32FC1)
     fillRowWithArray(samples, 0, input)
     val results = new Mat
-    val ret = knn.find_nearest(samples, k, results, new Mat, new Mat)
-
-    val predicted = results.get(0,0)(0).toInt
+    val neighbors = new Mat
+    val dist = new Mat
+    knn.findNearest(samples, k, results)
+    val predicted = if (results.rows() > 0 && results.cols() > 0) results.get(0,0)(0).toInt else 0
 
     LetterResult(
       Seq(
@@ -87,7 +88,7 @@ trait KnnPerceptron extends Perceptron{
 trait AnnPerceptron extends Perceptron{
   import Perceptron._
 
-  val ann = new CvANN_MLP
+  val ann = ANN_MLP.create()
 
   /*
   If you are using the default cvANN_MLP::SIGMOID_SYM activation function with
@@ -197,7 +198,8 @@ abstract class UntrainedKnnPerceptron() extends KnnPerceptron {
 
 
 
-    val ret = knn.train(input,labels)
+    val td = TrainData.create(input, 0, labels)
+    val ret = knn.train(td)
 
     //val date = new SimpleDateFormat("YYYY-MM-dd-HH-mm-ss").format(new Date)
     //ann.save(s"./trained-${getClass.getSimpleName}-$date.xml")
@@ -231,7 +233,7 @@ abstract class UntrainedAnnPerceptron(val nodesInInputLayer : Int, nodesInIntern
 
 
 
-  def train( data: TrainingPatterns, alpha: Double = 1,  beta: Double = 1, activateFunc : Int = CvANN_MLP.SIGMOID_SYM) : Int = {
+  def train( data: TrainingPatterns, alpha: Double = 1,  beta: Double = 1, activateFunc : Int = ANN_MLP.SIGMOID_SYM) : Int = {
     val letters = data.keys.toList
 
     // logger.error( s"data: ${data}" )
@@ -290,28 +292,20 @@ abstract class UntrainedAnnPerceptron(val nodesInInputLayer : Int, nodesInIntern
 
 
     val sizes = layerSizes(data.size)
-    ann.create(sizes, activateFunc, alpha, beta)
+    ann.setLayerSizes(sizes)
+    ann.setActivationFunction(activateFunc, alpha, beta)
 
     val (input,labels,weights) = trainDataset
-    val params = {
-      // https://github.com/arnaudgelas/OpenCVExamples/blob/master/NeuralNetwork/NeuralNetwork.cpp
-      val ret = new CvANN_MLP_TrainParams
-      ret.set_train_method(CvANN_MLP_TrainParams.BACKPROP)
-      val termCriteria = new TermCriteria(TermCriteria.MAX_ITER+TermCriteria.EPS,maxIterations,epsilon)
-      ret.set_term_crit( termCriteria )
-      ret
-    }
+    val termCriteria = new TermCriteria(TermCriteria.MAX_ITER+TermCriteria.EPS,maxIterations,epsilon)
+    ann.setTermCriteria(termCriteria)
+    ann.setTrainMethod(ANN_MLP.BACKPROP)
 
-    val flags = 0// CvANN_MLP.NO_INPUT_SCALE | CvANN_MLP.NO_OUTPUT_SCALE
-
-
-
-    val ret = ann.train( input, labels, weights, new Mat(), params, flags )
+    val td = TrainData.create(input, org.opencv.ml.Ml.ROW_SAMPLE, labels)
+    val ret = ann.train(td)
+    if (ret) 1 else 0
 
     //val date = new SimpleDateFormat("YYYY-MM-dd-HH-mm-ss").format(new Date)
     //ann.save(s"./trained-${getClass.getSimpleName}-$date.xml")
-
-    ret
   }
 
 

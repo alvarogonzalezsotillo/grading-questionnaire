@@ -10,12 +10,11 @@ import imgproc.{AnswerMatrixMeasures, ImageProcessing}
 import imgproc.ImageProcessing._
 import imgproc.ocr.OneLetterOCR.LetterResult
 import imgproc.ocr.perceptron.LetterPerceptron.AnnPerceptronParams
-import org.opencv.contrib.Contrib
 import org.opencv.core.Core.MinMaxLocResult
 import org.opencv.core._
 import org.opencv.imgproc.Imgproc
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
   * Created by alvaro on 20/01/16.

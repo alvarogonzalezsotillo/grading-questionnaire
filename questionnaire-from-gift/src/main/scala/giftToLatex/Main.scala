@@ -114,6 +114,7 @@ object Main extends App with LazyLogging {
         logger.error(c.toString)
 
         val g = GiftParser.parse(c.giftFile).get
+        g.checkPossibleDuplicates()
         val giftParsedFile = g.reduce(c.maxQuestionnaireQuestions)
         (0 until c.numberOfVariations).map(v => (v + 'A').toChar).foreach{ v =>
           val version = giftParsedFile.reorder()
