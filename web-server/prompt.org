@@ -1,0 +1,9 @@
+
+
+Create web app with the funcionality of blob-detect project:
+- Browser shows a video of the web cam, maximizing resolution
+- Browser sends images of the video to the server
+- The server tries to locate a valid questionnaire. If found (see cellsLocationStep), then sends that image to the browser
+- The browser maintains a list of valid questionnaires, visible as thumbnails under video.
+  - User can click on a thumbnail to enlarge, and save all images to disk.    
+- Use a SPI, or other pattern if you feel it is better
