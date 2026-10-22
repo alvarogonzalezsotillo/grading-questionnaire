@@ -31,3 +31,6 @@ gradle.properties
 
 /gifttolatex
 /.agent-shell/
+
+# questionnaires detected by the web server
+/web-server/captures/

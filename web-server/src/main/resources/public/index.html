@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Detección de cuestionarios</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+    <div class="title">
+        <h1>Detección de cuestionarios</h1>
+        <div id="status" class="status">Iniciando…</div>
+        <div id="server-info" class="status"></div>
+    </div>
+    <div class="controls">
+        <button id="toggle-camera" class="primary">Activar cámara</button>
+        <button id="capture-now">Capturar ahora</button>
+        <button id="save-all">Guardar todas</button>
+        <button id="clear">Vaciar</button>
+        <label>
+            Intervalo
+            <select id="interval">
+                <option value="200">200 ms</option>
+                <option value="500" selected>500 ms</option>
+                <option value="1000">1 s</option>
+                <option value="2000">2 s</option>
+                <option value="5000">5 s</option>
+            </select>
+        </label>
+        <label>
+            Envío
+            <select id="capture-width">
+                <option value="1280">1280 px</option>
+                <option value="1600" selected>1600 px</option>
+                <option value="1920">1920 px</option>
+                <option value="0">Original</option>
+            </select>
+        </label>
+    </div>
+</header>
+
+<main>
+    <div class="video-area">
+        <video id="video" autoplay playsinline muted></video>
+        <div id="video-placeholder" class="placeholder">
+            <p>La cámara está apagada</p>
+            <p class="hint">
+                Pulsa <strong>Activar cámara</strong> para empezar.<br>
+                Los navegadores sólo dan acceso a la cámara en <code>localhost</code> o sobre <code>https</code>.
+            </p>
+        </div>
+        <div class="video-info" id="video-info"></div>
+    </div>
+
+    <section class="captures">
+        <h2>Cuestionarios detectados (<span id="capture-count">0</span>)</h2>
+        <div id="thumbnail-list" class="thumbnail-list">
+            <p class="empty">Todavía no se ha detectado ningún cuestionario.</p>
+        </div>
+    </section>
+</main>
+
+<div id="lightbox" class="lightbox hidden">
+    <div class="lightbox-content">
+        <button id="lightbox-close" class="close" title="Cerrar">&times;</button>
+        <img id="lightbox-image" alt="Cuestionario detectado">
+        <div id="lightbox-info" class="lightbox-info"></div>
+        <a id="lightbox-download" class="download" download="cuestionario.jpg">Descargar</a>
+    </div>
+</div>
+
+<canvas id="capture-canvas" class="hidden"></canvas>
+
+<script src="app.js"></script>
+</body>
+</html>

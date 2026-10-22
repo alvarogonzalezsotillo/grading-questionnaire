@@ -1,0 +1,20 @@
+plugins {
+    id 'application'
+}
+
+dependencies {
+
+    implementation project(':blob-detect')
+    implementation project(':common')
+
+    implementation 'org.openpnp:opencv:4.9.0-0'
+}
+
+application {
+    mainClass = 'webserver.Main'
+}
+
+tasks.named('run') {
+    // the captures are stored relative to the root project
+    workingDir = rootProject.projectDir
+}
