@@ -19,6 +19,7 @@
 \usepackage{extramarks} % Required for headers and footers
 \usepackage{ctable} % for \specialrule command
 \usepackage{grffile} % spaces in graphics file
+\usepackage[tracking=true]{microtype}
 \IfFileExists{currfile.sty}{\usepackage{currfile}}{}
 
 
@@ -539,6 +540,10 @@
 }
 
 \begin{document}
+
+% ESTO SIRVE PARA CAMBIAR EL KERNING Y AJUSTAR EL ESPACIO ENTRE LETRAS
+\SetTracking{encoding=*}{0}% tracking amount in thousandths of an em
+\lsstyle
 
 
 \IndentOff
