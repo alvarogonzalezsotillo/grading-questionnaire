@@ -25,6 +25,19 @@ clean.doFirst {
 
 shadowJar {
    archiveBaseName.set('shadow')
+
+   // OpenCV is only used by common's test utilities. It contributes ~110 MB of
+   // native libraries (for every platform) to the executable, so leave it out.
+   dependencies {
+       exclude(dependency('org.openpnp:opencv:.*'))
+   }
+
+   // Remove classes from the bundled libraries that this executable never uses.
+   // SLF4J loads its provider through the service loader, which minimisation
+   // cannot see, so keep all of it (it is tiny).
+   minimize {
+       exclude(dependency('org.slf4j:.*:.*'))
+   }
 }
 
 task install(dependsOn: shadowJar) doLast {
